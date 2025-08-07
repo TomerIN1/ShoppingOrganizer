@@ -50,18 +50,22 @@ const auth = {
         let redirectTo;
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             // Development environment
-            redirectTo = window.location.href;
+            redirectTo = `${window.location.origin}/`;
         } else {
-            // Production environment (Vercel)
-            redirectTo = `${window.location.origin}${window.location.pathname}`;
+            // Production environment (Vercel) - use exact URL
+            redirectTo = window.location.origin + '/';
         }
         
-        console.log('Redirecting to:', redirectTo);
+        console.log('OAuth redirectTo:', redirectTo);
         
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: redirectTo
+                redirectTo: redirectTo,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                }
             }
         });
         
@@ -341,10 +345,25 @@ if (typeof window !== 'undefined') {
             supabase = initializeSupabase();
             console.log('Supabase initialized with environment config:', !!supabase);
             
+            // Handle OAuth callback immediately after initialization
+            if (supabase && window.location.hash) {
+                console.log('Detected URL hash, processing OAuth callback...');
+                try {
+                    const { data, error } = await supabase.auth.getSession();
+                    if (error) {
+                        console.warn('OAuth callback processing error:', error.message);
+                    } else if (data?.session) {
+                        console.log('✅ OAuth callback successful, session established');
+                    }
+                } catch (callbackError) {
+                    console.warn('OAuth callback processing failed:', callbackError.message);
+                }
+            }
+            
             // Trigger a custom event when Supabase is ready
             window.dispatchEvent(new CustomEvent('supabaseReady'));
         } catch (error) {
             console.error('Failed to initialize Supabase:', error);
         }
-    }, 200); // Slightly longer delay to ensure env-config.js is loaded
+    }, 100); // Reduced delay for faster initialization
 }

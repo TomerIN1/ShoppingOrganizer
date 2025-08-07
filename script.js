@@ -147,6 +147,9 @@ class ShoppingListOrganizer {
                 } else if (event === 'TOKEN_REFRESHED' && session?.user) {
                     // Update user info on token refresh
                     this.currentUser = session.user;
+                } else if (event === 'INITIAL_SESSION' && session?.user) {
+                    // Handle initial session on page load (OAuth callback)
+                    await this.switchToAuthenticatedMode(session.user);
                 }
             });
         } catch (error) {

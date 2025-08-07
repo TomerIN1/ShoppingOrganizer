@@ -65,7 +65,85 @@
     
     <!-- Supabase Integration -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="env-config.js"></script>
+    <script>
+        // Inline environment configuration loader to avoid 404 errors in production
+        class EnvironmentConfig {
+            constructor() {
+                this.config = {};
+                this.loaded = false;
+            }
+
+            async load() {
+                if (this.loaded) return this.config;
+
+                try {
+                    // Try to load from Vercel API endpoint (production)
+                    const apiResponse = await fetch('/api/config');
+                    if (apiResponse.ok) {
+                        this.config = await apiResponse.json();
+                        console.log('✅ Environment variables loaded from API (production)');
+                        this.loaded = true;
+                        return this.config;
+                    }
+                } catch (error) {
+                    console.warn('Unable to load from API, trying .env fallback:', error.message);
+                }
+
+                try {
+                    // Fallback: try to load from .env file (development)
+                    const envResponse = await fetch('.env');
+                    if (envResponse.ok) {
+                        const envText = await envResponse.text();
+                        this.parseEnvFile(envText);
+                        console.log('✅ Environment variables loaded from .env file (development)');
+                        this.loaded = true;
+                        return this.config;
+                    }
+                } catch (error) {
+                    // .env not available
+                }
+
+                // Final fallback - configuration error
+                console.error('❌ Unable to load environment variables');
+                this.config = {
+                    SUPABASE_URL: '',
+                    SUPABASE_ANON_KEY: '',
+                    GOOGLE_CLIENT_ID: '',
+                    NODE_ENV: 'production'
+                };
+
+                this.loaded = true;
+                return this.config;
+            }
+
+            parseEnvFile(envText) {
+                const lines = envText.split('\n');
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    
+                    // Skip empty lines and comments
+                    if (!line || line.startsWith('#')) return;
+                    
+                    const [key, ...valueParts] = line.split('=');
+                    if (key && valueParts.length > 0) {
+                        this.config[key.trim()] = valueParts.join('=').trim();
+                    }
+                });
+            }
+
+            get(key) {
+                return this.config[key];
+            }
+
+            getAll() {
+                return { ...this.config };
+            }
+        }
+
+        // Create global instance
+        window.EnvironmentConfig = new EnvironmentConfig();
+    </script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
