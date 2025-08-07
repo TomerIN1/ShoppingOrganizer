@@ -61,10 +61,82 @@ class ShoppingListOrganizer {
         };
 
         this.currentLists = {};
+        this.currentUser = null;
+        this.mode = 'guest'; // 'guest' or 'authenticated'
+        
+        this.initializeApp();
+    }
+
+    async initializeApp() {
         this.initializeEventListeners();
+        
+        // Wait for Supabase to initialize
+        await this.waitForSupabase();
+        
+        // Check for existing authentication
+        await this.checkAuthStatus();
+    }
+
+    async waitForSupabase() {
+        return new Promise((resolve) => {
+            // Check if Supabase is already ready
+            if (window.SupabaseConfig && window.SupabaseConfig.client()) {
+                console.log('✅ Supabase already loaded successfully');
+                resolve();
+                return;
+            }
+            
+            // Wait for the supabaseReady event
+            const handleSupabaseReady = () => {
+                if (window.SupabaseConfig && window.SupabaseConfig.client()) {
+                    console.log('✅ Supabase loaded successfully');
+                    window.removeEventListener('supabaseReady', handleSupabaseReady);
+                    resolve();
+                } else {
+                    console.warn('⚠️ Supabase ready event fired but client not available');
+                    setTimeout(() => resolve(), 1000); // Fallback
+                }
+            };
+            
+            window.addEventListener('supabaseReady', handleSupabaseReady);
+            
+            // Fallback timeout
+            setTimeout(() => {
+                window.removeEventListener('supabaseReady', handleSupabaseReady);
+                if (window.SupabaseConfig && window.SupabaseConfig.client()) {
+                    console.log('✅ Supabase loaded via fallback');
+                } else {
+                    console.warn('⚠️ Supabase not loaded, running in guest mode only');
+                }
+                resolve();
+            }, 3000);
+        });
+    }
+
+    async checkAuthStatus() {
+        if (!window.SupabaseConfig) return;
+        
+        try {
+            const user = await window.SupabaseConfig.auth.getCurrentUser();
+            if (user) {
+                await this.switchToAuthenticatedMode(user);
+            }
+            
+            // Listen for auth state changes
+            window.SupabaseConfig.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session?.user) {
+                    await this.switchToAuthenticatedMode(session.user);
+                } else if (event === 'SIGNED_OUT') {
+                    this.switchToGuestMode();
+                }
+            });
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+        }
     }
 
     initializeEventListeners() {
+        // Existing event listeners
         document.getElementById('organizeBtn').addEventListener('click', () => this.organizeList());
         document.getElementById('clearBtn').addEventListener('click', () => this.clearInput());
         document.getElementById('addCategoryBtn').addEventListener('click', () => this.addNewCategory());
@@ -73,11 +145,79 @@ class ShoppingListOrganizer {
         document.getElementById('newListBtn').addEventListener('click', () => this.newList());
         document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileLoad(e));
 
+        // Authentication event listeners
+        document.getElementById('signInBtn').addEventListener('click', () => this.signIn());
+        document.getElementById('signOutBtn').addEventListener('click', () => this.signOut());
+        document.getElementById('myListsBtn').addEventListener('click', () => this.showMyLists());
+        document.getElementById('sharedListsBtn').addEventListener('click', () => this.showSharedLists());
+
         document.getElementById('freeTextInput').addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
                 this.organizeList();
             }
         });
+    }
+
+    async signIn() {
+        if (!window.SupabaseConfig) {
+            alert('Authentication not available. Please refresh the page.');
+            return;
+        }
+        
+        try {
+            await window.SupabaseConfig.auth.signInWithGoogle();
+        } catch (error) {
+            console.error('Sign-in error:', error);
+            alert('Sign-in failed. Please try again.');
+        }
+    }
+
+    async signOut() {
+        if (!window.SupabaseConfig) return;
+        
+        try {
+            await window.SupabaseConfig.auth.signOut();
+            this.switchToGuestMode();
+        } catch (error) {
+            console.error('Sign-out error:', error);
+        }
+    }
+
+    async switchToAuthenticatedMode(user) {
+        this.currentUser = user;
+        this.mode = 'authenticated';
+        
+        // Update UI
+        document.getElementById('guestMode').style.display = 'none';
+        document.getElementById('authenticatedMode').style.display = 'flex';
+        
+        // Update user info
+        document.getElementById('userName').textContent = user.user_metadata?.full_name || user.email;
+        const avatar = document.getElementById('userAvatar');
+        avatar.src = user.user_metadata?.avatar_url || 'https://via.placeholder.com/40';
+        
+        console.log('✅ Switched to authenticated mode');
+    }
+
+    switchToGuestMode() {
+        this.currentUser = null;
+        this.mode = 'guest';
+        
+        // Update UI
+        document.getElementById('guestMode').style.display = 'flex';
+        document.getElementById('authenticatedMode').style.display = 'none';
+        
+        console.log('ℹ️ Switched to guest mode');
+    }
+
+    showMyLists() {
+        // TODO: Implement cloud lists view
+        alert('My Lists feature coming soon!');
+    }
+
+    showSharedLists() {
+        // TODO: Implement shared lists view
+        alert('Shared Lists feature coming soon!');
     }
 
     parseTextInput(text) {
