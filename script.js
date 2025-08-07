@@ -117,17 +117,36 @@ class ShoppingListOrganizer {
         if (!window.SupabaseConfig) return;
         
         try {
+            // First, handle any OAuth redirect by getting session
+            const supabaseClient = window.SupabaseConfig.client();
+            if (supabaseClient) {
+                // This will handle OAuth callback URLs
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
+                
+                if (error) {
+                    console.warn('Session initialization error:', error.message);
+                } else if (session?.user) {
+                    await this.switchToAuthenticatedMode(session.user);
+                }
+            }
+            
+            // Then check for existing user
             const user = await window.SupabaseConfig.auth.getCurrentUser();
-            if (user) {
+            if (user && !this.currentUser) {
                 await this.switchToAuthenticatedMode(user);
             }
             
             // Listen for auth state changes
             window.SupabaseConfig.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state change:', event, !!session);
+                
                 if (event === 'SIGNED_IN' && session?.user) {
                     await this.switchToAuthenticatedMode(session.user);
                 } else if (event === 'SIGNED_OUT') {
                     this.switchToGuestMode();
+                } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+                    // Update user info on token refresh
+                    this.currentUser = session.user;
                 }
             });
         } catch (error) {

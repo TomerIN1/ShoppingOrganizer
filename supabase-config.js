@@ -14,13 +14,20 @@ function initializeSupabase() {
     if (typeof window !== 'undefined' && window.supabase) {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
-                redirectTo: window.location.origin,
                 autoRefreshToken: true,
-                persistSession: true
+                persistSession: true,
+                detectSessionInUrl: true,
+                flowType: 'pkce',
+                debug: false
             },
             realtime: {
                 params: {
                     eventsPerSecond: 10
+                }
+            },
+            global: {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY
                 }
             }
         });
@@ -88,22 +95,21 @@ const auth = {
         }
         
         try {
-            // First check if there's an active session
+            // First get the current session
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
             
-            if (sessionError || !session) {
+            if (sessionError) {
+                console.warn('Session error:', sessionError.message);
+                return null;
+            }
+            
+            if (!session) {
                 // No active session, return null silently (this is normal for non-authenticated users)
                 return null;
             }
             
-            // If session exists, get the user
-            const { data: { user }, error } = await supabase.auth.getUser();
-            if (error) {
-                console.error('Error getting current user:', error.message);
-                return null;
-            }
-            
-            return user;
+            // Session exists, return the user from the session
+            return session.user;
         } catch (error) {
             console.error('Error in getCurrentUser:', error);
             return null;
