@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List Organizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Shopping List Organizer</h1>
+        </header>
+        
+        <main>
+            <section class="input-section">
+                <h2>Enter Your Shopping List</h2>
+                <textarea 
+                    id="freeTextInput" 
+                    placeholder="Enter your shopping items here (e.g., milk, bread, apples, chicken breast, etc.)"
+                    rows="8"
+                ></textarea>
+                <div class="input-actions">
+                    <button id="organizeBtn" class="btn-primary">Organize List</button>
+                    <button id="clearBtn" class="btn-secondary">Clear</button>
+                </div>
+            </section>
+
+            <section class="organized-section" id="organizedSection" style="display: none;">
+                <div class="section-header">
+                    <h2>Organized Shopping List</h2>
+                    <div class="list-actions">
+                        <button id="addCategoryBtn" class="btn-add">Add Category</button>
+                        <button id="saveBtn" class="btn-primary">Save List</button>
+                        <button id="loadBtn" class="btn-secondary">Load List</button>
+                        <button id="newListBtn" class="btn-secondary">New List</button>
+                    </div>
+                </div>
+                
+                <div id="categorizedLists" class="categories-container">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+    <script src="script.js"></script>
+</body>
+</html>
