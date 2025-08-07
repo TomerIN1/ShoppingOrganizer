@@ -11,21 +11,40 @@ class EnvironmentConfig {
         if (this.loaded) return this.config;
 
         try {
-            // In development, load from .env file
-            const response = await fetch('.env');
-            if (response.ok) {
-                const envText = await response.text();
+            // First try to load from .env file (development)
+            const envResponse = await fetch('.env');
+            if (envResponse.ok) {
+                const envText = await envResponse.text();
                 this.parseEnvFile(envText);
-                console.log('✅ Environment variables loaded from .env file');
-            } else {
-                // Fallback to hardcoded values for production
-                this.loadFallbackConfig();
-                console.log('⚠️ Using fallback configuration (production mode)');
+                console.log('✅ Environment variables loaded from .env file (development)');
+                this.loaded = true;
+                return this.config;
             }
         } catch (error) {
-            console.warn('Unable to load .env file, using fallback configuration');
-            this.loadFallbackConfig();
+            // .env not available, try production API
         }
+
+        try {
+            // Try to load from Vercel API endpoint (production)
+            const apiResponse = await fetch('/api/config');
+            if (apiResponse.ok) {
+                this.config = await apiResponse.json();
+                console.log('✅ Environment variables loaded from API (production)');
+                this.loaded = true;
+                return this.config;
+            }
+        } catch (error) {
+            console.warn('Unable to load from API:', error.message);
+        }
+
+        // Final fallback - configuration error
+        console.error('❌ Unable to load environment variables');
+        this.config = {
+            SUPABASE_URL: '',
+            SUPABASE_ANON_KEY: '',
+            GOOGLE_CLIENT_ID: '',
+            NODE_ENV: 'production'
+        };
 
         this.loaded = true;
         return this.config;
@@ -47,14 +66,13 @@ class EnvironmentConfig {
         });
     }
 
+    // This method is no longer used - configuration comes from API in production
     loadFallbackConfig() {
-        // In production, these would come from environment variables set on the server
-        // For now, we'll use placeholders that need to be replaced during deployment
+        console.error('Environment configuration failed - please check Vercel environment variables');
         this.config = {
-            SUPABASE_URL: process.env?.SUPABASE_URL || 'YOUR_SUPABASE_URL_HERE',
-            SUPABASE_ANON_KEY: process.env?.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY_HERE',
-            GOOGLE_CLIENT_ID: process.env?.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID_HERE',
-            GOOGLE_CLIENT_SECRET: process.env?.GOOGLE_CLIENT_SECRET || 'YOUR_GOOGLE_CLIENT_SECRET_HERE',
+            SUPABASE_URL: '',
+            SUPABASE_ANON_KEY: '',
+            GOOGLE_CLIENT_ID: '',
             NODE_ENV: 'production'
         };
     }
