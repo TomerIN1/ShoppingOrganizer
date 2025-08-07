@@ -17,17 +17,12 @@ function initializeSupabase() {
                 autoRefreshToken: true,
                 persistSession: true,
                 detectSessionInUrl: true,
-                flowType: 'pkce',
+                flowType: 'implicit',
                 debug: false
             },
             realtime: {
                 params: {
                     eventsPerSecond: 10
-                }
-            },
-            global: {
-                headers: {
-                    'apikey': SUPABASE_ANON_KEY
                 }
             }
         });
@@ -61,11 +56,7 @@ const auth = {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: redirectTo,
-                queryParams: {
-                    access_type: 'offline',
-                    prompt: 'consent',
-                }
+                redirectTo: redirectTo
             }
         });
         
@@ -346,15 +337,20 @@ if (typeof window !== 'undefined') {
             console.log('Supabase initialized with environment config:', !!supabase);
             
             // Handle OAuth callback immediately after initialization
-            if (supabase && window.location.hash) {
-                console.log('Detected URL hash, processing OAuth callback...');
+            if (supabase && (window.location.hash || window.location.search.includes('code='))) {
+                console.log('Detected OAuth callback, processing...');
                 try {
-                    const { data, error } = await supabase.auth.getSession();
-                    if (error) {
-                        console.warn('OAuth callback processing error:', error.message);
-                    } else if (data?.session) {
-                        console.log('✅ OAuth callback successful, session established');
-                    }
+                    // Give Supabase a moment to process the URL fragments
+                    setTimeout(async () => {
+                        const { data, error } = await supabase.auth.getSession();
+                        if (error) {
+                            console.warn('OAuth callback processing error:', error.message);
+                        } else if (data?.session) {
+                            console.log('✅ OAuth callback successful, session established');
+                        } else {
+                            console.log('ℹ️ No session established from callback');
+                        }
+                    }, 500); // Small delay to allow URL processing
                 } catch (callbackError) {
                     console.warn('OAuth callback processing failed:', callbackError.message);
                 }
