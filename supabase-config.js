@@ -39,10 +39,22 @@ const auth = {
             throw new Error('Supabase not initialized');
         }
         
+        // Determine the correct redirect URL based on environment
+        let redirectTo;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            // Development environment
+            redirectTo = window.location.href;
+        } else {
+            // Production environment (Vercel)
+            redirectTo = `${window.location.origin}${window.location.pathname}`;
+        }
+        
+        console.log('Redirecting to:', redirectTo);
+        
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.href
+                redirectTo: redirectTo
             }
         });
         
