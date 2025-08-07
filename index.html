@@ -10,6 +10,24 @@
     <div class="container">
         <header>
             <h1>Shopping List Organizer</h1>
+            <div class="auth-section">
+                <div id="guestMode" class="auth-status">
+                    <span class="mode-indicator">Guest Mode</span>
+                    <button id="signInBtn" class="btn-auth">Sign In with Google</button>
+                    <small>Sign in to save lists and collaborate with others</small>
+                </div>
+                <div id="authenticatedMode" class="auth-status" style="display: none;">
+                    <div class="user-info">
+                        <img id="userAvatar" src="" alt="User" class="user-avatar">
+                        <span id="userName" class="user-name"></span>
+                        <button id="signOutBtn" class="btn-auth-secondary">Sign Out</button>
+                    </div>
+                    <div class="cloud-actions">
+                        <button id="myListsBtn" class="btn-primary">My Lists</button>
+                        <button id="sharedListsBtn" class="btn-secondary">Shared Lists</button>
+                    </div>
+                </div>
+            </div>
         </header>
         
         <main>
@@ -44,6 +62,11 @@
     </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
+    
+    <!-- Supabase Integration -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="env-config.js"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Callback - Shopping List Organizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .callback-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        h1 {
+            margin: 0 0 20px 0;
+            font-size: 1.5rem;
+        }
+        
+        p {
+            margin: 0;
+            opacity: 0.8;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="callback-container">
+        <div class="spinner"></div>
+        <h1>Signing you in...</h1>
+        <p>Please wait while we complete the authentication process.</p>
+    </div>
+
+    <script>
+        // Handle OAuth callback
+        async function handleCallback() {
+            try {
+                // Get the hash fragment from URL
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const refreshToken = hashParams.get('refresh_token');
+                
+                if (accessToken) {
+                    // Store tokens and redirect back to main app
+                    localStorage.setItem('supabase.auth.token', JSON.stringify({
+                        access_token: accessToken,
+                        refresh_token: refreshToken
+                    }));
+                    
+                    // Redirect back to main app
+                    window.location.href = '/index.html';
+                } else {
+                    // Handle error case
+                    const error = hashParams.get('error');
+                    const errorDescription = hashParams.get('error_description');
+                    
+                    if (error) {
+                        console.error('Authentication error:', error, errorDescription);
+                        alert('Authentication failed: ' + (errorDescription || error));
+                    }
+                    
+                    // Redirect back to main app anyway
+                    window.location.href = '/index.html';
+                }
+            } catch (error) {
+                console.error('Error handling callback:', error);
+                // Redirect back to main app on any error
+                window.location.href = '/index.html';
+            }
+        }
+
+        // Execute callback handling
+        handleCallback();
+    </script>
+</body>
+</html>

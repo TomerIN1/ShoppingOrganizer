@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test - Shopping List Organizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .auth-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        button:hover {
+            background: #219a52;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+        
+        .test-btn {
+            background: #3498db;
+        }
+        
+        .test-btn:hover {
+            background: #2980b9;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: rgba(39, 174, 96, 0.3);
+            border: 1px solid #27ae60;
+        }
+        
+        .error {
+            background: rgba(231, 76, 60, 0.3);
+            border: 1px solid #e74c3c;
+        }
+        
+        .info {
+            background: rgba(52, 152, 219, 0.3);
+            border: 1px solid #3498db;
+        }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Authentication & Database Test</h1>
+        
+        <div class="auth-section">
+            <div id="loginSection">
+                <h2>Test Google Authentication</h2>
+                <button onclick="signInWithGoogle()">Sign In with Google</button>
+                <div class="info">
+                    <strong>Note:</strong> This tests if Supabase Google OAuth is working correctly.
+                </div>
+            </div>
+            
+            <div id="userSection" class="hidden">
+                <h2>Welcome!</h2>
+                <div id="userInfo" class="user-info"></div>
+                <button onclick="signOut()" class="logout-btn">Sign Out</button>
+                <button onclick="testDatabase()" class="test-btn">Test Database</button>
+            </div>
+        </div>
+        
+        <div id="statusSection">
+            <h3>Test Results:</h3>
+            <div id="status"></div>
+        </div>
+        
+        <div id="databaseTest" class="hidden">
+            <h3>Database Operations:</h3>
+            <button onclick="createTestList()" class="test-btn">Create Test List</button>
+            <button onclick="getMyLists()" class="test-btn">Get My Lists</button>
+            <div id="databaseResults"></div>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        let currentUser = null;
+
+        // Initialize authentication state
+        document.addEventListener('DOMContentLoaded', async () => {
+            addStatus('Initializing Supabase...', 'info');
+            
+            try {
+                // Wait a moment for supabase to initialize
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (!window.SupabaseConfig) {
+                    throw new Error('Supabase configuration not loaded');
+                }
+                
+                addStatus('✅ Supabase initialized successfully', 'success');
+                
+                // Check for current session
+                const user = await window.SupabaseConfig.auth.getCurrentUser();
+                if (user) {
+                    showUserInfo(user);
+                    addStatus('✅ User already logged in', 'success');
+                } else {
+                    addStatus('ℹ️ No user logged in', 'info');
+                }
+                
+                // Listen for auth changes
+                window.SupabaseConfig.auth.onAuthStateChange((event, session) => {
+                    console.log('Auth state changed:', event, session);
+                    if (event === 'SIGNED_IN' && session?.user) {
+                        showUserInfo(session.user);
+                        addStatus('✅ Successfully signed in!', 'success');
+                    } else if (event === 'SIGNED_OUT') {
+                        showLoginSection();
+                        addStatus('ℹ️ User signed out', 'info');
+                    }
+                });
+                
+            } catch (error) {
+                addStatus(`❌ Initialization error: ${error.message}`, 'error');
+                console.error('Initialization error:', error);
+            }
+        });
+
+        async function signInWithGoogle() {
+            addStatus('🔄 Starting Google sign-in...', 'info');
+            
+            try {
+                const result = await window.SupabaseConfig.auth.signInWithGoogle();
+                // The callback will handle the success case
+                addStatus('🔄 Redirecting to Google...', 'info');
+            } catch (error) {
+                addStatus(`❌ Sign-in error: ${error.message}`, 'error');
+                console.error('Sign-in error:', error);
+            }
+        }
+
+        async function signOut() {
+            try {
+                await window.SupabaseConfig.auth.signOut();
+                addStatus('✅ Successfully signed out', 'success');
+            } catch (error) {
+                addStatus(`❌ Sign-out error: ${error.message}`, 'error');
+            }
+        }
+
+        function showUserInfo(user) {
+            currentUser = user;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('databaseTest').classList.remove('hidden');
+            
+            document.getElementById('userInfo').innerHTML = `
+                <h3>User Information:</h3>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>Name:</strong> ${user.user_metadata?.full_name || 'Not provided'}</p>
+                <p><strong>ID:</strong> ${user.id}</p>
+                <p><strong>Provider:</strong> ${user.app_metadata?.provider || 'unknown'}</p>
+                <pre>${JSON.stringify(user.user_metadata, null, 2)}</pre>
+            `;
+        }
+
+        function showLoginSection() {
+            currentUser = null;
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('userSection').classList.add('hidden');
+            document.getElementById('databaseTest').classList.add('hidden');
+        }
+
+        async function testDatabase() {
+            if (!currentUser) {
+                addStatus('❌ No user logged in', 'error');
+                return;
+            }
+            
+            addStatus('🔄 Testing database connection...', 'info');
+            
+            try {
+                // Test profile operations
+                const profile = await window.SupabaseConfig.database.getProfile(currentUser.id);
+                addStatus(`✅ Database connection successful! Profile: ${JSON.stringify(profile)}`, 'success');
+                
+                // Update profile to test write operations
+                const updatedProfile = await window.SupabaseConfig.database.updateProfile(currentUser.id, {
+                    display_name: currentUser.user_metadata?.full_name || currentUser.email,
+                    avatar_url: currentUser.user_metadata?.avatar_url
+                });
+                
+                addStatus(`✅ Profile updated successfully!`, 'success');
+                
+            } catch (error) {
+                addStatus(`❌ Database test error: ${error.message}`, 'error');
+                console.error('Database test error:', error);
+            }
+        }
+
+        async function createTestList() {
+            if (!currentUser) {
+                addStatus('❌ No user logged in', 'error');
+                return;
+            }
+            
+            try {
+                const testList = await window.SupabaseConfig.database.createList(
+                    'Test Shopping List',
+                    {
+                        'Fruits': ['Apple', 'Banana'],
+                        'Dairy': ['Milk', 'Cheese']
+                    }
+                );
+                
+                addDatabaseResult('✅ Test list created:', testList);
+                
+            } catch (error) {
+                addDatabaseResult(`❌ Create list error: ${error.message}`);
+            }
+        }
+
+        async function getMyLists() {
+            if (!currentUser) {
+                addStatus('❌ No user logged in', 'error');
+                return;
+            }
+            
+            try {
+                const lists = await window.SupabaseConfig.database.getMyLists();
+                addDatabaseResult(`✅ Retrieved ${lists.length} lists:`, lists);
+                
+            } catch (error) {
+                addDatabaseResult(`❌ Get lists error: ${error.message}`);
+            }
+        }
+
+        function addStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const statusItem = document.createElement('div');
+            statusItem.className = `status ${type}`;
+            statusItem.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            statusDiv.appendChild(statusItem);
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+
+        function addDatabaseResult(message, data = null) {
+            const resultsDiv = document.getElementById('databaseResults');
+            const resultItem = document.createElement('div');
+            resultItem.className = 'status success';
+            
+            let content = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            if (data) {
+                content += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            resultItem.innerHTML = content;
+            resultsDiv.appendChild(resultItem);
+        }
+    </script>
+</body>
+</html>

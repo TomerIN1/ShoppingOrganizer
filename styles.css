@@ -25,7 +25,101 @@ header {
 header h1 {
     color: #2c3e50;
     font-size: 2.5rem;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.auth-section {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.auth-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.mode-indicator {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-auth {
+    background: #4285f4;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-auth:hover {
+    background: #357ae8;
+}
+
+.btn-auth-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-auth-secondary:hover {
+    background: #5a6268;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #e1e8ed;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.cloud-actions {
+    display: flex;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .auth-status {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .cloud-actions {
+        justify-content: center;
+    }
 }
 
 .input-section {

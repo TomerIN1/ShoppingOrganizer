@@ -1,0 +1,15 @@
+{
+  "name": "shoppingorgenizer",
+  "version": "1.0.0",
+  "description": "A modern, intuitive web application that transforms unorganized shopping lists into categorized, manageable lists. Simply paste your shopping items in free text format, and the app intelligently organizes them into supermarket categories.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.53.1"
+  }
+}
