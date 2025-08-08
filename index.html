@@ -71,6 +71,7 @@
                     <h2>Organized Shopping List</h2>
                     <div class="list-actions">
                         <button id="addCategoryBtn" class="btn-add">Add Category</button>
+                        <button id="shareListBtn" class="btn-primary" style="display: none;">Share List</button>
                         <button id="saveBtn" class="btn-primary">Save List</button>
                         <button id="loadBtn" class="btn-secondary">Load List</button>
                         <button id="newListBtn" class="btn-secondary">New List</button>
@@ -84,6 +85,38 @@
     </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
+    
+    <!-- Share List Modal -->
+    <div id="shareModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Shopping List</h3>
+                <button class="modal-close" id="shareModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="share-section">
+                    <h4>Share with Someone</h4>
+                    <p>Enter the email address of the person you want to share this list with:</p>
+                    <div class="share-form">
+                        <input type="email" id="shareEmailInput" placeholder="Enter email address..." class="share-email-input">
+                        <select id="sharePermissionSelect" class="share-permission-select">
+                            <option value="view">View Only</option>
+                            <option value="edit">Can Edit</option>
+                        </select>
+                        <button id="sendInviteBtn" class="btn-primary">Send Invite</button>
+                    </div>
+                </div>
+                
+                <div class="shared-with-section" id="sharedWithSection" style="display: none;">
+                    <h4>Shared With</h4>
+                    <div id="sharedWithList" class="shared-users-list">
+                        <!-- Shared users will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop" id="shareModalBackdrop"></div>
+    </div>
     
     <!-- Supabase Integration -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

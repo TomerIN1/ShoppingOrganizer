@@ -173,6 +173,12 @@ class ShoppingListOrganizer {
         document.getElementById('backToMainBtn').addEventListener('click', () => this.backToMain());
         document.getElementById('refreshListsBtn').addEventListener('click', () => this.loadMyLists());
 
+        // Share functionality event listeners
+        document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
+        document.getElementById('shareModalClose').addEventListener('click', () => this.hideShareModal());
+        document.getElementById('shareModalBackdrop').addEventListener('click', () => this.hideShareModal());
+        document.getElementById('sendInviteBtn').addEventListener('click', () => this.sendListInvitation());
+
         document.getElementById('freeTextInput').addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
                 this.organizeList();
@@ -248,8 +254,24 @@ class ShoppingListOrganizer {
     }
 
     async showSharedLists() {
-        // TODO: Implement shared lists view
-        alert('Shared Lists feature coming soon!');
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Please sign in to view shared lists.');
+            return;
+        }
+
+        try {
+            const sharedLists = await window.SupabaseConfig.database.getSharedLists();
+            if (sharedLists.length === 0) {
+                alert('No shared lists found. Lists shared with you will appear here.');
+            } else {
+                // For now, show a simple alert with count
+                // In Phase 4 we'll implement a full shared lists dashboard
+                alert(`You have ${sharedLists.length} shared list(s). Full shared lists dashboard coming soon!`);
+            }
+        } catch (error) {
+            console.error('Failed to load shared lists:', error);
+            alert('Failed to load shared lists. Please try again.');
+        }
     }
 
     backToMain() {
@@ -362,6 +384,7 @@ class ShoppingListOrganizer {
                 <h3 class="list-title">${list.title}</h3>
                 <div class="list-actions-mini">
                     <button class="btn-mini" onclick="organizer.loadListFromCloud('${list.id}')" title="Open this list">Open</button>
+                    <button class="btn-mini" onclick="organizer.shareListFromCard('${list.id}')" title="Share this list">Share</button>
                     <button class="btn-mini delete" onclick="organizer.deleteCloudList('${list.id}')" title="Delete this list">Delete</button>
                 </div>
             </div>
@@ -423,6 +446,7 @@ class ShoppingListOrganizer {
             // Show the organized section and hide my lists
             this.backToMain();
             document.getElementById('organizedSection').style.display = 'block';
+            this.updateShareButtonVisibility();
             
             console.log('✅ List loaded successfully from cloud');
 
@@ -467,6 +491,272 @@ class ShoppingListOrganizer {
         }
     }
 
+    async shareListFromCard(listId) {
+        // Load the list temporarily to set current context
+        try {
+            const lists = await window.SupabaseConfig.database.getMyLists();
+            const list = lists.find(l => l.id === listId);
+            
+            if (!list) {
+                alert('List not found.');
+                return;
+            }
+
+            // Temporarily set the current list ID for sharing
+            const originalListId = this.currentListId;
+            this.currentListId = listId;
+            
+            // Show share modal
+            this.showShareModal();
+            
+            // Restore original list ID after modal is shown
+            // We'll restore it when the modal is closed
+            this.originalListIdForShare = originalListId;
+            
+        } catch (error) {
+            console.error('Failed to share list:', error);
+            alert('Failed to share list. Please try again.');
+        }
+    }
+
+    // Updated hideShareModal to restore original list context
+    hideShareModal() {
+        document.getElementById('shareModal').style.display = 'none';
+        this.hideShareStatus();
+        
+        // Restore original list context if it was temporarily changed
+        if (this.originalListIdForShare !== undefined) {
+            this.currentListId = this.originalListIdForShare;
+            this.originalListIdForShare = undefined;
+        }
+    }
+
+    updateShareButtonVisibility() {
+        const shareButton = document.getElementById('shareListBtn');
+        
+        // Show share button only if:
+        // 1. User is authenticated
+        // 2. There is a current list with ID (saved to cloud)
+        if (this.mode === 'authenticated' && this.currentUser && this.currentListId) {
+            shareButton.style.display = 'inline-block';
+        } else {
+            shareButton.style.display = 'none';
+        }
+    }
+
+    // Share functionality
+    showShareModal() {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Please sign in to share lists.');
+            return;
+        }
+
+        if (!this.currentListId) {
+            alert('Please save the list first before sharing.');
+            return;
+        }
+
+        // Show the modal
+        document.getElementById('shareModal').style.display = 'flex';
+        
+        // Reset form
+        document.getElementById('shareEmailInput').value = '';
+        document.getElementById('sharePermissionSelect').value = 'view';
+        
+        // Load current collaborators
+        this.loadListCollaborators();
+    }
+
+    hideShareModal() {
+        document.getElementById('shareModal').style.display = 'none';
+        this.hideShareStatus();
+    }
+
+    async loadListCollaborators() {
+        if (!this.currentListId) return;
+
+        try {
+            console.log('Loading collaborators for list:', this.currentListId);
+            const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
+            console.log('Found collaborators:', collaborators.length);
+            
+            this.renderCollaborators(collaborators);
+            
+        } catch (error) {
+            console.error('Failed to load collaborators:', error);
+            document.getElementById('sharedWithSection').style.display = 'none';
+        }
+    }
+
+    renderCollaborators(collaborators) {
+        const sharedWithSection = document.getElementById('sharedWithSection');
+        const sharedWithList = document.getElementById('sharedWithList');
+        
+        if (collaborators.length === 0) {
+            sharedWithSection.style.display = 'none';
+            return;
+        }
+
+        // Show the section
+        sharedWithSection.style.display = 'block';
+        
+        // Clear existing collaborators
+        sharedWithList.innerHTML = '';
+        
+        collaborators.forEach(collaborator => {
+            const userItem = this.createCollaboratorItem(collaborator);
+            sharedWithList.appendChild(userItem);
+        });
+    }
+
+    createCollaboratorItem(collaborator) {
+        const item = document.createElement('div');
+        item.className = 'shared-user-item';
+        
+        const profile = collaborator.profiles;
+        const email = profile?.email || 'Unknown';
+        const fullName = profile?.full_name || '';
+        const initials = this.getInitials(fullName || email);
+        
+        item.innerHTML = `
+            <div class="shared-user-info">
+                <div class="shared-user-avatar">${initials}</div>
+                <div class="shared-user-details">
+                    <div class="shared-user-email">${email}</div>
+                    <div class="shared-user-permission ${collaborator.permission_level}">
+                        ${collaborator.permission_level === 'edit' ? 'Can edit' : 'View only'}
+                    </div>
+                </div>
+            </div>
+            <div class="shared-user-actions">
+                <button class="btn-mini remove" onclick="organizer.removeCollaborator('${collaborator.user_id}')" title="Remove access">
+                    Remove
+                </button>
+            </div>
+        `;
+        
+        return item;
+    }
+
+    getInitials(name) {
+        return name
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase())
+            .slice(0, 2)
+            .join('');
+    }
+
+    async removeCollaborator(userId) {
+        if (!confirm('Are you sure you want to remove this person\'s access to the list?')) {
+            return;
+        }
+
+        try {
+            console.log('Removing collaborator:', userId);
+            await window.SupabaseConfig.database.removeCollaborator(this.currentListId, userId);
+            
+            this.showShareStatus('Collaborator removed successfully.', 'success');
+            await this.loadListCollaborators();
+            
+        } catch (error) {
+            console.error('Failed to remove collaborator:', error);
+            this.showShareStatus('Failed to remove collaborator. Please try again.', 'error');
+        }
+    }
+
+    async sendListInvitation() {
+        const email = document.getElementById('shareEmailInput').value.trim();
+        const permission = document.getElementById('sharePermissionSelect').value;
+
+        if (!email) {
+            this.showShareStatus('Please enter an email address.', 'error');
+            return;
+        }
+
+        if (!this.isValidEmail(email)) {
+            this.showShareStatus('Please enter a valid email address.', 'error');
+            return;
+        }
+
+        if (email === this.currentUser.email) {
+            this.showShareStatus('You cannot share a list with yourself.', 'error');
+            return;
+        }
+
+        const sendButton = document.getElementById('sendInviteBtn');
+        const originalText = sendButton.textContent;
+        sendButton.textContent = 'Sending...';
+        sendButton.disabled = true;
+
+        try {
+            console.log('Sending invitation to:', email, 'with permission:', permission);
+            
+            await window.SupabaseConfig.database.shareList(this.currentListId, email, permission);
+            
+            this.showShareStatus(`Invitation sent to ${email} successfully!`, 'success');
+            
+            // Clear the form
+            document.getElementById('shareEmailInput').value = '';
+            
+            // Reload collaborators
+            await this.loadListCollaborators();
+            
+        } catch (error) {
+            console.error('Failed to send invitation:', error);
+            
+            let errorMessage = 'Failed to send invitation. ';
+            if (error.message?.includes('User not found')) {
+                errorMessage += 'The user needs to sign up first.';
+            } else if (error.message?.includes('already shared')) {
+                errorMessage += 'This list is already shared with this user.';
+            } else {
+                errorMessage += 'Please try again.';
+            }
+            
+            this.showShareStatus(errorMessage, 'error');
+        } finally {
+            sendButton.textContent = originalText;
+            sendButton.disabled = false;
+        }
+    }
+
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    showShareStatus(message, type) {
+        const statusElement = document.querySelector('.share-status') || this.createShareStatusElement();
+        
+        statusElement.textContent = message;
+        statusElement.className = `share-status ${type}`;
+        statusElement.style.display = 'block';
+        
+        // Auto-hide after 5 seconds for success messages
+        if (type === 'success') {
+            setTimeout(() => {
+                this.hideShareStatus();
+            }, 5000);
+        }
+    }
+
+    createShareStatusElement() {
+        const statusElement = document.createElement('div');
+        statusElement.className = 'share-status';
+        
+        const modalBody = document.querySelector('.modal-body');
+        modalBody.insertBefore(statusElement, modalBody.firstChild);
+        
+        return statusElement;
+    }
+
+    hideShareStatus() {
+        const statusElement = document.querySelector('.share-status');
+        if (statusElement) {
+            statusElement.style.display = 'none';
+        }
+    }
+
     // Auto-save functionality
     async autoSaveCurrentList() {
         console.log('🔍 autoSaveCurrentList called:', {
@@ -507,6 +797,9 @@ class ShoppingListOrganizer {
 
             // Show save indicator
             this.showSaveIndicator('saved');
+            
+            // Update share button visibility now that list is saved
+            this.updateShareButtonVisibility();
         } catch (error) {
             console.error('❌ Failed to auto-save list:', error);
             this.showSaveIndicator('error');
@@ -677,6 +970,7 @@ class ShoppingListOrganizer {
         this.currentLists = this.categorizeItems(items);
         this.renderCategorizedLists();
         this.updateListTitle();
+        this.updateShareButtonVisibility();
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
 
@@ -926,6 +1220,7 @@ class ShoppingListOrganizer {
                 document.getElementById('organizedSection').style.display = 'none';
                 document.getElementById('freeTextInput').value = '';
                 document.getElementById('listNameInput').value = '';
+                this.updateShareButtonVisibility();
             }
         }
     }

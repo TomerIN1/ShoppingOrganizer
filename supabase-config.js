@@ -274,11 +274,44 @@ const database = {
             .single();
         
         if (error) {
+            if (error.code === '23505') { // Unique constraint violation
+                throw new Error('This list is already shared with this user.');
+            }
             console.error('Error sharing list:', error.message);
             throw error;
         }
         
         return data;
+    },
+
+    async getListCollaborators(listId) {
+        const { data, error } = await supabase
+            .from('list_collaborators')
+            .select(`
+                *,
+                profiles!list_collaborators_user_id_fkey(id, email, full_name, avatar_url)
+            `)
+            .eq('list_id', listId);
+        
+        if (error) {
+            console.error('Error getting list collaborators:', error.message);
+            throw error;
+        }
+        
+        return data || [];
+    },
+
+    async removeCollaborator(listId, userId) {
+        const { error } = await supabase
+            .from('list_collaborators')
+            .delete()
+            .eq('list_id', listId)
+            .eq('user_id', userId);
+        
+        if (error) {
+            console.error('Error removing collaborator:', error.message);
+            throw error;
+        }
     },
 
     async acceptInvitation(listId) {
