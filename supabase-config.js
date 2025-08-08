@@ -17,8 +17,9 @@ function initializeSupabase() {
                 autoRefreshToken: true,
                 persistSession: true,
                 detectSessionInUrl: true,
-                flowType: 'implicit',
-                debug: false
+                flowType: 'pkce',
+                debug: true,
+                storageKey: 'supabase.auth.token'
             },
             realtime: {
                 params: {
@@ -337,23 +338,29 @@ if (typeof window !== 'undefined') {
             console.log('Supabase initialized with environment config:', !!supabase);
             
             // Handle OAuth callback immediately after initialization
-            if (supabase && (window.location.hash || window.location.search.includes('code='))) {
-                console.log('Detected OAuth callback, processing...');
-                try {
-                    // Give Supabase a moment to process the URL fragments
-                    setTimeout(async () => {
+            if (supabase && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
+                console.log('Detected OAuth callback, processing...', {
+                    hash: window.location.hash,
+                    search: window.location.search
+                });
+                
+                // Give Supabase time to automatically process the callback
+                setTimeout(async () => {
+                    try {
                         const { data, error } = await supabase.auth.getSession();
                         if (error) {
-                            console.warn('OAuth callback processing error:', error.message);
+                            console.warn('OAuth callback session error:', error.message);
                         } else if (data?.session) {
-                            console.log('✅ OAuth callback successful, session established');
+                            console.log('✅ OAuth callback successful, session established:', !!data.session.user);
+                            // Clean up the URL
+                            window.history.replaceState({}, document.title, window.location.pathname);
                         } else {
                             console.log('ℹ️ No session established from callback');
                         }
-                    }, 500); // Small delay to allow URL processing
-                } catch (callbackError) {
-                    console.warn('OAuth callback processing failed:', callbackError.message);
-                }
+                    } catch (callbackError) {
+                        console.warn('OAuth callback processing failed:', callbackError.message);
+                    }
+                }, 1000); // Give more time for processing
             }
             
             // Trigger a custom event when Supabase is ready
