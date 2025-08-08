@@ -169,6 +169,10 @@ class ShoppingListOrganizer {
         document.getElementById('myListsBtn').addEventListener('click', () => this.showMyLists());
         document.getElementById('sharedListsBtn').addEventListener('click', () => this.showSharedLists());
 
+        // My Lists dashboard event listeners
+        document.getElementById('backToMainBtn').addEventListener('click', () => this.backToMain());
+        document.getElementById('refreshListsBtn').addEventListener('click', () => this.loadMyLists());
+
         document.getElementById('freeTextInput').addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'Enter') {
                 this.organizeList();
@@ -229,13 +233,238 @@ class ShoppingListOrganizer {
     }
 
     async showMyLists() {
-        // TODO: Implement cloud lists view
-        alert('My Lists feature coming soon!');
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Please sign in to view your lists.');
+            return;
+        }
+
+        // Hide other sections and show My Lists
+        document.getElementById('organizedSection').style.display = 'none';
+        document.querySelector('.input-section').style.display = 'none';
+        document.getElementById('myListsSection').style.display = 'block';
+
+        // Load the lists
+        await this.loadMyLists();
     }
 
     async showSharedLists() {
         // TODO: Implement shared lists view
         alert('Shared Lists feature coming soon!');
+    }
+
+    backToMain() {
+        // Show main sections and hide My Lists
+        document.getElementById('myListsSection').style.display = 'none';
+        document.querySelector('.input-section').style.display = 'block';
+        
+        // Show organized section if there's a current list
+        if (Object.keys(this.currentLists).length > 0) {
+            document.getElementById('organizedSection').style.display = 'block';
+        }
+    }
+
+    async loadMyLists() {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            console.error('Not authenticated for loading lists');
+            return;
+        }
+
+        const container = document.getElementById('myListsContainer');
+        const loadingIndicator = document.getElementById('listsLoading');
+        
+        // Show loading state
+        loadingIndicator.style.display = 'block';
+        const existingGrid = container.querySelector('.lists-grid');
+        if (existingGrid) {
+            existingGrid.style.display = 'none';
+        }
+
+        try {
+            console.log('Loading user lists...');
+            const lists = await window.SupabaseConfig.database.getMyLists();
+            console.log('Loaded lists:', lists.length);
+
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+
+            // Render the lists
+            this.renderMyLists(lists);
+
+        } catch (error) {
+            console.error('Failed to load lists:', error);
+            loadingIndicator.textContent = 'Failed to load lists. Please try again.';
+            
+            // Add retry functionality
+            setTimeout(() => {
+                loadingIndicator.innerHTML = `
+                    Failed to load lists. 
+                    <button onclick="organizer.loadMyLists()" class="btn-primary" style="margin-left: 10px; padding: 8px 16px; font-size: 14px;">
+                        Retry
+                    </button>
+                `;
+            }, 1000);
+        }
+    }
+
+    renderMyLists(lists) {
+        const container = document.getElementById('myListsContainer');
+        
+        // Remove existing content
+        const existingGrid = container.querySelector('.lists-grid');
+        if (existingGrid) {
+            existingGrid.remove();
+        }
+        
+        const existingEmpty = container.querySelector('.empty-lists-state');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
+
+        if (lists.length === 0) {
+            // Show empty state
+            container.innerHTML += `
+                <div class="empty-lists-state">
+                    <h3>No Shopping Lists Yet</h3>
+                    <p>Create your first shopping list by going back to the main page and organizing some items!</p>
+                    <button onclick="organizer.backToMain()" class="btn-primary">Create First List</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Create lists grid
+        const listsGrid = document.createElement('div');
+        listsGrid.className = 'lists-grid';
+
+        lists.forEach(list => {
+            const listCard = this.createListCard(list);
+            listsGrid.appendChild(listCard);
+        });
+
+        container.appendChild(listsGrid);
+    }
+
+    createListCard(list) {
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        
+        // Format dates
+        const createdDate = new Date(list.created_at).toLocaleDateString();
+        const updatedDate = new Date(list.updated_at).toLocaleDateString();
+        const isRecent = updatedDate !== createdDate;
+        
+        // Get categories preview
+        const categories = Object.keys(list.categories || {});
+        const totalItems = Object.values(list.categories || {}).reduce((sum, items) => sum + items.length, 0);
+        
+        card.innerHTML = `
+            <div class="list-card-header">
+                <h3 class="list-title">${list.title}</h3>
+                <div class="list-actions-mini">
+                    <button class="btn-mini" onclick="organizer.loadListFromCloud('${list.id}')" title="Open this list">Open</button>
+                    <button class="btn-mini delete" onclick="organizer.deleteCloudList('${list.id}')" title="Delete this list">Delete</button>
+                </div>
+            </div>
+            
+            <div class="list-metadata">
+                <span>📝 ${totalItems} items</span>
+                <span>📁 ${categories.length} categories</span>
+                <span>📅 ${isRecent ? `Updated ${updatedDate}` : `Created ${createdDate}`}</span>
+            </div>
+            
+            <div class="list-categories-preview">
+                ${categories.slice(0, 4).map(cat => 
+                    `<span class="category-tag">${cat}</span>`
+                ).join('')}
+                ${categories.length > 4 ? `<span class="category-tag">+${categories.length - 4} more</span>` : ''}
+            </div>
+        `;
+
+        // Add click handler to the card (excluding buttons)
+        card.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('btn-mini')) {
+                this.loadListFromCloud(list.id);
+            }
+        });
+
+        return card;
+    }
+
+    async loadListFromCloud(listId) {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Authentication required to load list.');
+            return;
+        }
+
+        try {
+            console.log('Loading list from cloud:', listId);
+            
+            // Get the list data - we'll need to fetch it from the database
+            const lists = await window.SupabaseConfig.database.getMyLists();
+            const list = lists.find(l => l.id === listId);
+            
+            if (!list) {
+                alert('List not found.');
+                return;
+            }
+
+            // Load the list data into current state
+            this.currentLists = list.categories || {};
+            this.currentListId = list.id;
+            this.currentListName = list.title;
+            
+            // Update the UI
+            document.getElementById('listNameInput').value = this.currentListName;
+            
+            // Render the list and go back to main view
+            this.renderCategorizedLists();
+            this.updateListTitle();
+            
+            // Show the organized section and hide my lists
+            this.backToMain();
+            document.getElementById('organizedSection').style.display = 'block';
+            
+            console.log('✅ List loaded successfully from cloud');
+
+        } catch (error) {
+            console.error('Failed to load list:', error);
+            alert('Failed to load list. Please try again.');
+        }
+    }
+
+    async deleteCloudList(listId) {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Authentication required to delete list.');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this list? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            console.log('Deleting list from cloud:', listId);
+            
+            await window.SupabaseConfig.database.deleteList(listId);
+            
+            // If this is the currently loaded list, clear it
+            if (this.currentListId === listId) {
+                this.currentLists = {};
+                this.currentListId = null;
+                this.currentListName = null;
+                document.getElementById('listNameInput').value = '';
+                document.getElementById('organizedSection').style.display = 'none';
+            }
+            
+            // Refresh the lists view
+            await this.loadMyLists();
+            
+            console.log('✅ List deleted successfully');
+
+        } catch (error) {
+            console.error('Failed to delete list:', error);
+            alert('Failed to delete list. Please try again.');
+        }
     }
 
     // Auto-save functionality
