@@ -166,9 +166,15 @@ const database = {
 
     // Shopping list operations
     async getMyLists() {
+        const user = await auth.getCurrentUser();
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
         const { data, error } = await supabase
             .from('shopping_lists')
             .select('*')
+            .eq('owner_id', user.id)
             .order('updated_at', { ascending: false });
         
         if (error) {
@@ -180,12 +186,18 @@ const database = {
     },
 
     async getSharedLists() {
+        const user = await auth.getCurrentUser();
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
         const { data, error } = await supabase
             .from('shopping_lists')
             .select(`
                 *,
                 list_collaborators!inner(permission_level, accepted_at)
             `)
+            .eq('list_collaborators.user_id', user.id)
             .not('list_collaborators.accepted_at', 'is', null)
             .order('updated_at', { ascending: false });
         
