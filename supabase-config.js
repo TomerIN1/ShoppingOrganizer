@@ -263,23 +263,28 @@ const database = {
 
     // Collaboration operations
     async shareList(listId, userEmail, permissionLevel = 'view') {
-        // First, get the user ID from email
-        const { data: userData, error: userError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('email', userEmail)
-            .single();
+        console.log('Attempting to share list', listId, 'with email:', userEmail);
+        
+        // Use RPC function to get user ID by email
+        const { data: userId, error: userError } = await supabase
+            .rpc('get_user_id_by_email', { email: userEmail });
         
         if (userError) {
-            console.error('User not found:', userError.message);
+            console.error('Error looking up user:', userError.message);
+            throw new Error('Failed to find user. Please check the email address.');
+        }
+        
+        if (!userId) {
             throw new Error('User not found. They need to sign up first.');
         }
+        
+        console.log('Found user ID:', userId);
         
         const { data, error } = await supabase
             .from('list_collaborators')
             .insert([{
                 list_id: listId,
-                user_id: userData.id,
+                user_id: userId,
                 permission_level: permissionLevel
             }])
             .select()
@@ -297,20 +302,59 @@ const database = {
     },
 
     async getListCollaborators(listId) {
-        const { data, error } = await supabase
+        console.log('Getting collaborators for list:', listId);
+        
+        // First get the basic collaborator data
+        const { data: collaborators, error: collabError } = await supabase
             .from('list_collaborators')
-            .select(`
-                *,
-                profiles!list_collaborators_user_id_fkey(id, email, full_name, avatar_url)
-            `)
+            .select('*')
             .eq('list_id', listId);
         
-        if (error) {
-            console.error('Error getting list collaborators:', error.message);
-            throw error;
+        if (collabError) {
+            console.error('Error getting list collaborators:', collabError.message);
+            throw collabError;
         }
         
-        return data || [];
+        if (!collaborators || collaborators.length === 0) {
+            return [];
+        }
+        
+        // Get user profile info for each collaborator using RPC function
+        const collaboratorsWithProfiles = await Promise.all(
+            collaborators.map(async (collab) => {
+                try {
+                    const { data: profile, error: profileError } = await supabase
+                        .rpc('get_user_profile_with_email', { user_id: collab.user_id });
+                    
+                    if (profileError) {
+                        console.warn('Could not get profile for user:', collab.user_id, profileError.message);
+                    }
+                    
+                    return {
+                        ...collab,
+                        profiles: profile && profile.length > 0 ? profile[0] : {
+                            id: collab.user_id,
+                            email: 'Unknown',
+                            display_name: null,
+                            avatar_url: null
+                        }
+                    };
+                } catch (err) {
+                    console.warn('Error fetching profile for user:', collab.user_id, err);
+                    return {
+                        ...collab,
+                        profiles: {
+                            id: collab.user_id,
+                            email: 'Unknown',
+                            display_name: null,
+                            avatar_url: null
+                        }
+                    };
+                }
+            })
+        );
+        
+        return collaboratorsWithProfiles;
     },
 
     async removeCollaborator(listId, userId) {

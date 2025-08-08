@@ -615,8 +615,8 @@ class ShoppingListOrganizer {
         
         const profile = collaborator.profiles;
         const email = profile?.email || 'Unknown';
-        const fullName = profile?.full_name || '';
-        const initials = this.getInitials(fullName || email);
+        const displayName = profile?.display_name || '';
+        const initials = this.getInitials(displayName || email);
         
         item.innerHTML = `
             <div class="shared-user-info">
