@@ -138,18 +138,12 @@ class ShoppingListOrganizer {
             
             // Listen for auth state changes
             window.SupabaseConfig.auth.onAuthStateChange(async (event, session) => {
-                console.log('Auth state change:', event, !!session);
+                console.log('Auth state change:', event, !!session, session?.user?.email);
                 
-                if (event === 'SIGNED_IN' && session?.user) {
+                if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session?.user) {
                     await this.switchToAuthenticatedMode(session.user);
                 } else if (event === 'SIGNED_OUT') {
                     this.switchToGuestMode();
-                } else if (event === 'TOKEN_REFRESHED' && session?.user) {
-                    // Update user info on token refresh
-                    this.currentUser = session.user;
-                } else if (event === 'INITIAL_SESSION' && session?.user) {
-                    // Handle initial session on page load (OAuth callback)
-                    await this.switchToAuthenticatedMode(session.user);
                 }
             });
         } catch (error) {

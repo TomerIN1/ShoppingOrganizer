@@ -375,23 +375,36 @@ if (typeof window !== 'undefined') {
                     hasRefreshToken: window.location.hash.includes('refresh_token')
                 });
                 
-                // Give Supabase time to automatically process the callback
-                setTimeout(async () => {
-                    try {
-                        const { data, error } = await supabase.auth.getSession();
+                // Parse tokens from URL hash and set session manually
+                try {
+                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                    const accessToken = hashParams.get('access_token');
+                    const refreshToken = hashParams.get('refresh_token');
+                    const tokenType = hashParams.get('token_type');
+                    const expiresIn = hashParams.get('expires_in');
+
+                    if (accessToken && refreshToken) {
+                        console.log('Found OAuth tokens, setting session manually...');
+                        
+                        // Set session manually using the tokens
+                        const { data, error } = await supabase.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken
+                        });
+
                         if (error) {
-                            console.warn('OAuth callback session error:', error.message);
-                        } else if (data?.session) {
-                            console.log('✅ OAuth callback successful, session established:', !!data.session.user);
+                            console.error('Failed to set session:', error.message);
+                        } else if (data?.session?.user) {
+                            console.log('✅ OAuth session established successfully:', data.session.user.email);
                             // Clean up the URL
                             window.history.replaceState({}, document.title, window.location.pathname);
-                        } else {
-                            console.log('ℹ️ No session established from callback');
                         }
-                    } catch (callbackError) {
-                        console.warn('OAuth callback processing failed:', callbackError.message);
+                    } else {
+                        console.warn('OAuth tokens not found in URL hash');
                     }
-                }, 1000); // Give more time for processing
+                } catch (parseError) {
+                    console.error('Failed to parse OAuth callback:', parseError.message);
+                }
             }
             
             // Trigger a custom event when Supabase is ready
