@@ -42,10 +42,26 @@ const auth = {
             throw new Error('Supabase not initialized');
         }
         
-        // Use the current page as redirect URL (implicit flow works well with this)
-        const redirectTo = window.location.origin + window.location.pathname;
+        // Use environment-appropriate redirect URL
+        let redirectTo;
+        const hostname = window.location.hostname;
         
-        console.log('OAuth redirectTo (implicit flow):', redirectTo);
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Development
+            redirectTo = window.location.origin + '/';
+        } else if (hostname.includes('dev-') || hostname.includes('-dev.') || hostname.includes('git-dev')) {
+            // Dev/staging environment
+            redirectTo = window.location.origin + '/';
+        } else {
+            // Production
+            redirectTo = window.location.origin + '/';
+        }
+        
+        console.log('OAuth redirectTo (environment-aware):', {
+            hostname,
+            redirectTo,
+            environment: hostname.includes('dev') ? 'development' : 'production'
+        });
         
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
