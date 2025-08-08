@@ -330,7 +330,10 @@ if (typeof window !== 'undefined') {
             console.log('Loaded environment config:', {
                 SUPABASE_URL: SUPABASE_URL ? SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
                 SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.substring(0, 20) + '...' : 'MISSING',
-                configKeys: Object.keys(envConfig)
+                configKeys: Object.keys(envConfig),
+                // Check if this might be a service key instead of anon key
+                possibleServiceKey: SUPABASE_ANON_KEY?.startsWith('eyJ') && SUPABASE_ANON_KEY?.includes('service_role'),
+                keyLength: SUPABASE_ANON_KEY?.length || 0
             });
             
             // Validate credentials before initializing Supabase
@@ -393,11 +396,24 @@ if (typeof window !== 'undefined') {
                         });
 
                         if (error) {
-                            console.error('Failed to set session:', error.message);
+                            console.error('❌ Failed to set session:', {
+                                message: error.message,
+                                code: error.code,
+                                status: error.status,
+                                details: error.details
+                            });
+                            
+                            // Provide specific guidance based on error
+                            if (error.message?.includes('Invalid API key')) {
+                                console.error('💡 Solution: Check that you\'re using the ANON/PUBLIC key, not the SERVICE key');
+                                console.error('💡 The anon key should be safe to use in client-side code');
+                            }
                         } else if (data?.session?.user) {
                             console.log('✅ OAuth session established successfully:', data.session.user.email);
                             // Clean up the URL
                             window.history.replaceState({}, document.title, window.location.pathname);
+                        } else {
+                            console.warn('⚠️ setSession succeeded but no user session returned');
                         }
                     } else {
                         console.warn('OAuth tokens not found in URL hash');
