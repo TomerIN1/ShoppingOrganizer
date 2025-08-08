@@ -333,9 +333,46 @@ if (typeof window !== 'undefined') {
             SUPABASE_URL = envConfig.SUPABASE_URL;
             SUPABASE_ANON_KEY = envConfig.SUPABASE_ANON_KEY;
             
+            // Debug: Log the loaded credentials (partially masked for security)
+            console.log('Loaded environment config:', {
+                SUPABASE_URL: SUPABASE_URL ? SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
+                SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.substring(0, 20) + '...' : 'MISSING',
+                configKeys: Object.keys(envConfig)
+            });
+            
+            // Validate credentials before initializing Supabase
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                console.error('❌ Missing Supabase credentials:', {
+                    hasUrl: !!SUPABASE_URL,
+                    hasKey: !!SUPABASE_ANON_KEY
+                });
+                return;
+            }
+            
+            if (!SUPABASE_URL.includes('supabase.co')) {
+                console.error('❌ Invalid Supabase URL format:', SUPABASE_URL);
+                return;
+            }
+            
             // Initialize Supabase with loaded credentials
             supabase = initializeSupabase();
             console.log('Supabase initialized with environment config:', !!supabase);
+            
+            // Test API key validity with a simple request
+            if (supabase) {
+                try {
+                    // This will test if the API key is valid
+                    const { data, error } = await supabase.auth.getSession();
+                    if (error && error.message.includes('Invalid API key')) {
+                        console.error('❌ API Key validation failed:', error.message);
+                        console.error('Please check your Vercel environment variables');
+                    } else {
+                        console.log('✅ API Key appears to be valid');
+                    }
+                } catch (testError) {
+                    console.warn('API key test failed:', testError.message);
+                }
+            }
             
             // Handle OAuth callback immediately after initialization
             if (supabase && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
