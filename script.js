@@ -239,12 +239,26 @@ class ShoppingListOrganizer {
 
     // Auto-save functionality
     async autoSaveCurrentList() {
-        if (!window.SupabaseConfig || !this.currentUser) return;
+        console.log('🔍 autoSaveCurrentList called:', {
+            hasSupabaseConfig: !!window.SupabaseConfig,
+            currentUser: !!this.currentUser,
+            mode: this.mode,
+            currentListsCount: Object.keys(this.currentLists).length
+        });
 
+        if (!window.SupabaseConfig || !this.currentUser) {
+            console.warn('❌ Auto-save skipped - missing SupabaseConfig or user');
+            return;
+        }
+
+        this.showSaveIndicator('saving');
+        
         try {
             // Generate a title based on the current date or items
             const now = new Date();
             const title = `Shopping List - ${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+            
+            console.log('💾 Attempting to save list:', { title, currentListId: this.currentListId });
             
             // Save or update the current list
             if (this.currentListId) {
@@ -265,16 +279,19 @@ class ShoppingListOrganizer {
             // Show save indicator
             this.showSaveIndicator('saved');
         } catch (error) {
-            console.error('Failed to auto-save list:', error);
+            console.error('❌ Failed to auto-save list:', error);
             this.showSaveIndicator('error');
         }
     }
 
     // Visual indicator for save status
     showSaveIndicator(status) {
+        console.log('🎯 showSaveIndicator called with status:', status);
+        
         // Create or update save indicator
         let indicator = document.getElementById('save-indicator');
         if (!indicator) {
+            console.log('📝 Creating new save indicator element');
             indicator = document.createElement('div');
             indicator.id = 'save-indicator';
             indicator.style.cssText = `
@@ -283,11 +300,14 @@ class ShoppingListOrganizer {
                 right: 20px;
                 padding: 8px 12px;
                 border-radius: 4px;
-                font-size: 12px;
+                font-size: 14px;
                 z-index: 1000;
                 transition: opacity 0.3s ease;
+                font-weight: bold;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             `;
             document.body.appendChild(indicator);
+            console.log('✅ Save indicator element added to DOM');
         }
 
         if (status === 'saving') {
@@ -305,11 +325,20 @@ class ShoppingListOrganizer {
         }
 
         indicator.style.opacity = '1';
+        console.log('📍 Indicator visible:', {
+            text: indicator.textContent,
+            position: indicator.style.position,
+            top: indicator.style.top,
+            right: indicator.style.right,
+            opacity: indicator.style.opacity,
+            zIndex: indicator.style.zIndex
+        });
         
-        // Hide after 2 seconds
+        // Hide after 3 seconds (increased for better visibility)
         setTimeout(() => {
             indicator.style.opacity = '0';
-        }, 2000);
+            console.log('👻 Indicator hidden');
+        }, 3000);
     }
 
     parseTextInput(text) {
