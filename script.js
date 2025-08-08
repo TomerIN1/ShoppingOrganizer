@@ -61,6 +61,7 @@ class ShoppingListOrganizer {
         };
 
         this.currentLists = {};
+        this.currentListId = null; // Track current list ID for updates
         this.currentUser = null;
         this.mode = 'guest'; // 'guest' or 'authenticated'
         
@@ -226,14 +227,89 @@ class ShoppingListOrganizer {
         console.log('ℹ️ Switched to guest mode');
     }
 
-    showMyLists() {
+    async showMyLists() {
         // TODO: Implement cloud lists view
         alert('My Lists feature coming soon!');
     }
 
-    showSharedLists() {
+    async showSharedLists() {
         // TODO: Implement shared lists view
         alert('Shared Lists feature coming soon!');
+    }
+
+    // Auto-save functionality
+    async autoSaveCurrentList() {
+        if (!window.SupabaseConfig || !this.currentUser) return;
+
+        try {
+            // Generate a title based on the current date or items
+            const now = new Date();
+            const title = `Shopping List - ${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+            
+            // Save or update the current list
+            if (this.currentListId) {
+                // Update existing list
+                await window.SupabaseConfig.database.updateList(this.currentListId, {
+                    title: title,
+                    categories: this.currentLists,
+                    updated_at: new Date().toISOString()
+                });
+                console.log('📤 List auto-saved to cloud');
+            } else {
+                // Create new list
+                const savedList = await window.SupabaseConfig.database.createList(title, this.currentLists);
+                this.currentListId = savedList.id;
+                console.log('📤 New list created and saved to cloud:', savedList.id);
+            }
+
+            // Show save indicator
+            this.showSaveIndicator('saved');
+        } catch (error) {
+            console.error('Failed to auto-save list:', error);
+            this.showSaveIndicator('error');
+        }
+    }
+
+    // Visual indicator for save status
+    showSaveIndicator(status) {
+        // Create or update save indicator
+        let indicator = document.getElementById('save-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'save-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                z-index: 1000;
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(indicator);
+        }
+
+        if (status === 'saving') {
+            indicator.textContent = '💾 Saving...';
+            indicator.style.backgroundColor = '#f39c12';
+            indicator.style.color = 'white';
+        } else if (status === 'saved') {
+            indicator.textContent = '✅ Saved to cloud';
+            indicator.style.backgroundColor = '#27ae60';
+            indicator.style.color = 'white';
+        } else if (status === 'error') {
+            indicator.textContent = '❌ Save failed';
+            indicator.style.backgroundColor = '#e74c3c';
+            indicator.style.color = 'white';
+        }
+
+        indicator.style.opacity = '1';
+        
+        // Hide after 2 seconds
+        setTimeout(() => {
+            indicator.style.opacity = '0';
+        }, 2000);
     }
 
     parseTextInput(text) {
@@ -328,7 +404,7 @@ class ShoppingListOrganizer {
         return matrix[str2.length][str1.length];
     }
 
-    organizeList() {
+    async organizeList() {
         const inputText = document.getElementById('freeTextInput').value;
         if (!inputText.trim()) {
             alert('Please enter some shopping items first!');
@@ -340,6 +416,11 @@ class ShoppingListOrganizer {
         this.renderCategorizedLists();
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
+
+        // Auto-save to cloud if authenticated
+        if (this.mode === 'authenticated' && this.currentUser) {
+            await this.autoSaveCurrentList();
+        }
     }
 
     renderCategorizedLists() {
@@ -375,7 +456,7 @@ class ShoppingListOrganizer {
             <div class="category-content">
                 <div class="add-item-form">
                     <input type="text" class="add-item-input" placeholder="Add new item...">
-                    <button class="btn-add" onclick="organizer.addItem('${category}', this)">Add</button>
+                    <button class="btn-add" onclick="organizer.addItem('${category}', this).catch(console.error)">Add</button>
                 </div>
                 <ul class="items-list" id="list-${categoryId}">
                     ${items.map(item => this.createItemHTML(category, item)).join('')}
@@ -397,16 +478,16 @@ class ShoppingListOrganizer {
         return `
             <li class="item-row" id="${itemId}">
                 <input type="text" class="item-text" value="${item}" 
-                       onblur="organizer.updateItem('${category}', '${itemId}', this.value)"
+                       onblur="organizer.updateItem('${category}', '${itemId}', this.value).catch(console.error)"
                        onkeypress="if(event.key==='Enter') this.blur()">
                 <div class="item-actions">
-                    <button class="btn-delete" onclick="organizer.deleteItem('${category}', '${itemId}')">Delete</button>
+                    <button class="btn-delete" onclick="organizer.deleteItem('${category}', '${itemId}').catch(console.error)">Delete</button>
                 </div>
             </li>
         `;
     }
 
-    addItem(category, buttonElement) {
+    async addItem(category, buttonElement) {
         const input = buttonElement.previousElementSibling;
         const newItem = input.value.trim();
         
@@ -426,19 +507,29 @@ class ShoppingListOrganizer {
             
             const categoryHeader = buttonElement.closest('.category-card').querySelector('.item-count');
             categoryHeader.textContent = `${this.currentLists[category].length} items`;
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
         }
     }
 
-    updateItem(category, itemId, newValue) {
+    async updateItem(category, itemId, newValue) {
         const itemElement = document.getElementById(itemId);
         const itemIndex = Array.from(itemElement.parentNode.children).indexOf(itemElement);
         
         if (this.currentLists[category] && this.currentLists[category][itemIndex] !== undefined) {
             this.currentLists[category][itemIndex] = newValue.trim();
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
         }
     }
 
-    deleteItem(category, itemId) {
+    async deleteItem(category, itemId) {
         const itemElement = document.getElementById(itemId);
         const itemIndex = Array.from(itemElement.parentNode.children).indexOf(itemElement);
         
@@ -462,6 +553,11 @@ class ShoppingListOrganizer {
             
             if (Object.keys(this.currentLists).length === 0) {
                 document.getElementById('organizedSection').style.display = 'none';
+            }
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
             }
         }
     }
@@ -525,15 +621,20 @@ class ShoppingListOrganizer {
 
     newList() {
         if (Object.keys(this.currentLists).length > 0) {
-            if (confirm('Are you sure you want to start a new list? Current list will be lost if not saved.')) {
+            const message = this.mode === 'authenticated' 
+                ? 'Are you sure you want to start a new list? Current list is already saved to cloud.' 
+                : 'Are you sure you want to start a new list? Current list will be lost if not saved.';
+                
+            if (confirm(message)) {
                 this.currentLists = {};
+                this.currentListId = null; // Reset for new list
                 document.getElementById('organizedSection').style.display = 'none';
                 document.getElementById('freeTextInput').value = '';
             }
         }
     }
 
-    addNewCategory() {
+    async addNewCategory() {
         if (Object.keys(this.currentLists).length === 0) {
             alert('Please organize a shopping list first before adding categories!');
             return;
@@ -550,10 +651,15 @@ class ShoppingListOrganizer {
             
             this.currentLists[trimmedName] = [];
             this.renderCategorizedLists();
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
         }
     }
 
-    editCategoryName(oldCategoryName) {
+    async editCategoryName(oldCategoryName) {
         const categoryElement = event.target;
         const newCategoryName = prompt('Enter new category name:', oldCategoryName);
         
@@ -568,10 +674,15 @@ class ShoppingListOrganizer {
             this.currentLists[trimmedName] = this.currentLists[oldCategoryName];
             delete this.currentLists[oldCategoryName];
             this.renderCategorizedLists();
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
         }
     }
 
-    deleteCategory(categoryName) {
+    async deleteCategory(categoryName) {
         if (confirm(`Are you sure you want to delete the "${categoryName}" category and all its items?`)) {
             delete this.currentLists[categoryName];
             
@@ -579,6 +690,11 @@ class ShoppingListOrganizer {
                 document.getElementById('organizedSection').style.display = 'none';
             } else {
                 this.renderCategorizedLists();
+            }
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
             }
         }
     }
