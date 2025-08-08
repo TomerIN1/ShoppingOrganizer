@@ -62,6 +62,7 @@ class ShoppingListOrganizer {
 
         this.currentLists = {};
         this.currentListId = null; // Track current list ID for updates
+        this.currentListName = null; // Track current list name
         this.currentUser = null;
         this.mode = 'guest'; // 'guest' or 'authenticated'
         
@@ -254,9 +255,8 @@ class ShoppingListOrganizer {
         this.showSaveIndicator('saving');
         
         try {
-            // Generate a title based on the current date or items
-            const now = new Date();
-            const title = `Shopping List - ${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+            // Use current list name or generate default
+            const title = this.currentListName || this.generateDefaultListName();
             
             console.log('💾 Attempting to save list:', { title, currentListId: this.currentListId });
             
@@ -440,15 +440,51 @@ class ShoppingListOrganizer {
             return;
         }
 
+        // Get custom list name or generate default
+        const customName = document.getElementById('listNameInput').value.trim();
+        this.currentListName = customName || this.generateDefaultListName();
+
         const items = this.parseTextInput(inputText);
         this.currentLists = this.categorizeItems(items);
         this.renderCategorizedLists();
+        this.updateListTitle();
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
 
         // Auto-save to cloud if authenticated
         if (this.mode === 'authenticated' && this.currentUser) {
             await this.autoSaveCurrentList();
+        }
+    }
+
+    generateDefaultListName() {
+        const now = new Date();
+        return `Shopping List - ${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+    }
+
+    updateListTitle() {
+        const titleElement = document.querySelector('.organized-section h2');
+        if (titleElement && this.currentListName) {
+            titleElement.textContent = this.currentListName;
+            titleElement.style.cursor = 'pointer';
+            titleElement.title = 'Click to rename list';
+            titleElement.onclick = () => this.renameCurrentList();
+        }
+    }
+
+    async renameCurrentList() {
+        const newName = prompt('Enter new list name:', this.currentListName);
+        if (newName && newName.trim() && newName.trim() !== this.currentListName) {
+            this.currentListName = newName.trim();
+            this.updateListTitle();
+            
+            // Update the input field too
+            document.getElementById('listNameInput').value = this.currentListName;
+            
+            // Auto-save with new name if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
         }
     }
 
@@ -657,8 +693,10 @@ class ShoppingListOrganizer {
             if (confirm(message)) {
                 this.currentLists = {};
                 this.currentListId = null; // Reset for new list
+                this.currentListName = null; // Reset list name
                 document.getElementById('organizedSection').style.display = 'none';
                 document.getElementById('freeTextInput').value = '';
+                document.getElementById('listNameInput').value = '';
             }
         }
     }
