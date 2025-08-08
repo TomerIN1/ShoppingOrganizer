@@ -327,13 +327,15 @@ if (typeof window !== 'undefined') {
             SUPABASE_ANON_KEY = envConfig.SUPABASE_ANON_KEY;
             
             // Debug: Log the loaded credentials (partially masked for security)
-            console.log('Loaded environment config:', {
+            console.log('🔍 Loaded environment config:', {
                 SUPABASE_URL: SUPABASE_URL ? SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
                 SUPABASE_ANON_KEY: SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.substring(0, 20) + '...' : 'MISSING',
+                SUPABASE_ANON_KEY_ENDING: SUPABASE_ANON_KEY ? '...' + SUPABASE_ANON_KEY.substring(SUPABASE_ANON_KEY.length - 10) : 'MISSING',
                 configKeys: Object.keys(envConfig),
                 // Check if this might be a service key instead of anon key
-                possibleServiceKey: SUPABASE_ANON_KEY?.startsWith('eyJ') && SUPABASE_ANON_KEY?.includes('service_role'),
-                keyLength: SUPABASE_ANON_KEY?.length || 0
+                possibleServiceKey: SUPABASE_ANON_KEY?.includes('service_role'),
+                keyLength: SUPABASE_ANON_KEY?.length || 0,
+                deployTime: new Date().toISOString()
             });
             
             // Validate credentials before initializing Supabase
