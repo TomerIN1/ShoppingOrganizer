@@ -17,8 +17,8 @@ function initializeSupabase() {
                 autoRefreshToken: true,
                 persistSession: true,
                 detectSessionInUrl: true,
-                flowType: 'pkce',
-                debug: true,
+                flowType: 'implicit',
+                debug: false,
                 storageKey: 'supabase.auth.token'
             },
             realtime: {
@@ -42,17 +42,10 @@ const auth = {
             throw new Error('Supabase not initialized');
         }
         
-        // Determine the correct redirect URL based on environment
-        let redirectTo;
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            // Development environment
-            redirectTo = `${window.location.origin}/`;
-        } else {
-            // Production environment (Vercel) - use exact URL
-            redirectTo = window.location.origin + '/';
-        }
+        // Use the current page as redirect URL (implicit flow works well with this)
+        const redirectTo = window.location.origin + window.location.pathname;
         
-        console.log('OAuth redirectTo:', redirectTo);
+        console.log('OAuth redirectTo (implicit flow):', redirectTo);
         
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -375,10 +368,11 @@ if (typeof window !== 'undefined') {
             }
             
             // Handle OAuth callback immediately after initialization
-            if (supabase && (window.location.hash.includes('access_token') || window.location.search.includes('code='))) {
-                console.log('Detected OAuth callback, processing...', {
-                    hash: window.location.hash,
-                    search: window.location.search
+            if (supabase && window.location.hash.includes('access_token')) {
+                console.log('Detected implicit flow OAuth callback, processing...', {
+                    hash: window.location.hash.substring(0, 50) + '...',
+                    hasAccessToken: window.location.hash.includes('access_token'),
+                    hasRefreshToken: window.location.hash.includes('refresh_token')
                 });
                 
                 // Give Supabase time to automatically process the callback
