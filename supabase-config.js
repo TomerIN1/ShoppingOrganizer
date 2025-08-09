@@ -330,16 +330,30 @@ const database = {
         try {
             console.log('📧 Sending invitation email...');
             const currentUser = await auth.getCurrentUser();
-            const listData = await this.getListById(listId);
+            
+            // Get list data for email
+            const { data: listData, error: listError } = await supabase
+                .from('shopping_lists')
+                .select('*')
+                .eq('id', listId)
+                .single();
+                
+            if (listError) {
+                console.warn('Could not fetch list data for email:', listError.message);
+            }
+            
+            const emailPayload = {
+                listTitle: listData?.title || 'Shopping List',
+                listOwnerName: currentUser?.user_metadata?.full_name || currentUser?.email || 'Someone',
+                listOwnerEmail: currentUser?.email,
+                recipientEmail: userEmail,
+                permission: permissionLevel
+            };
+            
+            console.log('📧 Email payload:', emailPayload);
             
             const { data: emailResult, error: emailError } = await supabase.functions.invoke('resend-email', {
-                body: {
-                    listTitle: listData?.title || 'Shopping List',
-                    listOwnerName: currentUser?.user_metadata?.full_name || currentUser?.email || 'Someone',
-                    listOwnerEmail: currentUser?.email,
-                    recipientEmail: userEmail,
-                    permission: permissionLevel
-                }
+                body: emailPayload
             });
 
             if (emailError) {
