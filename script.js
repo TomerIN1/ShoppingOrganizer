@@ -280,6 +280,8 @@ class ShoppingListOrganizer {
         if (Object.keys(this.currentLists).length > 0) {
             document.getElementById('organizedSection').style.display = 'block';
         }
+        
+        this.updateOrganizeButtonText(); // Update button text based on current state
     }
 
     backToMainFromShared() {
@@ -291,6 +293,8 @@ class ShoppingListOrganizer {
         if (Object.keys(this.currentLists).length > 0) {
             document.getElementById('organizedSection').style.display = 'block';
         }
+        
+        this.updateOrganizeButtonText(); // Update button text based on current state
     }
 
     async loadSharedLists() {
@@ -458,6 +462,7 @@ class ShoppingListOrganizer {
             this.backToMainFromShared();
             document.getElementById('organizedSection').style.display = 'block';
             this.updateShareButtonVisibility();
+            this.updateOrganizeButtonText(); // Update button text for loaded list
             
             console.log('✅ Shared list loaded successfully from cloud');
 
@@ -629,6 +634,7 @@ class ShoppingListOrganizer {
             this.backToMain();
             document.getElementById('organizedSection').style.display = 'block';
             this.updateShareButtonVisibility();
+            this.updateOrganizeButtonText(); // Update button text for loaded list
             
             console.log('✅ List loaded successfully from cloud');
 
@@ -1184,14 +1190,36 @@ class ShoppingListOrganizer {
             return;
         }
 
-        // Get custom list name or generate default
-        const customName = document.getElementById('listNameInput').value.trim();
-        this.currentListName = customName || this.generateDefaultListName();
+        // Check if there's already an organized list displayed
+        const organizedSection = document.getElementById('organizedSection');
+        const hasExistingList = organizedSection.style.display === 'block' && this.currentLists && Object.keys(this.currentLists).length > 0;
 
-        const items = this.parseTextInput(inputText);
-        this.currentLists = this.categorizeItems(items);
+        if (hasExistingList) {
+            // Adding items to existing list
+            console.log('Adding items to existing list...');
+            const items = this.parseTextInput(inputText);
+            const newCategories = this.categorizeItems(items);
+            
+            // Merge new categories with existing ones
+            this.mergeCategories(newCategories);
+            
+        } else {
+            // Creating a new list
+            console.log('Creating new organized list...');
+            
+            // Get custom list name or generate default
+            const customName = document.getElementById('listNameInput').value.trim();
+            this.currentListName = customName || this.generateDefaultListName();
+            
+            const items = this.parseTextInput(inputText);
+            this.currentLists = this.categorizeItems(items);
+            this.updateListTitle();
+        }
+        
+        // Update button text based on context
+        this.updateOrganizeButtonText();
+        
         this.renderCategorizedLists();
-        this.updateListTitle();
         this.updateShareButtonVisibility();
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
@@ -1199,6 +1227,40 @@ class ShoppingListOrganizer {
         // Auto-save to cloud if authenticated
         if (this.mode === 'authenticated' && this.currentUser) {
             await this.autoSaveCurrentList();
+        }
+    }
+
+    mergeCategories(newCategories) {
+        // Merge new categories with existing ones
+        for (const [categoryName, newItems] of Object.entries(newCategories)) {
+            if (this.currentLists[categoryName]) {
+                // Category exists, merge items (avoid duplicates)
+                const existingItems = this.currentLists[categoryName];
+                newItems.forEach(newItem => {
+                    const isDuplicate = existingItems.some(existingItem => 
+                        existingItem.toLowerCase().trim() === newItem.toLowerCase().trim()
+                    );
+                    if (!isDuplicate) {
+                        existingItems.push(newItem);
+                    }
+                });
+            } else {
+                // New category, add it
+                this.currentLists[categoryName] = newItems;
+            }
+        }
+        console.log('Categories merged:', this.currentLists);
+    }
+    
+    updateOrganizeButtonText() {
+        const organizeBtn = document.getElementById('organizeBtn');
+        const organizedSection = document.getElementById('organizedSection');
+        const hasExistingList = organizedSection.style.display === 'block' && this.currentLists && Object.keys(this.currentLists).length > 0;
+        
+        if (hasExistingList) {
+            organizeBtn.textContent = 'Add More Items';
+        } else {
+            organizeBtn.textContent = 'Organize List';
         }
     }
 
@@ -1443,6 +1505,7 @@ class ShoppingListOrganizer {
                 document.getElementById('freeTextInput').value = '';
                 document.getElementById('listNameInput').value = '';
                 this.updateShareButtonVisibility();
+                this.updateOrganizeButtonText(); // Reset button text
             }
         }
     }
