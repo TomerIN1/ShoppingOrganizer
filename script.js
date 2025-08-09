@@ -173,6 +173,10 @@ class ShoppingListOrganizer {
         document.getElementById('backToMainBtn').addEventListener('click', () => this.backToMain());
         document.getElementById('refreshListsBtn').addEventListener('click', () => this.loadMyLists());
 
+        // Shared Lists dashboard event listeners
+        document.getElementById('backToMainFromSharedBtn').addEventListener('click', () => this.backToMainFromShared());
+        document.getElementById('refreshSharedListsBtn').addEventListener('click', () => this.loadSharedLists());
+
         // Share functionality event listeners
         document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
         document.getElementById('shareModalClose').addEventListener('click', () => this.hideShareModal());
@@ -259,26 +263,14 @@ class ShoppingListOrganizer {
             return;
         }
 
-        try {
-            console.log('Loading shared lists...');
-            const sharedLists = await window.SupabaseConfig.database.getSharedLists();
-            console.log('Found shared lists:', sharedLists);
-            
-            if (sharedLists.length === 0) {
-                alert('No shared lists found. When someone shares a list with you, it will appear here.');
-            } else {
-                // Show shared lists in a simple format for now
-                let message = `You have ${sharedLists.length} shared list(s):\n\n`;
-                sharedLists.forEach((list, index) => {
-                    message += `${index + 1}. "${list.title}" (${Object.keys(list.categories || {}).length} categories)\n`;
-                });
-                message += '\nFull shared lists dashboard coming soon!';
-                alert(message);
-            }
-        } catch (error) {
-            console.error('Failed to load shared lists:', error);
-            alert('Failed to load shared lists. Please try again.');
-        }
+        // Hide other sections and show Shared Lists
+        document.getElementById('organizedSection').style.display = 'none';
+        document.querySelector('.input-section').style.display = 'none';
+        document.getElementById('myListsSection').style.display = 'none';
+        document.getElementById('sharedListsSection').style.display = 'block';
+
+        // Load the shared lists
+        await this.loadSharedLists();
     }
 
     backToMain() {
@@ -289,6 +281,191 @@ class ShoppingListOrganizer {
         // Show organized section if there's a current list
         if (Object.keys(this.currentLists).length > 0) {
             document.getElementById('organizedSection').style.display = 'block';
+        }
+    }
+
+    backToMainFromShared() {
+        // Show main sections and hide Shared Lists
+        document.getElementById('sharedListsSection').style.display = 'none';
+        document.querySelector('.input-section').style.display = 'block';
+        
+        // Show organized section if there's a current list
+        if (Object.keys(this.currentLists).length > 0) {
+            document.getElementById('organizedSection').style.display = 'block';
+        }
+    }
+
+    async loadSharedLists() {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            console.error('Not authenticated for loading shared lists');
+            return;
+        }
+
+        const container = document.getElementById('sharedListsContainer');
+        const loadingIndicator = document.getElementById('sharedListsLoading');
+        
+        // Show loading state
+        loadingIndicator.style.display = 'block';
+        const existingGrid = container.querySelector('.lists-grid');
+        if (existingGrid) {
+            existingGrid.style.display = 'none';
+        }
+
+        try {
+            console.log('Loading shared lists...');
+            const sharedLists = await window.SupabaseConfig.database.getSharedLists();
+            console.log('Loaded shared lists:', sharedLists.length);
+
+            // Hide loading indicator
+            loadingIndicator.style.display = 'none';
+
+            // Render the shared lists
+            this.renderSharedLists(sharedLists);
+
+        } catch (error) {
+            console.error('Failed to load shared lists:', error);
+            loadingIndicator.textContent = 'Failed to load shared lists. Please try again.';
+            
+            // Add retry functionality
+            setTimeout(() => {
+                loadingIndicator.innerHTML = `
+                    Failed to load shared lists. 
+                    <button onclick="organizer.loadSharedLists()" class="btn-primary" style="margin-left: 10px; padding: 8px 16px; font-size: 14px;">
+                        Retry
+                    </button>
+                `;
+            }, 1000);
+        }
+    }
+
+    renderSharedLists(sharedLists) {
+        const container = document.getElementById('sharedListsContainer');
+        
+        // Remove existing content
+        const existingGrid = container.querySelector('.lists-grid');
+        if (existingGrid) {
+            existingGrid.remove();
+        }
+        
+        const existingEmpty = container.querySelector('.empty-lists-state');
+        if (existingEmpty) {
+            existingEmpty.remove();
+        }
+
+        if (sharedLists.length === 0) {
+            // Show empty state
+            container.innerHTML += `
+                <div class="empty-lists-state">
+                    <h3>No Shared Lists Yet</h3>
+                    <p>When someone shares a shopping list with you, it will appear here!</p>
+                    <button onclick="organizer.backToMainFromShared()" class="btn-primary">Back to Main</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Create shared lists grid
+        const listsGrid = document.createElement('div');
+        listsGrid.className = 'lists-grid';
+
+        sharedLists.forEach(list => {
+            const listCard = this.createSharedListCard(list);
+            listsGrid.appendChild(listCard);
+        });
+
+        container.appendChild(listsGrid);
+    }
+
+    createSharedListCard(list) {
+        const card = document.createElement('div');
+        card.className = 'list-card';
+        
+        // Format dates
+        const createdDate = new Date(list.created_at).toLocaleDateString();
+        const updatedDate = new Date(list.updated_at).toLocaleDateString();
+        const isRecent = updatedDate !== createdDate;
+        
+        // Get categories preview
+        const categories = Object.keys(list.categories || {});
+        const totalItems = Object.values(list.categories || {}).reduce((sum, items) => sum + items.length, 0);
+        
+        // Get permission level
+        const permission = list.list_collaborators?.[0]?.permission_level || 'view';
+        
+        card.innerHTML = `
+            <div class="list-card-header">
+                <h3 class="list-title">${list.title}</h3>
+                <div class="list-actions-mini">
+                    <button class="btn-mini" onclick="organizer.loadSharedListFromCloud('${list.id}')" title="Open this shared list">Open</button>
+                    <span class="permission-badge ${permission}">${permission === 'edit' ? 'Can Edit' : 'View Only'}</span>
+                </div>
+            </div>
+            
+            <div class="list-metadata">
+                <span>📝 ${totalItems} items</span>
+                <span>📁 ${categories.length} categories</span>
+                <span>📅 ${isRecent ? `Updated ${updatedDate}` : `Created ${createdDate}`}</span>
+                <span>👥 Shared with you</span>
+            </div>
+            
+            <div class="list-categories-preview">
+                ${categories.slice(0, 4).map(cat => 
+                    `<span class="category-tag">${cat}</span>`
+                ).join('')}
+                ${categories.length > 4 ? `<span class="category-tag">+${categories.length - 4} more</span>` : ''}
+            </div>
+        `;
+
+        // Add click handler to the card (excluding buttons)
+        card.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('btn-mini') && !e.target.classList.contains('permission-badge')) {
+                this.loadSharedListFromCloud(list.id);
+            }
+        });
+
+        return card;
+    }
+
+    async loadSharedListFromCloud(listId) {
+        if (!window.SupabaseConfig || !this.currentUser) {
+            alert('Authentication required to load shared list.');
+            return;
+        }
+
+        try {
+            console.log('Loading shared list from cloud:', listId);
+            
+            // Get the shared list data
+            const sharedLists = await window.SupabaseConfig.database.getSharedLists();
+            const list = sharedLists.find(l => l.id === listId);
+            
+            if (!list) {
+                alert('Shared list not found.');
+                return;
+            }
+
+            // Load the list data into current state
+            this.currentLists = list.categories || {};
+            this.currentListId = list.id;
+            this.currentListName = list.title;
+            
+            // Update the UI
+            document.getElementById('listNameInput').value = this.currentListName + ' (Shared)';
+            
+            // Render the list and go back to main view
+            this.renderCategorizedLists();
+            this.updateListTitle();
+            
+            // Show the organized section and hide shared lists
+            this.backToMainFromShared();
+            document.getElementById('organizedSection').style.display = 'block';
+            this.updateShareButtonVisibility();
+            
+            console.log('✅ Shared list loaded successfully from cloud');
+
+        } catch (error) {
+            console.error('Failed to load shared list:', error);
+            alert('Failed to load shared list. Please try again.');
         }
     }
 
