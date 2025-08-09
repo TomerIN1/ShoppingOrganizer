@@ -260,13 +260,20 @@ class ShoppingListOrganizer {
         }
 
         try {
+            console.log('Loading shared lists...');
             const sharedLists = await window.SupabaseConfig.database.getSharedLists();
+            console.log('Found shared lists:', sharedLists);
+            
             if (sharedLists.length === 0) {
-                alert('No shared lists found. Lists shared with you will appear here.');
+                alert('No shared lists found. When someone shares a list with you, it will appear here.');
             } else {
-                // For now, show a simple alert with count
-                // In Phase 4 we'll implement a full shared lists dashboard
-                alert(`You have ${sharedLists.length} shared list(s). Full shared lists dashboard coming soon!`);
+                // Show shared lists in a simple format for now
+                let message = `You have ${sharedLists.length} shared list(s):\n\n`;
+                sharedLists.forEach((list, index) => {
+                    message += `${index + 1}. "${list.title}" (${Object.keys(list.categories || {}).length} categories)\n`;
+                });
+                message += '\nFull shared lists dashboard coming soon!';
+                alert(message);
             }
         } catch (error) {
             console.error('Failed to load shared lists:', error);
@@ -724,8 +731,8 @@ class ShoppingListOrganizer {
             
             await window.SupabaseConfig.database.shareList(this.currentListId, email, permission);
             
-            console.log('✅ Invitation sent successfully to:', email);
-            this.showShareStatus(`Invitation sent to ${email} successfully!`, 'success');
+            console.log('✅ User added as collaborator successfully:', email);
+            this.showShareStatus(`${email} has been given access to this list! They can now find it in their "Shared Lists".`, 'success');
             
             // Clear the form
             document.getElementById('shareEmailInput').value = '';
