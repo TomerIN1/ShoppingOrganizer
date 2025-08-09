@@ -546,18 +546,31 @@ class ShoppingListOrganizer {
 
     // Share functionality
     showShareModal() {
+        console.log('🎬 showShareModal called:', { 
+            hasSupabaseConfig: !!window.SupabaseConfig, 
+            currentUser: !!this.currentUser, 
+            currentListId: this.currentListId 
+        });
+
         if (!window.SupabaseConfig || !this.currentUser) {
+            console.error('❌ No authentication for sharing');
             alert('Please sign in to share lists.');
             return;
         }
 
         if (!this.currentListId) {
+            console.error('❌ No current list ID for sharing');
             alert('Please save the list first before sharing.');
             return;
         }
 
+        console.log('✅ Opening share modal for list:', this.currentListId);
+
         // Show the modal
-        document.getElementById('shareModal').style.display = 'flex';
+        const modal = document.getElementById('shareModal');
+        console.log('📱 Modal element:', modal);
+        modal.style.display = 'flex';
+        console.log('📱 Modal display set to flex');
         
         // Reset form
         document.getElementById('shareEmailInput').value = '';
