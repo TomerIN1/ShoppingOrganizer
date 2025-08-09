@@ -345,10 +345,16 @@ const database = {
             const emailPayload = {
                 listTitle: listData?.title || 'Shopping List',
                 listOwnerName: currentUser?.user_metadata?.full_name || currentUser?.email || 'Someone',
-                listOwnerEmail: currentUser?.email,
+                listOwnerEmail: currentUser?.email || currentUser?.user_metadata?.email,
                 recipientEmail: userEmail,
                 permission: permissionLevel
             };
+            
+            console.log('📧 Current user data:', {
+                email: currentUser?.email,
+                userMetadata: currentUser?.user_metadata,
+                id: currentUser?.id
+            });
             
             console.log('📧 Email payload:', emailPayload);
             
@@ -357,7 +363,12 @@ const database = {
             });
 
             if (emailError) {
-                console.warn('⚠️ Email sending failed:', emailError.message);
+                console.error('⚠️ Email sending failed:', {
+                    message: emailError.message,
+                    details: emailError.details,
+                    hint: emailError.hint,
+                    code: emailError.code
+                });
                 // Don't fail the sharing process if email fails
             } else {
                 console.log('✅ Invitation email sent successfully:', emailResult);
