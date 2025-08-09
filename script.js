@@ -158,8 +158,6 @@ class ShoppingListOrganizer {
         document.getElementById('organizeBtn').addEventListener('click', () => this.organizeList());
         document.getElementById('clearBtn').addEventListener('click', () => this.clearInput());
         document.getElementById('addCategoryBtn').addEventListener('click', () => this.addNewCategory());
-        document.getElementById('saveBtn').addEventListener('click', () => this.saveList());
-        document.getElementById('loadBtn').addEventListener('click', () => this.loadList());
         document.getElementById('newListBtn').addEventListener('click', () => this.newList());
         document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileLoad(e));
 
