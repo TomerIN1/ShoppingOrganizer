@@ -263,23 +263,29 @@ const database = {
 
     // Collaboration operations
     async shareList(listId, userEmail, permissionLevel = 'view') {
-        console.log('Attempting to share list', listId, 'with email:', userEmail);
+        console.log('🔍 shareList called:', { listId, userEmail, permissionLevel });
         
         // Use RPC function to get user ID by email
+        console.log('📞 Calling get_user_id_by_email RPC function...');
         const { data: userId, error: userError } = await supabase
             .rpc('get_user_id_by_email', { email: userEmail });
         
+        console.log('📞 RPC response:', { userId, userError });
+        
         if (userError) {
-            console.error('Error looking up user:', userError.message);
-            throw new Error('Failed to find user. Please check the email address.');
+            console.error('❌ Error looking up user:', userError);
+            throw new Error(`Failed to find user: ${userError.message}`);
         }
         
         if (!userId) {
+            console.error('❌ No user ID returned for email:', userEmail);
             throw new Error('User not found. They need to sign up first.');
         }
         
-        console.log('Found user ID:', userId);
+        console.log('✅ Found user ID:', userId, 'for email:', userEmail);
         
+        // Insert into list_collaborators table
+        console.log('💾 Inserting collaborator record...');
         const { data, error } = await supabase
             .from('list_collaborators')
             .insert([{
@@ -289,6 +295,8 @@ const database = {
             }])
             .select()
             .single();
+        
+        console.log('💾 Insert response:', { data, error });
         
         if (error) {
             if (error.code === '23505') { // Unique constraint violation

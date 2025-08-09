@@ -573,17 +573,22 @@ class ShoppingListOrganizer {
     }
 
     async loadListCollaborators() {
-        if (!this.currentListId) return;
+        console.log('🔄 loadListCollaborators called:', { currentListId: this.currentListId });
+        
+        if (!this.currentListId) {
+            console.warn('⚠️ No current list ID, skipping collaborator load');
+            return;
+        }
 
         try {
-            console.log('Loading collaborators for list:', this.currentListId);
+            console.log('📋 Loading collaborators for list:', this.currentListId);
             const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
-            console.log('Found collaborators:', collaborators.length);
+            console.log('📊 Found collaborators:', collaborators.length, collaborators);
             
             this.renderCollaborators(collaborators);
             
         } catch (error) {
-            console.error('Failed to load collaborators:', error);
+            console.error('❌ Failed to load collaborators:', error);
             document.getElementById('sharedWithSection').style.display = 'none';
         }
     }
@@ -668,6 +673,8 @@ class ShoppingListOrganizer {
         const email = document.getElementById('shareEmailInput').value.trim();
         const permission = document.getElementById('sharePermissionSelect').value;
 
+        console.log('🎯 sendListInvitation called:', { email, permission, currentListId: this.currentListId });
+
         if (!email) {
             this.showShareStatus('Please enter an email address.', 'error');
             return;
@@ -683,34 +690,54 @@ class ShoppingListOrganizer {
             return;
         }
 
+        if (!this.currentListId) {
+            this.showShareStatus('No list selected for sharing.', 'error');
+            console.error('❌ No current list ID for sharing');
+            return;
+        }
+
         const sendButton = document.getElementById('sendInviteBtn');
         const originalText = sendButton.textContent;
         sendButton.textContent = 'Sending...';
         sendButton.disabled = true;
 
         try {
-            console.log('Sending invitation to:', email, 'with permission:', permission);
+            console.log('📤 Attempting to send invitation:', { 
+                email, 
+                permission, 
+                listId: this.currentListId,
+                userEmail: this.currentUser?.email 
+            });
             
             await window.SupabaseConfig.database.shareList(this.currentListId, email, permission);
             
+            console.log('✅ Invitation sent successfully to:', email);
             this.showShareStatus(`Invitation sent to ${email} successfully!`, 'success');
             
             // Clear the form
             document.getElementById('shareEmailInput').value = '';
             
-            // Reload collaborators
+            // Reload collaborators to show the new addition
             await this.loadListCollaborators();
             
         } catch (error) {
-            console.error('Failed to send invitation:', error);
+            console.error('❌ Failed to send invitation:', error);
+            console.error('❌ Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
             
             let errorMessage = 'Failed to send invitation. ';
             if (error.message?.includes('User not found')) {
                 errorMessage += 'The user needs to sign up first.';
             } else if (error.message?.includes('already shared')) {
                 errorMessage += 'This list is already shared with this user.';
+            } else if (error.message?.includes('Failed to find user')) {
+                errorMessage += 'User not found. Please check the email address.';
             } else {
-                errorMessage += 'Please try again.';
+                errorMessage += `Error: ${error.message}`;
             }
             
             this.showShareStatus(errorMessage, 'error');
