@@ -46,22 +46,45 @@ serve(async (req) => {
       </div>
     `
 
-    // For now, just log the email details (in production, integrate with email service)
-    console.log('📧 Email notification details:', {
-      to: recipientEmail,
-      from: listOwnerEmail,
-      subject,
-      listTitle,
-      permission
+    // Get Resend API key from environment variables
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set')
+    }
+
+    // Send email using Resend API
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Shopping List Organizer <onboarding@resend.dev>',
+        to: [recipientEmail],
+        subject: subject,
+        html: htmlContent,
+      }),
     })
 
-    // TODO: Integrate with email service like SendGrid, Mailgun, or Resend
-    // For now, return success without actually sending email
-    
+    if (!resendResponse.ok) {
+      const errorData = await resendResponse.text()
+      console.error('Resend API error:', errorData)
+      throw new Error(`Resend API error: ${resendResponse.status} ${errorData}`)
+    }
+
+    const resendData = await resendResponse.json()
+    console.log('✅ Email sent successfully via Resend:', {
+      id: resendData.id,
+      to: recipientEmail,
+      subject: subject
+    })
+
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Email notification logged (email service integration needed)' 
+        message: 'Invitation email sent successfully',
+        emailId: resendData.id
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

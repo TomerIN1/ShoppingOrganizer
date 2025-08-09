@@ -253,6 +253,21 @@ const database = {
         return data;
     },
 
+    async getListById(listId) {
+        const { data, error } = await supabase
+            .from('shopping_lists')
+            .select('*')
+            .eq('id', listId)
+            .single();
+        
+        if (error) {
+            console.error('Error fetching list:', error.message);
+            throw error;
+        }
+        
+        return data;
+    },
+
     async deleteList(listId) {
         const { error } = await supabase
             .from('shopping_lists')
@@ -309,6 +324,33 @@ const database = {
             }
             console.error('Error sharing list:', error.message);
             throw error;
+        }
+
+        // Send invitation email via Edge Function
+        try {
+            console.log('📧 Sending invitation email...');
+            const currentUser = await auth.getCurrentUser();
+            const listData = await this.getListById(listId);
+            
+            const { data: emailResult, error: emailError } = await supabase.functions.invoke('resend-email', {
+                body: {
+                    listTitle: listData?.title || 'Shopping List',
+                    listOwnerName: currentUser?.user_metadata?.full_name || currentUser?.email || 'Someone',
+                    listOwnerEmail: currentUser?.email,
+                    recipientEmail: userEmail,
+                    permission: permissionLevel
+                }
+            });
+
+            if (emailError) {
+                console.warn('⚠️ Email sending failed:', emailError.message);
+                // Don't fail the sharing process if email fails
+            } else {
+                console.log('✅ Invitation email sent successfully:', emailResult);
+            }
+        } catch (emailError) {
+            console.warn('⚠️ Email sending error:', emailError.message);
+            // Don't fail the sharing process if email fails
         }
         
         return data;
