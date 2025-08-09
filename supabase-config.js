@@ -191,15 +191,19 @@ const database = {
             throw new Error('User not authenticated');
         }
 
+        console.log('🔍 getSharedLists: Looking for lists shared with user:', user.id);
+
         const { data, error } = await supabase
             .from('shopping_lists')
             .select(`
                 *,
-                list_collaborators!inner(permission_level, accepted_at)
+                list_collaborators!inner(permission_level, accepted_at, invited_at)
             `)
             .eq('list_collaborators.user_id', user.id)
             .not('list_collaborators.accepted_at', 'is', null)
             .order('updated_at', { ascending: false });
+        
+        console.log('📊 getSharedLists query result:', { data, error, userID: user.id });
         
         if (error) {
             console.error('Error fetching shared lists:', error.message);
@@ -291,7 +295,8 @@ const database = {
             .insert([{
                 list_id: listId,
                 user_id: userId,
-                permission_level: permissionLevel
+                permission_level: permissionLevel,
+                accepted_at: new Date().toISOString() // Auto-accept for immediate access
             }])
             .select()
             .single();
