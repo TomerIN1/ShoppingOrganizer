@@ -346,7 +346,7 @@ const database = {
                 listTitle: listData?.title || 'Shopping List',
                 listOwnerName: currentUser?.user_metadata?.full_name || currentUser?.email || 'Someone',
                 listOwnerEmail: currentUser?.email || currentUser?.user_metadata?.email,
-                recipientEmail: userEmail,
+                recipientEmail: 'tomerikoka@gmail.com', // For testing - using your verified email
                 permission: permissionLevel
             };
             
