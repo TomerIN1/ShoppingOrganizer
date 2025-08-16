@@ -1476,6 +1476,8 @@ CRITICAL RULES:
 6. For any vegetable, fruit, or produce: use "Fruits & Vegetables"
 7. For any ANIMAL meat, fish, or seafood: use "Meat & Seafood"
 8. For plant-based proteins (tofu, tempeh, seitan, etc.): use "Pantry & Canned Goods"
+9. For hardware/DIY items (screws, nails, tools, etc.): use "Household & Cleaning"
+10. For non-grocery items that don't fit: use "Other" if available, otherwise closest category
 
 EXAMPLES:
 - "organic spinach" → "Fruits & Vegetables"
@@ -1486,6 +1488,10 @@ EXAMPLES:
 - "tofu" → "Pantry & Canned Goods"
 - "artisanal goat cheese" → "Dairy & Eggs"
 - "gluten-free bread" → "Bakery & Bread"
+- "screwdriver" → "Household & Cleaning"
+- "wood planks" → "Household & Cleaning"
+- "screws" → "Household & Cleaning"
+- "paintbrushes" → "Household & Cleaning"
 
 Items to categorize: ${items.join(', ')}
 
@@ -1528,13 +1534,60 @@ JSON Response:`;
         const data = await response.json();
         const content = data.choices[0].message.content.trim();
         
-        // Parse JSON response
+        // Parse JSON response with enhanced error handling
         try {
-            return JSON.parse(content);
+            // Clean up the response - sometimes AI adds extra text before/after JSON
+            let cleanContent = content.trim();
+            
+            // Look for JSON object boundaries
+            const jsonStart = cleanContent.indexOf('{');
+            const jsonEnd = cleanContent.lastIndexOf('}');
+            
+            if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+                cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
+            }
+            
+            const parsed = JSON.parse(cleanContent);
+            console.log('✅ Successfully parsed OpenAI response:', parsed);
+            return parsed;
         } catch (parseError) {
-            console.error('Failed to parse OpenAI response:', content);
-            throw new Error('Invalid JSON response from OpenAI');
+            console.error('❌ Failed to parse OpenAI response:', {
+                originalContent: content,
+                parseError: parseError.message
+            });
+            
+            // Try to extract items and create a fallback mapping
+            console.warn('🔧 Attempting fallback parsing...');
+            return this.createFallbackMapping(content);
         }
+    }
+
+    createFallbackMapping(content) {
+        console.log('🔧 Creating fallback mapping from malformed response');
+        
+        // Extract any quoted strings that might be item names
+        const itemMatches = content.match(/"([^"]+)"/g);
+        const fallbackMapping = {};
+        
+        if (itemMatches) {
+            itemMatches.forEach(match => {
+                const item = match.replace(/"/g, '');
+                
+                // Skip if it looks like a category name
+                if (Object.keys(this.categories).some(cat => 
+                    cat.toLowerCase().includes(item.toLowerCase()) || 
+                    item.toLowerCase().includes(cat.toLowerCase())
+                )) {
+                    return;
+                }
+                
+                // Default to "Other" for unknown items
+                fallbackMapping[item] = 'Other';
+            });
+        }
+        
+        console.log('🔧 Fallback mapping created:', fallbackMapping);
+        return fallbackMapping;
     }
 
     validateAndCorrectCategories(aiResponse, validCategories) {
