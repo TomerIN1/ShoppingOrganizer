@@ -1521,7 +1521,7 @@ class ShoppingListOrganizer {
             <div class="category-content">
                 <div class="add-item-form">
                     <input type="text" class="add-item-input" placeholder="Add new item...">
-                    <button class="btn-add" onclick="organizer.addItem('${category}', this).catch(console.error)">Add</button>
+                    <button class="btn-add" onclick="organizer.addItem('${category}', this).catch(console.error)">+</button>
                 </div>
                 <ul class="items-list" id="list-${categoryId}">
                     ${actualItems.map(item => this.createItemHTML(category, item)).join('')}

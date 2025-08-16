@@ -585,11 +585,16 @@ header h1 {
     background: #27ae60;
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 8px 12px;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
     transition: background 0.3s ease;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-add:hover {
@@ -798,8 +803,7 @@ header h1 {
         grid-template-columns: 1fr;
     }
     
-    .input-actions,
-    .add-item-form {
+    .input-actions {
         flex-direction: column;
     }
     
