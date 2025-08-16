@@ -1604,25 +1604,66 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-Create appropriate categories for these items:
-
-Rules:
-- SHORT category names (max 20 characters)
-- Group similar items together
-- NO commas in category names
-- Return valid JSON only
+Map each item to ONE category:
 
 Items: ${items.join(', ')}
 
-{"item1": "Category1", "item2": "Category2"}`;
+REQUIRED FORMAT (item -> category):
+{"item_name": "category_name", "item_name": "category_name"}
+
+Example:
+{"passport": "Travel Documents", "phone": "Electronics", "shirt": "Clothing"}`;
+    }
+
+    correctInvertedAIResponse(aiResponse) {
+        console.log('🔍 Checking AI response format:', aiResponse);
+        
+        // Check if the response is inverted (category -> items instead of item -> category)
+        const entries = Object.entries(aiResponse);
+        let invertedCount = 0;
+        
+        entries.forEach(([key, value]) => {
+            // If the value contains commas or is very long, it's likely a list of items (inverted format)
+            if (typeof value === 'string' && (value.includes(',') || value.length > 50)) {
+                invertedCount++;
+            }
+        });
+        
+        // If more than half the entries look inverted, fix the format
+        if (invertedCount > entries.length / 2) {
+            console.log('🔄 Detected inverted AI response format, correcting...');
+            const corrected = {};
+            
+            entries.forEach(([category, itemsString]) => {
+                if (typeof itemsString === 'string') {
+                    // Split the items string and assign each item to the category
+                    const items = itemsString.split(',').map(item => item.trim()).filter(item => item);
+                    items.forEach(item => {
+                        corrected[item] = category;
+                    });
+                } else {
+                    // Not inverted, keep as is
+                    corrected[category] = itemsString;
+                }
+            });
+            
+            console.log('✅ Corrected response:', corrected);
+            return corrected;
+        }
+        
+        console.log('✅ Response format is correct');
+        return aiResponse;
     }
 
     groupSimilarCategories(aiResponse) {
+        // First, check if the AI returned the format backwards (category -> items instead of item -> category)
+        const correctedResponse = this.correctInvertedAIResponse(aiResponse);
+        
         const grouped = {};
         const categoryAliases = {};
         
         // First pass: collect all categories and their aliases
-        Object.entries(aiResponse).forEach(([item, category]) => {
+        Object.entries(correctedResponse).forEach(([item, category]) => {
             const normalizedCategory = this.normalizeCategoryName(category);
             
             // Check if this category is similar to an existing one
