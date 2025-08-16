@@ -1514,8 +1514,8 @@ class ShoppingListOrganizer {
                     <button class="btn-category-action btn-delete-category" onclick="organizer.deleteCategory('${category}')" title="Delete category">×</button>
                 </div>
                 <div class="category-header-bottom">
-                    <span class="item-count">${actualItems.length} items</span>
                     ${assignmentUI}
+                    <span class="item-count">${actualItems.length} items</span>
                 </div>
             </div>
             <div class="category-content">
