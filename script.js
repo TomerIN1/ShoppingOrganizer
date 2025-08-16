@@ -1546,7 +1546,7 @@ class ShoppingListOrganizer {
         
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
         const displayText = assignedUser 
-            ? this.getDisplayName(assignedUser.profiles || {})
+            ? (assignedUser.profiles?.email || 'Unknown User').split('@')[0]
             : 'Unassigned';
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
@@ -1563,8 +1563,16 @@ class ShoppingListOrganizer {
         console.log('🎯 showAssignmentDropdown called:', { 
             category, 
             collaboratorsCount: this.currentCollaborators.length,
-            collaborators: this.currentCollaborators 
+            collaborators: this.currentCollaborators,
+            element: element,
+            mode: this.mode
         });
+        
+        // Basic check - if no collaborators, exit early
+        if (this.currentCollaborators.length === 0) {
+            console.error('❌ No collaborators found - dropdown will not be created');
+            return;
+        }
         
         // Remove any existing dropdown
         const existingDropdown = document.querySelector('.assignment-dropdown');
@@ -1598,7 +1606,8 @@ class ShoppingListOrganizer {
         } else {
             this.currentCollaborators.forEach(collaborator => {
                 console.log('👤 Processing collaborator:', collaborator);
-                const userName = this.getDisplayName(collaborator.profiles || {});
+                const userEmail = collaborator.profiles?.email || 'Unknown User';
+                const userName = userEmail.split('@')[0];
                 const displayName = collaborator.is_owner ? `${userName} (Owner)` : userName;
                 
                 const collabOption = document.createElement('div');
