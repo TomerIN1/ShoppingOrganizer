@@ -1602,29 +1602,19 @@ class ShoppingListOrganizer {
     }
 
     buildFlexibleCategorizationPrompt(items) {
-        return `You are a smart categorizer. Categorize these items into appropriate, logical categories.
+        return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-CRITICAL RULES:
-1. Create SHORT, appropriate category names (max 3-4 words)
-2. Group similar items together under the same category
-3. Use clear, descriptive category names (e.g., "Travel Essentials", "Electronics", "Clothing")
-4. NEVER create categories with more than 50 characters
-5. NEVER list multiple items as a single category name
-6. Each item should map to ONE appropriate category
-7. Return only valid JSON in the exact format specified
+Create appropriate categories for these items:
 
-Items to categorize: ${items.join(', ')}
+Rules:
+- SHORT category names (max 20 characters)
+- Group similar items together
+- NO commas in category names
+- Return valid JSON only
 
-EXAMPLES:
-- "passport" → "Travel Documents"
-- "phone charger" → "Electronics"
-- "t-shirt" → "Clothing"
-- "sunglasses" → "Accessories"
+Items: ${items.join(', ')}
 
-Respond ONLY with valid JSON in this exact format:
-{"item_name": "Category Name"}
-
-JSON Response:`;
+{"item1": "Category1", "item2": "Category2"}`;
     }
 
     groupSimilarCategories(aiResponse) {
@@ -1695,42 +1685,19 @@ JSON Response:`;
         const validCategories = [...categoriesList, 'Other'];
         const categoriesText = validCategories.map((cat, i) => `${i+1}. ${cat}`).join('\n');
         
-        return `You are a shopping list categorizer. You MUST categorize each item into EXACTLY ONE of these predefined categories:
+        return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
+Categorize each item into EXACTLY ONE category from this list:
 ${categoriesText}
 
-CRITICAL RULES:
-1. You can ONLY use the exact category names listed above - no exceptions, no variations
-2. Never create new categories like "vegetables", "produce", "fruits" - use "Fruits & Vegetables"
-3. Never create "meat", "protein" - use "Meat & Seafood"  
-4. Never create "dairy" - use "Dairy & Eggs"
-5. If an item doesn't clearly fit, choose the closest category from the list above
-6. For any vegetable, fruit, or produce: use "Fruits & Vegetables"
-7. For any ANIMAL meat, fish, or seafood: use "Meat & Seafood"
-8. For plant-based proteins (tofu, tempeh, seitan, etc.): use "Pantry & Canned Goods"
-9. For hardware/DIY items (screws, nails, tools, etc.): use "Household & Cleaning"
-10. For non-grocery items that don't fit: use "Other" if available, otherwise closest category
+Rules:
+- Use ONLY exact category names from the list above
+- For non-grocery items: use "Other"
+- Return valid JSON only
 
-EXAMPLES:
-- "organic spinach" → "Fruits & Vegetables"
-- "rare heirloom tomatoes" → "Fruits & Vegetables"
-- "exotic dragon fruit" → "Fruits & Vegetables"
-- "grass-fed wagyu beef" → "Meat & Seafood"
-- "tempeh" → "Pantry & Canned Goods"
-- "tofu" → "Pantry & Canned Goods"
-- "artisanal goat cheese" → "Dairy & Eggs"
-- "gluten-free bread" → "Bakery & Bread"
-- "screwdriver" → "Household & Cleaning"
-- "wood planks" → "Household & Cleaning"
-- "screws" → "Household & Cleaning"
-- "paintbrushes" → "Household & Cleaning"
+Items: ${items.join(', ')}
 
-Items to categorize: ${items.join(', ')}
-
-Respond ONLY with valid JSON in this exact format:
-{"item_name": "exact_category_name_from_list_above"}
-
-JSON Response:`;
+{"item1": "Category Name", "item2": "Category Name"}`;
     }
 
     async callOpenAI(prompt) {
@@ -1747,15 +1714,15 @@ JSON Response:`;
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a precise shopping list categorizer. Always follow instructions exactly and return valid JSON.'
+                        content: 'You are a JSON-only categorizer. Return ONLY valid JSON with no explanations, no text before or after. Follow the exact format requested.'
                     },
                     {
                         role: 'user', 
                         content: prompt
                     }
                 ],
-                temperature: 0.1, // Low temperature for consistent results
-                max_tokens: 500
+                temperature: 0, // Zero temperature for most consistent JSON output
+                max_tokens: 2000
             })
         });
 
