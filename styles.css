@@ -253,8 +253,10 @@ header h1 {
 .category-card {
     border: 2px solid #e1e8ed;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
     background: #fafafa;
+    position: relative;
+    z-index: 10;
 }
 
 .category-header {
@@ -264,6 +266,9 @@ header h1 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    overflow: visible;
+    position: relative;
+    z-index: 100;
 }
 
 .category-header-left {
@@ -271,6 +276,9 @@ header h1 {
     align-items: center;
     gap: 10px;
     flex: 1;
+    overflow: visible;
+    position: relative;
+    z-index: 101;
 }
 
 .category-header-right {
