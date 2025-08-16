@@ -1474,13 +1474,16 @@ CRITICAL RULES:
 4. Never create "dairy" - use "Dairy & Eggs"
 5. If an item doesn't clearly fit, choose the closest category from the list above
 6. For any vegetable, fruit, or produce: use "Fruits & Vegetables"
-7. For any meat, fish, or protein: use "Meat & Seafood"
+7. For any ANIMAL meat, fish, or seafood: use "Meat & Seafood"
+8. For plant-based proteins (tofu, tempeh, seitan, etc.): use "Pantry & Canned Goods"
 
 EXAMPLES:
 - "organic spinach" → "Fruits & Vegetables"
 - "rare heirloom tomatoes" → "Fruits & Vegetables"
 - "exotic dragon fruit" → "Fruits & Vegetables"
 - "grass-fed wagyu beef" → "Meat & Seafood"
+- "tempeh" → "Pantry & Canned Goods"
+- "tofu" → "Pantry & Canned Goods"
 - "artisanal goat cheese" → "Dairy & Eggs"
 - "gluten-free bread" → "Bakery & Bread"
 
