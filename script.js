@@ -1420,6 +1420,7 @@ class ShoppingListOrganizer {
     // AI-Enhanced Three-Step Categorization System
     async categorizeWithAI(items) {
         console.log('🤖 Starting three-step AI-enhanced categorization for', items.length, 'items');
+        console.log('📝 Input items:', items);
         
         try {
             // Step 1: Rule-based categorization (fast, local)
@@ -1515,9 +1516,62 @@ class ShoppingListOrganizer {
             
         } catch (error) {
             console.error('❌ Flexible AI categorization failed:', error.message);
-            // Fallback: put all items in "Other" category
+            // Better fallback: try to extract any usable categorization from the raw response
+            try {
+                const betterFallback = this.extractCategoriesFromText(items);
+                if (Object.keys(betterFallback).length > 0) {
+                    console.log('✅ Using better fallback categorization:', betterFallback);
+                    return betterFallback;
+                }
+            } catch (fallbackError) {
+                console.warn('Fallback extraction also failed:', fallbackError.message);
+            }
+            
+            // Ultimate fallback: put all items in "Other" category
+            console.log('🔄 Using ultimate fallback: all items → Other');
             return { 'Other': items };
         }
+    }
+
+    extractCategoriesFromText(items) {
+        // Simple rule-based categorization for common travel/non-grocery items
+        const categories = {
+            'Travel Documents': ['passport', 'tickets', 'visa', 'id', 'license', 'boarding pass'],
+            'Electronics': ['phone', 'charger', 'adapter', 'cable', 'battery', 'camera', 'tablet', 'laptop'],
+            'Clothing': ['shirt', 'pants', 'dress', 'skirt', 'shorts', 'underwear', 'socks', 'shoes', 'jacket'],
+            'Travel Accessories': ['suitcase', 'backpack', 'bag', 'pillow', 'blanket', 'luggage'],
+            'Personal Care': ['shampoo', 'toothbrush', 'toothpaste', 'soap', 'deodorant', 'lotion', 'sunscreen'],
+            'Health & Medicine': ['medication', 'vitamins', 'bandages', 'first aid', 'pills'],
+            'Entertainment': ['book', 'magazine', 'games', 'toys', 'coloring', 'crayons'],
+            'Other': []
+        };
+        
+        const result = {};
+        
+        items.forEach(item => {
+            const normalizedItem = item.toLowerCase().trim();
+            let categorized = false;
+            
+            for (const [category, keywords] of Object.entries(categories)) {
+                if (category === 'Other') continue;
+                
+                if (keywords.some(keyword => 
+                    normalizedItem.includes(keyword) || keyword.includes(normalizedItem)
+                )) {
+                    if (!result[category]) result[category] = [];
+                    result[category].push(item);
+                    categorized = true;
+                    break;
+                }
+            }
+            
+            if (!categorized) {
+                if (!result['Other']) result['Other'] = [];
+                result['Other'].push(item);
+            }
+        });
+        
+        return result;
     }
 
     buildFlexibleCategorizationPrompt(items) {
@@ -1718,6 +1772,7 @@ JSON Response:`;
             
             // Try to extract items and create a fallback mapping
             console.warn('🔧 Attempting fallback parsing...');
+            console.warn('🔧 Raw AI response:', content.substring(0, 200) + '...');
             return this.createFallbackMapping(content);
         }
     }
