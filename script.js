@@ -1349,11 +1349,24 @@ class ShoppingListOrganizer {
 
             for (const [category, keywords] of Object.entries(this.categories)) {
                 const matchFound = keywords.some(keyword => {
-                    const includesMatch = normalizedItem.includes(keyword) || keyword.includes(normalizedItem);
+                    // Improved matching logic to avoid false positives like "shampoo" -> "ham"
+                    const exactMatch = normalizedItem === keyword;
+                    const wordBoundaryMatch = this.wordBoundaryMatch(normalizedItem, keyword);
+                    const keywordContainsItem = keyword.includes(normalizedItem) && normalizedItem.length >= 3; // Item must be at least 3 chars
                     const fuzzyMatchResult = this.fuzzyMatch(normalizedItem, keyword);
                     
+                    // Safe substring matching: item contains keyword as complete word or at word boundaries
+                    const safeSubstringMatch = normalizedItem.includes(keyword) && (
+                        keyword.length >= 4 ||  // Long keywords are safer
+                        wordBoundaryMatch ||    // Word boundary is safe
+                        normalizedItem.startsWith(keyword) ||  // Starts with keyword is safe
+                        normalizedItem.endsWith(keyword)       // Ends with keyword is safe
+                    );
+                    
+                    const includesMatch = exactMatch || keywordContainsItem || safeSubstringMatch;
+                    
                     if (includesMatch || fuzzyMatchResult) {
-                        console.log(`✅ Match found in "${category}": keyword="${keyword}", includes=${includesMatch}, fuzzy=${fuzzyMatchResult}`);
+                        console.log(`✅ Match found in "${category}": keyword="${keyword}", exact=${exactMatch}, wordBoundary=${wordBoundaryMatch}, safeSubstring=${safeSubstringMatch}, fuzzy=${fuzzyMatchResult}`);
                         return true;
                     }
                     return false;
@@ -1415,6 +1428,12 @@ class ShoppingListOrganizer {
         }
 
         return matrix[str2.length][str1.length];
+    }
+
+    wordBoundaryMatch(item, keyword) {
+        // Check if keyword appears as a whole word in the item
+        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+        return regex.test(item);
     }
 
     // AI-Enhanced Three-Step Categorization System
