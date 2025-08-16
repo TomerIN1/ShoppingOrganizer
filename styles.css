@@ -923,7 +923,8 @@ header h1 {
     }
     
     .list-actions .btn-primary,
-    .list-actions .btn-secondary {
+    .list-actions .btn-secondary,
+    .list-actions .btn-add {
         width: 100%;
         padding: 14px 20px;
         font-size: 16px;
