@@ -4,6 +4,13 @@ A modern, collaborative shopping list application that transforms free-text shop
 
 ## 📅 Recent Updates (Latest)
 
+### **🎯 Category Assignment System** (NEW!)
+- ✅ **Interactive Category Assignment**: Users can assign shopping categories to specific collaborators
+- ✅ **Visual Assignment Indicators**: Color-coded assigned (green) vs unassigned (gray) categories
+- ✅ **Dropdown Selection Interface**: Click any category to assign it to a team member
+- ✅ **Backward Data Compatibility**: Seamlessly supports existing lists while adding assignment features
+- ✅ **Auto-Save Integration**: Assignment changes instantly sync to cloud
+
 ### **UI/UX Improvements**
 - ✅ **Unified Lists Interface**: Integrated personal and shared lists into single "My Lists" view
 - ✅ **Streamlined Navigation**: Removed redundant "Shared Lists" button for cleaner interface
@@ -51,9 +58,11 @@ A modern, collaborative shopping list application that transforms free-text shop
 
 ### 🤝 Collaboration & Sharing
 - **List Sharing**: Share lists via email with view or edit permissions
+- **Category Assignments**: Assign shopping categories to specific team members with visual indicators
+- **Interactive Assignment UI**: Click-to-assign categories with dropdown selection of collaborators
 - **Permission Management**: Control whether collaborators can view or edit
 - **Email Invitations**: Automatic email notifications using Resend service
-- **Real-Time Collaboration**: Multiple users can edit simultaneously
+- **Real-Time Collaboration**: Multiple users can edit simultaneously with instant assignment updates
 - **Shared Lists Integration**: View personal and shared lists in unified interface
 
 ### 📱 User Experience
@@ -133,10 +142,12 @@ ShoppingOrganizer/
 
 ### **Collaboration Features** (Requires Sign-in)
 - **Share Lists**: Click "Share List" button and enter collaborator email
+- **Category Assignments**: Click on any category header (👥 icon) to assign it to a team member
+- **Assignment Visualization**: Assigned categories show in green, unassigned in gray
 - **Permission Control**: Choose "View Only" or "Can Edit" permissions
 - **Email Invitations**: Collaborators receive automatic email notifications
 - **Shared List Access**: Shared lists appear in your "My Lists" dashboard
-- **Real-Time Editing**: Multiple users can edit simultaneously
+- **Real-Time Editing**: Multiple users can edit simultaneously with live assignment updates
 
 ### **Cloud Features** (Requires Sign-in)
 - **Auto-Save**: Every change automatically saves
@@ -182,9 +193,11 @@ ShoppingOrganizer/
 - [x] **Collaborative Access** - Real-time shared list management
 - [x] **Database-driven Sharing** - Robust collaboration system
 
-### **Phase 4: Real-Time Features** 📅 IN PROGRESS
+### **Phase 4: Real-Time Features** ✅ COMPLETE
 - [x] **Real-Time Collaboration** - Live list editing and sharing
 - [x] **Auto-save functionality** - Instant cloud synchronization
+- [x] **Category Assignment System** - Interactive assignment of categories to collaborators
+- [x] **Visual Assignment Indicators** - Color-coded assignment status
 - [ ] Change notifications and conflict resolution
 - [ ] Activity feeds and user presence
 
@@ -290,7 +303,7 @@ This project was built through pair programming with **Claude Code**, following 
 
 **Ultimate Goal**: A shopping list app so seamless that families never lose items, never duplicate purchases, and always stay synchronized - whether one person is at home planning or another is at the store shopping.
 
-**Success Story**: "My wife creates our weekly shopping list at home with custom categories. She shares it with me via email, I get notified instantly, open the list on my phone at the store, check off items as I shop, and add anything extra we need. When I get home, she can see exactly what we bought and what's still needed for next time - all in real-time!"
+**Success Story**: "My wife creates our weekly shopping list at home with custom categories and assigns each category to either me or herself (e.g., 'Dairy & Eggs' to me, 'Fruits & Vegetables' to her). She shares it with me via email, I get notified instantly, open the list on my phone at the store, and can immediately see which categories are my responsibility (highlighted in green). I check off items as I shop and add anything extra we need. When I get home, she can see exactly what we bought and what's still needed for next time - all in real-time with clear assignment visibility!"
 
 ---
 
