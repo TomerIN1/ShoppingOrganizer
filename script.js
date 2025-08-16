@@ -1509,13 +1509,13 @@ class ShoppingListOrganizer {
         
         card.innerHTML = `
             <div class="category-header">
-                <div class="category-header-left">
+                <div class="category-header-top">
                     <h3 class="category-title" onclick="organizer.editCategoryName('${category}')" title="Click to edit category name">${category}</h3>
-                    ${assignmentUI}
-                </div>
-                <div class="category-header-right">
-                    <span class="item-count">${actualItems.length} items</span>
                     <button class="btn-category-action btn-delete-category" onclick="organizer.deleteCategory('${category}')" title="Delete category">×</button>
+                </div>
+                <div class="category-header-bottom">
+                    <span class="item-count">${actualItems.length} items</span>
+                    ${assignmentUI}
                 </div>
             </div>
             <div class="category-content">
