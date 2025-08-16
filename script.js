@@ -1583,6 +1583,16 @@ class ShoppingListOrganizer {
         // Create dropdown
         const dropdown = document.createElement('div');
         dropdown.className = 'assignment-dropdown';
+        console.log('🎨 Created dropdown element:', dropdown);
+        
+        // Add test option first
+        const testOption = document.createElement('div');
+        testOption.style.cssText = 'padding: 10px; background: yellow; color: black; font-weight: bold;';
+        testOption.textContent = '🔥 TEST OPTION - CLICK ME!';
+        testOption.addEventListener('click', () => {
+            alert('Test option clicked! Dropdown is working!');
+        });
+        dropdown.appendChild(testOption);
         
         // Add unassigned option
         const unassignedOption = document.createElement('div');
@@ -1632,9 +1642,28 @@ class ShoppingListOrganizer {
         dropdown.style.display = 'block';
         dropdown.style.visibility = 'visible';
         dropdown.style.opacity = '1';
+        dropdown.style.backgroundColor = 'red'; // Emergency visibility test
+        dropdown.style.minHeight = '100px';
+        dropdown.style.width = '200px';
+        
+        console.log('📍 BEFORE appendChild:', {
+            dropdown,
+            element,
+            dropdownParent: dropdown.parentNode,
+            elementChildren: element.children.length
+        });
+        
         element.appendChild(dropdown);
         
-        // Dropdown successfully positioned and displayed
+        console.log('📍 AFTER appendChild:', {
+            dropdown,
+            element,
+            dropdownParent: dropdown.parentNode,
+            elementChildren: element.children.length,
+            dropdownInDOM: document.contains(dropdown),
+            dropdownRect: dropdown.getBoundingClientRect(),
+            elementRect: element.getBoundingClientRect()
+        });
         
         // Close dropdown when clicking outside
         setTimeout(() => {
