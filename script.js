@@ -1740,7 +1740,7 @@ class ShoppingListOrganizer {
                     <input type="text" class="item-name" value="${itemName}" placeholder="Item name"
                            onblur="organizer.updateItemData('${category}', '${itemId}', 'name', this.value).catch(console.error)"
                            onkeypress="if(event.key==='Enter') this.blur()">
-                    <input type="number" class="item-amount" value="${itemAmount}" placeholder="Amount" min="0" step="0.1"
+                    <input type="number" class="item-amount" value="${itemAmount}" placeholder="Qty" min="0" step="0.1"
                            onblur="organizer.updateItemData('${category}', '${itemId}', 'amount', this.value).catch(console.error)"
                            onkeypress="if(event.key==='Enter') this.blur()">
                     <select class="item-unit" onchange="organizer.updateItemData('${category}', '${itemId}', 'unit', this.value).catch(console.error)">
