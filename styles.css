@@ -386,14 +386,14 @@ header h1 {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100px;
+    max-width: 120px;
     cursor: pointer;
     position: relative;
     padding: 4px 8px;
     border-radius: 3px;
     transition: background-color 0.2s ease;
-    font-size: 0.85rem;
-    min-width: 60px;
+    font-size: 0.75rem;
+    min-width: 80px;
 }
 
 /* Mobile responsive assignment text */

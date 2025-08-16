@@ -1546,7 +1546,7 @@ class ShoppingListOrganizer {
         
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
         const displayText = assignedUser 
-            ? (assignedUser.profiles?.email || 'Unknown User').split('@')[0]
+            ? (assignedUser.profiles?.email || 'Unknown User')
             : 'Unassigned';
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
@@ -1607,8 +1607,7 @@ class ShoppingListOrganizer {
             this.currentCollaborators.forEach(collaborator => {
                 console.log('👤 Processing collaborator:', collaborator);
                 const userEmail = collaborator.profiles?.email || 'Unknown User';
-                const userName = userEmail.split('@')[0];
-                const displayName = collaborator.is_owner ? `${userName} (Owner)` : userName;
+                const displayName = collaborator.is_owner ? `${userEmail} (Owner)` : userEmail;
                 
                 const collabOption = document.createElement('div');
                 collabOption.className = 'dropdown-option';
