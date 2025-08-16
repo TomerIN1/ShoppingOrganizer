@@ -1525,10 +1525,21 @@ class ShoppingListOrganizer {
             return '';
         }
         
+        console.log('🏷️ createAssignmentUI called:', { 
+            category, 
+            assignedTo, 
+            collaboratorsCount: this.currentCollaborators.length,
+            collaborators: this.currentCollaborators.map(c => ({ user_id: c.user_id, email: c.profiles?.email }))
+        });
+        
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
+        console.log('👤 Found assigned user:', assignedUser);
+        
         const displayText = assignedUser 
-            ? `${assignedUser.profiles?.email || 'Unknown User'}` 
+            ? `${assignedUser.profiles?.email || assignedUser.profiles?.display_name || 'Unknown User'}` 
             : 'Unassigned';
+        
+        console.log('📝 Display text:', displayText);
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
         
@@ -1596,6 +1607,13 @@ class ShoppingListOrganizer {
 
     async assignCategory(category, userId, dropdown) {
         try {
+            console.log('🎯 assignCategory called:', { 
+                category, 
+                userId, 
+                currentCollaborators: this.currentCollaborators.length,
+                currentLists: this.currentLists[category] 
+            });
+            
             // Update the category data structure
             if (!this.currentLists[category]) {
                 console.error('Category not found:', category);
@@ -1604,6 +1622,7 @@ class ShoppingListOrganizer {
             
             // Convert to new format if needed
             if (Array.isArray(this.currentLists[category])) {
+                console.log('🔄 Converting old format to new format for category:', category);
                 this.currentLists[category] = {
                     items: this.currentLists[category]
                 };
@@ -1612,14 +1631,17 @@ class ShoppingListOrganizer {
             // Set or remove assignment
             if (userId) {
                 this.currentLists[category].assigned_to = userId;
+                console.log('✅ Assignment set:', { category, userId, assigned_to: this.currentLists[category].assigned_to });
             } else {
                 delete this.currentLists[category].assigned_to;
+                console.log('🗑️ Assignment removed for category:', category);
             }
             
             // Close dropdown
             dropdown.remove();
             
             // Re-render categories to show the change
+            console.log('🔄 Re-rendering categories after assignment...');
             this.renderCategorizedLists();
             
             // Auto-save if authenticated
@@ -1627,7 +1649,7 @@ class ShoppingListOrganizer {
                 await this.autoSaveCurrentList();
             }
             
-            console.log('✅ Category assignment updated:', { category, userId });
+            console.log('✅ Category assignment updated:', { category, userId, finalData: this.currentLists[category] });
             
         } catch (error) {
             console.error('❌ Failed to assign category:', error);
