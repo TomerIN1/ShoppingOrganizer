@@ -1515,7 +1515,7 @@ class ShoppingListOrganizer {
                 </div>
                 <div class="category-header-bottom">
                     ${assignmentUI}
-                    <span class="item-count">${actualItems.length} items</span>
+                    <span class="item-count">🛒 ${actualItems.length}</span>
                 </div>
             </div>
             <div class="category-content">
@@ -1766,7 +1766,7 @@ class ShoppingListOrganizer {
             
             const categoryHeader = buttonElement.closest('.category-card').querySelector('.item-count');
             const itemCount = this.currentLists[category].items ? this.currentLists[category].items.length : 0;
-            categoryHeader.textContent = `${itemCount} items`;
+            categoryHeader.textContent = `🛒 ${itemCount}`;
 
             // Auto-save to cloud if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {
@@ -1820,7 +1820,7 @@ class ShoppingListOrganizer {
             const categoryCard = document.querySelector(`#list-${categoryId}`).closest('.category-card');
             if (this.currentLists[category]) {
                 const categoryHeader = categoryCard.querySelector('.item-count');
-                categoryHeader.textContent = `${this.currentLists[category].items.length} items`;
+                categoryHeader.textContent = `🛒 ${this.currentLists[category].items.length}`;
             } else {
                 categoryCard.remove();
             }
