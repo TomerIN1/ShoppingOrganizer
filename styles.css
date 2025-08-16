@@ -374,9 +374,18 @@ header h1 {
 .assignment-text {
     font-weight: 500;
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible;
     text-overflow: ellipsis;
     max-width: 120px;
+    cursor: pointer;
+    position: relative;
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.assignment-text:hover {
+    background-color: rgba(255,255,255,0.2);
 }
 
 .assignment-dropdown {
@@ -385,12 +394,16 @@ header h1 {
     left: 0;
     right: 0;
     background: white;
-    border: 1px solid #ddd;
+    border: 2px solid #007bff;
     border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10000;
     margin-top: 5px;
     overflow: hidden;
+    min-width: 200px;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .dropdown-option {
@@ -403,6 +416,8 @@ header h1 {
     pointer-events: auto;
     position: relative;
     z-index: 10001;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
 }
 
 .dropdown-option:hover {

@@ -1604,7 +1604,18 @@ class ShoppingListOrganizer {
         
         // Position and show dropdown
         element.style.position = 'relative';
+        dropdown.style.display = 'block';
+        dropdown.style.visibility = 'visible';
+        dropdown.style.opacity = '1';
         element.appendChild(dropdown);
+        
+        console.log('📍 Dropdown positioned and added:', {
+            dropdownElement: dropdown,
+            parentElement: element,
+            dropdownRect: dropdown.getBoundingClientRect(),
+            parentRect: element.getBoundingClientRect(),
+            childrenCount: dropdown.children.length
+        });
         
         // Close dropdown when clicking outside
         setTimeout(() => {
