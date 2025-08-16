@@ -48,6 +48,16 @@ body {
     align-items: center;
     gap: 15px;
     position: relative;
+    flex-wrap: wrap;
+}
+
+.auth-message {
+    color: #6c757d;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-top: 5px;
+    max-width: 280px;
+    text-align: center;
 }
 
 .mode-indicator {
@@ -200,6 +210,14 @@ body {
     .auth-compact {
         justify-content: center;
         width: 100%;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .auth-message {
+        max-width: 100%;
+        margin-top: 8px;
+        font-size: 12px;
     }
     
     .user-profile {
