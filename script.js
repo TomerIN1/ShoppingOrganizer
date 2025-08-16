@@ -1316,25 +1316,33 @@ class ShoppingListOrganizer {
     }
 
     parseTextInput(text) {
+        console.log('📄 Raw input text:', text.substring(0, 200) + (text.length > 200 ? '...' : ''));
+        
         const lines = text.split('\n');
         const items = [];
 
-        lines.forEach(line => {
+        lines.forEach((line, index) => {
             line = line.trim();
             if (line) {
+                console.log(`📝 Processing line ${index + 1}: "${line}"`);
                 if (line.includes(',')) {
                     const lineItems = line.split(',').map(item => item.trim()).filter(item => item);
+                    console.log(`  ↳ Split by comma: ${lineItems.length} items:`, lineItems);
                     items.push(...lineItems);
                 } else if (line.includes(';')) {
                     const lineItems = line.split(';').map(item => item.trim()).filter(item => item);
+                    console.log(`  ↳ Split by semicolon: ${lineItems.length} items:`, lineItems);
                     items.push(...lineItems);
                 } else {
+                    console.log(`  ↳ Single item: "${line}"`);
                     items.push(line);
                 }
             }
         });
 
-        return items.filter(item => item.length > 0);
+        const filteredItems = items.filter(item => item.length > 0);
+        console.log('✅ Final parsed items:', filteredItems);
+        return filteredItems;
     }
 
     categorizeItems(items) {
@@ -1994,6 +2002,9 @@ JSON Response:`;
 
     async organizeList() {
         const inputText = document.getElementById('freeTextInput').value;
+        console.log('🚀 organizeList called with input text length:', inputText.length);
+        console.log('🚀 Raw input text preview:', inputText.substring(0, 300) + (inputText.length > 300 ? '...' : ''));
+        
         if (!inputText.trim()) {
             alert('Please enter some shopping items first!');
             return;
