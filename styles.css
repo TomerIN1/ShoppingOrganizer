@@ -350,6 +350,8 @@ header h1 {
     cursor: pointer;
     transition: background-color 0.3s ease;
     position: relative;
+    overflow: visible;
+    z-index: 1000;
 }
 
 .category-assignment:hover {
@@ -411,16 +413,19 @@ header h1 {
     position: absolute;
     top: 100%;
     left: 0;
-    right: 0;
+    right: auto;
     background: white;
-    border: 1px solid #ddd;
+    border: 2px solid #ff0000;
     border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 10000;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    z-index: 99999;
     margin-top: 5px;
-    overflow: hidden;
+    overflow: visible;
     min-width: 160px;
     max-width: 200px;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Mobile responsive dropdown */
