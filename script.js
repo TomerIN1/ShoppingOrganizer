@@ -1345,12 +1345,21 @@ class ShoppingListOrganizer {
             const normalizedItem = item.toLowerCase().trim();
             let categoryFound = false;
 
+            console.log(`🔍 Categorizing item: "${item}" (normalized: "${normalizedItem}")`);
+
             for (const [category, keywords] of Object.entries(this.categories)) {
-                if (keywords.some(keyword => 
-                    normalizedItem.includes(keyword) || 
-                    keyword.includes(normalizedItem) ||
-                    this.fuzzyMatch(normalizedItem, keyword)
-                )) {
+                const matchFound = keywords.some(keyword => {
+                    const includesMatch = normalizedItem.includes(keyword) || keyword.includes(normalizedItem);
+                    const fuzzyMatchResult = this.fuzzyMatch(normalizedItem, keyword);
+                    
+                    if (includesMatch || fuzzyMatchResult) {
+                        console.log(`✅ Match found in "${category}": keyword="${keyword}", includes=${includesMatch}, fuzzy=${fuzzyMatchResult}`);
+                        return true;
+                    }
+                    return false;
+                });
+                
+                if (matchFound) {
                     if (!categorizedItems[category]) {
                         categorizedItems[category] = [];
                     }
@@ -1361,6 +1370,7 @@ class ShoppingListOrganizer {
             }
 
             if (!categoryFound) {
+                console.log(`❌ No category found for: "${item}"`);
                 uncategorized.push(item);
             }
         });
@@ -1453,7 +1463,7 @@ class ShoppingListOrganizer {
         
         try {
             const aiResponse = await this.callOpenAI(prompt);
-            const validatedResponse = this.validateAndCorrectCategories(aiResponse, categoriesList);
+            const validatedResponse = this.validateAndCorrectCategories(aiResponse, [...categoriesList, 'Other']);
             
             // Separate grocery items from "Other" items
             const groceryItems = {};
@@ -1600,7 +1610,9 @@ JSON Response:`;
     }
 
     buildStrictCategorizationPrompt(items, categoriesList) {
-        const categoriesText = categoriesList.map((cat, i) => `${i+1}. ${cat}`).join('\n');
+        // Add "Other" to the list of valid categories for Step 2
+        const validCategories = [...categoriesList, 'Other'];
+        const categoriesText = validCategories.map((cat, i) => `${i+1}. ${cat}`).join('\n');
         
         return `You are a shopping list categorizer. You MUST categorize each item into EXACTLY ONE of these predefined categories:
 
@@ -1685,6 +1697,15 @@ JSON Response:`;
             if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
                 cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
             }
+            
+            // Fix common AI JSON formatting issues
+            cleanContent = cleanContent
+                .replace(/\\n/g, '') // Remove escaped newlines
+                .replace(/\s+/g, ' ') // Normalize whitespace
+                .replace(/,\s*}/g, '}') // Remove trailing commas
+                .replace(/,\s*]/g, ']') // Remove trailing commas in arrays
+                .replace(/"{2,}/g, '"') // Fix multiple quotes
+                .replace(/"(\w+)":/g, '"$1":'); // Ensure property names are properly quoted
             
             const parsed = JSON.parse(cleanContent);
             console.log('✅ Successfully parsed OpenAI response:', parsed);
