@@ -1546,7 +1546,7 @@ class ShoppingListOrganizer {
         
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
         const displayText = assignedUser 
-            ? (assignedUser.profiles?.email || 'Unknown User')
+            ? (assignedUser.profiles?.display_name || assignedUser.profiles?.email || 'Unknown User')
             : 'Unassigned';
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
@@ -1583,16 +1583,7 @@ class ShoppingListOrganizer {
         // Create dropdown
         const dropdown = document.createElement('div');
         dropdown.className = 'assignment-dropdown';
-        console.log('🎨 Created dropdown element:', dropdown);
-        
-        // Add test option first
-        const testOption = document.createElement('div');
-        testOption.style.cssText = 'padding: 10px; background: yellow; color: black; font-weight: bold;';
-        testOption.textContent = '🔥 TEST OPTION - CLICK ME!';
-        testOption.addEventListener('click', () => {
-            alert('Test option clicked! Dropdown is working!');
-        });
-        dropdown.appendChild(testOption);
+        // Remove test option - keeping for future debugging if needed
         
         // Add unassigned option
         const unassignedOption = document.createElement('div');
@@ -1616,8 +1607,8 @@ class ShoppingListOrganizer {
         } else {
             this.currentCollaborators.forEach(collaborator => {
                 console.log('👤 Processing collaborator:', collaborator);
-                const userEmail = collaborator.profiles?.email || 'Unknown User';
-                const displayName = collaborator.is_owner ? `${userEmail} (Owner)` : userEmail;
+                const userName = collaborator.profiles?.display_name || collaborator.profiles?.email || 'Unknown User';
+                const displayName = collaborator.is_owner ? `${userName} (Owner)` : userName;
                 
                 const collabOption = document.createElement('div');
                 collabOption.className = 'dropdown-option';
@@ -1661,28 +1652,19 @@ class ShoppingListOrganizer {
         // Get element position for absolute positioning
         const elementRect = element.getBoundingClientRect();
         
-        console.log('📍 BEFORE appendChild:', {
-            dropdown,
-            element,
-            elementRect,
-            dropdownParent: dropdown.parentNode,
-            elementChildren: element.children.length
-        });
-        
-        // Append to body instead of element to avoid CSS conflicts
+        // Position dropdown with clean, professional styling
         dropdown.style.cssText = `
             position: fixed !important;
             top: ${elementRect.bottom + 5}px !important;
             left: ${elementRect.left}px !important;
-            background: red !important;
-            border: 3px solid blue !important;
+            background: white !important;
+            border: 1px solid #ddd !important;
             border-radius: 5px !important;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
             z-index: 99999 !important;
             overflow: visible !important;
-            min-width: 200px !important;
-            width: 200px !important;
-            min-height: 100px !important;
+            min-width: 160px !important;
+            max-width: 250px !important;
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
@@ -1690,13 +1672,7 @@ class ShoppingListOrganizer {
         
         document.body.appendChild(dropdown);
         
-        console.log('📍 AFTER appendChild to body:', {
-            dropdown,
-            dropdownParent: dropdown.parentNode,
-            dropdownInDOM: document.contains(dropdown),
-            dropdownRect: dropdown.getBoundingClientRect(),
-            elementRect: elementRect
-        });
+        // Dropdown successfully positioned and displayed
         
         // Close dropdown when clicking outside
         setTimeout(() => {
@@ -1711,7 +1687,7 @@ class ShoppingListOrganizer {
 
     async assignCategory(category, userId, dropdown) {
         try {
-            console.log('✅ assignCategory function called:', { category, userId, dropdown });
+            // Assignment function called
             
             // Update the category data structure
             if (!this.currentLists[category]) {
