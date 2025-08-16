@@ -1658,29 +1658,50 @@ class ShoppingListOrganizer {
             opacity: 1 !important;
         `;
         
+        // Get element position for absolute positioning
+        const elementRect = element.getBoundingClientRect();
+        
         console.log('📍 BEFORE appendChild:', {
             dropdown,
             element,
+            elementRect,
             dropdownParent: dropdown.parentNode,
             elementChildren: element.children.length
         });
         
-        element.appendChild(dropdown);
+        // Append to body instead of element to avoid CSS conflicts
+        dropdown.style.cssText = `
+            position: fixed !important;
+            top: ${elementRect.bottom + 5}px !important;
+            left: ${elementRect.left}px !important;
+            background: red !important;
+            border: 3px solid blue !important;
+            border-radius: 5px !important;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
+            z-index: 99999 !important;
+            overflow: visible !important;
+            min-width: 200px !important;
+            width: 200px !important;
+            min-height: 100px !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
         
-        console.log('📍 AFTER appendChild:', {
+        document.body.appendChild(dropdown);
+        
+        console.log('📍 AFTER appendChild to body:', {
             dropdown,
-            element,
             dropdownParent: dropdown.parentNode,
-            elementChildren: element.children.length,
             dropdownInDOM: document.contains(dropdown),
             dropdownRect: dropdown.getBoundingClientRect(),
-            elementRect: element.getBoundingClientRect()
+            elementRect: elementRect
         });
         
         // Close dropdown when clicking outside
         setTimeout(() => {
             document.addEventListener('click', function closeDropdown(e) {
-                if (!element.contains(e.target)) {
+                if (!dropdown.contains(e.target) && !element.contains(e.target)) {
                     dropdown.remove();
                     document.removeEventListener('click', closeDropdown);
                 }
