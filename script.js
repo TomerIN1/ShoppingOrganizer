@@ -1407,6 +1407,249 @@ class ShoppingListOrganizer {
         return matrix[str2.length][str1.length];
     }
 
+    // AI-Enhanced Categorization System
+    async categorizeWithAI(items) {
+        console.log('🤖 Starting AI-enhanced categorization for', items.length, 'items');
+        
+        try {
+            // First pass: Use existing fast categorization
+            const quickResults = this.categorizeItems(items);
+            
+            // Check if we have OpenAI API key and "Other" items to process
+            const config = await this.getEnvironmentConfig();
+            if (!config.OPENAI_API_KEY) {
+                console.log('⚠️ No OpenAI API key found, using rule-based categorization only');
+                return quickResults;
+            }
+            
+            // Second pass: Send "Other" items to AI if any exist
+            if (quickResults['Other'] && quickResults['Other'].length > 0) {
+                console.log('🔍 Processing', quickResults['Other'].length, 'uncategorized items with AI');
+                
+                const aiResults = await this.aiCategorizeItems(quickResults['Other']);
+                
+                // Merge AI results back into quick results
+                return this.mergeCategorizationResults(quickResults, aiResults);
+            }
+            
+            console.log('✅ All items categorized with rule-based system');
+            return quickResults;
+            
+        } catch (error) {
+            console.error('❌ AI categorization failed, falling back to rule-based:', error.message);
+            return this.categorizeItems(items);
+        }
+    }
+
+    async aiCategorizeItems(items) {
+        const categoriesList = Object.keys(this.categories);
+        
+        // Build strict prompt with examples and constraints
+        const prompt = this.buildStrictCategorizationPrompt(items, categoriesList);
+        
+        try {
+            const aiResponse = await this.callOpenAI(prompt);
+            const validatedResponse = this.validateAndCorrectCategories(aiResponse, categoriesList);
+            
+            console.log('✅ AI categorization completed:', validatedResponse);
+            return validatedResponse;
+            
+        } catch (error) {
+            console.error('❌ OpenAI API call failed:', error.message);
+            throw error;
+        }
+    }
+
+    buildStrictCategorizationPrompt(items, categoriesList) {
+        const categoriesText = categoriesList.map((cat, i) => `${i+1}. ${cat}`).join('\n');
+        
+        return `You are a shopping list categorizer. You MUST categorize each item into EXACTLY ONE of these predefined categories:
+
+${categoriesText}
+
+CRITICAL RULES:
+1. You can ONLY use the exact category names listed above - no exceptions, no variations
+2. Never create new categories like "vegetables", "produce", "fruits" - use "Fruits & Vegetables"
+3. Never create "meat", "protein" - use "Meat & Seafood"  
+4. Never create "dairy" - use "Dairy & Eggs"
+5. If an item doesn't clearly fit, choose the closest category from the list above
+6. For any vegetable, fruit, or produce: use "Fruits & Vegetables"
+7. For any meat, fish, or protein: use "Meat & Seafood"
+
+EXAMPLES:
+- "organic spinach" → "Fruits & Vegetables"
+- "rare heirloom tomatoes" → "Fruits & Vegetables"
+- "exotic dragon fruit" → "Fruits & Vegetables"
+- "grass-fed wagyu beef" → "Meat & Seafood"
+- "artisanal goat cheese" → "Dairy & Eggs"
+- "gluten-free bread" → "Bakery & Bread"
+
+Items to categorize: ${items.join(', ')}
+
+Respond ONLY with valid JSON in this exact format:
+{"item_name": "exact_category_name_from_list_above"}
+
+JSON Response:`;
+    }
+
+    async callOpenAI(prompt) {
+        const config = await this.getEnvironmentConfig();
+        
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${config.OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a precise shopping list categorizer. Always follow instructions exactly and return valid JSON.'
+                    },
+                    {
+                        role: 'user', 
+                        content: prompt
+                    }
+                ],
+                temperature: 0.1, // Low temperature for consistent results
+                max_tokens: 500
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0].message.content.trim();
+        
+        // Parse JSON response
+        try {
+            return JSON.parse(content);
+        } catch (parseError) {
+            console.error('Failed to parse OpenAI response:', content);
+            throw new Error('Invalid JSON response from OpenAI');
+        }
+    }
+
+    validateAndCorrectCategories(aiResponse, validCategories) {
+        const corrected = {};
+        
+        // Common AI category variations that need correction
+        const categoryMappings = {
+            'produce': 'Fruits & Vegetables',
+            'vegetables': 'Fruits & Vegetables',
+            'fruits': 'Fruits & Vegetables',
+            'fresh produce': 'Fruits & Vegetables',
+            'fruits and vegetables': 'Fruits & Vegetables',
+            'meat': 'Meat & Seafood',
+            'protein': 'Meat & Seafood',
+            'meats': 'Meat & Seafood',
+            'seafood': 'Meat & Seafood',
+            'dairy': 'Dairy & Eggs',
+            'dairy products': 'Dairy & Eggs',
+            'baked goods': 'Bakery & Bread',
+            'bread': 'Bakery & Bread',
+            'cleaning': 'Household & Cleaning',
+            'cleaning supplies': 'Household & Cleaning',
+            'personal care': 'Health & Beauty',
+            'beauty': 'Health & Beauty',
+            'drinks': 'Beverages',
+            'snacks': 'Snacks & Sweets',
+            'candy': 'Snacks & Sweets',
+            'frozen': 'Frozen Foods',
+            'pantry': 'Pantry & Canned Goods',
+            'condiments': 'Pantry & Canned Goods'
+        };
+        
+        for (const [item, category] of Object.entries(aiResponse)) {
+            let finalCategory = category;
+            
+            // Check if it's a valid category
+            if (!validCategories.includes(category)) {
+                console.warn(`⚠️ AI returned invalid category "${category}" for item "${item}"`);
+                
+                // Try to map it to a valid category
+                const mapped = categoryMappings[category.toLowerCase()];
+                if (mapped) {
+                    finalCategory = mapped;
+                    console.log(`✅ Corrected "${category}" to "${mapped}"`);
+                } else {
+                    // Find most similar valid category
+                    finalCategory = this.findMostSimilarCategory(category, validCategories);
+                    console.log(`🔄 Mapped "${category}" to closest match "${finalCategory}"`);
+                }
+            }
+            
+            corrected[item] = finalCategory;
+        }
+        
+        return corrected;
+    }
+
+    findMostSimilarCategory(invalidCategory, validCategories) {
+        let bestMatch = 'Other';
+        let bestSimilarity = 0;
+        
+        for (const validCategory of validCategories) {
+            const similarity = this.calculateStringSimilarity(
+                invalidCategory.toLowerCase(), 
+                validCategory.toLowerCase()
+            );
+            
+            if (similarity > bestSimilarity) {
+                bestSimilarity = similarity;
+                bestMatch = validCategory;
+            }
+        }
+        
+        // Only use the match if similarity is reasonable
+        return bestSimilarity > 0.3 ? bestMatch : 'Other';
+    }
+
+    calculateStringSimilarity(str1, str2) {
+        const maxLength = Math.max(str1.length, str2.length);
+        if (maxLength === 0) return 1;
+        
+        const distance = this.levenshteinDistance(str1, str2);
+        return 1 - distance / maxLength;
+    }
+
+    mergeCategorizationResults(quickResults, aiResults) {
+        const merged = { ...quickResults };
+        
+        // Remove the "Other" category since we're processing those items
+        delete merged['Other'];
+        
+        // Add AI categorized items to their respective categories
+        for (const [item, category] of Object.entries(aiResults)) {
+            if (!merged[category]) {
+                merged[category] = [];
+            }
+            merged[category].push(item);
+        }
+        
+        return merged;
+    }
+
+    async getEnvironmentConfig() {
+        if (this.cachedConfig) {
+            return this.cachedConfig;
+        }
+        
+        try {
+            // Use the existing environment config system
+            const config = await window.EnvironmentConfig.load();
+            this.cachedConfig = config;
+            return config;
+        } catch (error) {
+            console.error('Failed to load environment config:', error);
+            return {};
+        }
+    }
+
     async organizeList() {
         const inputText = document.getElementById('freeTextInput').value;
         if (!inputText.trim()) {
@@ -1414,15 +1657,22 @@ class ShoppingListOrganizer {
             return;
         }
 
-        // Check if there's already an organized list displayed
-        const organizedSection = document.getElementById('organizedSection');
-        const hasExistingList = organizedSection.style.display === 'block' && this.currentLists && Object.keys(this.currentLists).length > 0;
+        // Show loading indicator
+        const organizeBtn = document.getElementById('organizeBtn');
+        const originalText = organizeBtn.textContent;
+        organizeBtn.textContent = '🤖 Organizing...';
+        organizeBtn.disabled = true;
+
+        try {
+            // Check if there's already an organized list displayed
+            const organizedSection = document.getElementById('organizedSection');
+            const hasExistingList = organizedSection.style.display === 'block' && this.currentLists && Object.keys(this.currentLists).length > 0;
 
         if (hasExistingList) {
             // Adding items to existing list
             console.log('Adding items to existing list...');
             const items = this.parseTextInput(inputText);
-            const newCategories = this.categorizeItems(items);
+            const newCategories = await this.categorizeWithAI(items);
             
             // Merge new categories with existing ones
             this.mergeCategories(newCategories);
@@ -1436,7 +1686,7 @@ class ShoppingListOrganizer {
             this.currentListName = customName || this.generateDefaultListName();
             
             const items = this.parseTextInput(inputText);
-            this.currentLists = this.categorizeItems(items);
+            this.currentLists = await this.categorizeWithAI(items);
             this.updateListTitle();
         }
         
@@ -1448,14 +1698,23 @@ class ShoppingListOrganizer {
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
 
-        // Auto-save to cloud if authenticated
-        if (this.mode === 'authenticated' && this.currentUser) {
-            await this.autoSaveCurrentList();
-            
-            // Load collaborators for assignment feature if this is an existing list
-            if (this.currentListId) {
-                await this.loadListCollaborators();
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+                
+                // Load collaborators for assignment feature if this is an existing list
+                if (this.currentListId) {
+                    await this.loadListCollaborators();
+                }
             }
+            
+        } catch (error) {
+            console.error('❌ Error organizing list:', error);
+            alert('Failed to organize list. Please try again.');
+        } finally {
+            // Restore button state
+            organizeBtn.textContent = originalText;
+            organizeBtn.disabled = false;
         }
     }
 
