@@ -448,6 +448,9 @@ class ShoppingListOrganizer {
             this.updateShareButtonVisibility();
             this.updateOrganizeButtonText(); // Update button text for loaded list
             
+            // Load collaborators for assignment feature
+            await this.loadListCollaborators();
+            
             console.log('✅ Shared list loaded successfully from cloud');
 
         } catch (error) {
@@ -752,6 +755,9 @@ class ShoppingListOrganizer {
             this.updateShareButtonVisibility();
             this.updateOrganizeButtonText(); // Update button text for loaded list
             
+            // Load collaborators for assignment feature
+            await this.loadListCollaborators();
+            
             console.log('✅ List loaded successfully from cloud');
 
         } catch (error) {
@@ -920,7 +926,16 @@ class ShoppingListOrganizer {
             // Store collaborators for use in assignment dropdowns
             this.currentCollaborators = collaborators;
             
-            this.renderCollaborators(collaborators);
+            // Re-render categories to show assignment UI if collaborators were loaded
+            if (collaborators.length > 0 && Object.keys(this.currentLists).length > 0) {
+                this.renderCategorizedLists();
+            }
+            
+            // Only render in modal if the share modal is visible
+            const shareModal = document.getElementById('shareModal');
+            if (shareModal && shareModal.style.display !== 'none') {
+                this.renderCollaborators(collaborators);
+            }
             
         } catch (error) {
             console.error('❌ Failed to load collaborators:', error);
@@ -1361,6 +1376,11 @@ class ShoppingListOrganizer {
         // Auto-save to cloud if authenticated
         if (this.mode === 'authenticated' && this.currentUser) {
             await this.autoSaveCurrentList();
+            
+            // Load collaborators for assignment feature if this is an existing list
+            if (this.currentListId) {
+                await this.loadListCollaborators();
+            }
         }
     }
 
