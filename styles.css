@@ -887,3 +887,41 @@ header h1 {
         align-self: flex-end;
     }
 }
+
+/* Sharing Indicators */
+.sharing-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+    vertical-align: middle;
+    box-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.sharing-badge:hover {
+    transform: scale(1.05);
+}
+
+.sharing-info {
+    color: #3498db !important;
+    font-weight: 500;
+    background: rgba(52, 152, 219, 0.1);
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+
+/* Shared list card styling */
+.list-card.shared {
+    border-left: 4px solid #3498db;
+    background: linear-gradient(135deg, #fafafa, #f8f9fa);
+}
+
+.list-card.shared:hover {
+    border-left-color: #2980b9;
+}

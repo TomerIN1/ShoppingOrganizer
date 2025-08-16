@@ -535,7 +535,13 @@ class ShoppingListOrganizer {
 
     createListCard(list) {
         const card = document.createElement('div');
-        card.className = 'list-card';
+        
+        // Check if list has collaborators
+        const collaborators = list.list_collaborators || [];
+        const acceptedCollaborators = collaborators.filter(c => c.accepted_at !== null);
+        const isShared = acceptedCollaborators.length > 0;
+        
+        card.className = `list-card${isShared ? ' shared' : ''}`;
         
         // Format dates
         const createdDate = new Date(list.created_at).toLocaleDateString();
@@ -546,9 +552,13 @@ class ShoppingListOrganizer {
         const categories = Object.keys(list.categories || {});
         const totalItems = Object.values(list.categories || {}).reduce((sum, items) => sum + items.length, 0);
         
+        // Create sharing badge
+        const sharingBadge = isShared ? 
+            `<span class="sharing-badge" title="${acceptedCollaborators.length} collaborator${acceptedCollaborators.length !== 1 ? 's' : ''}">👥 ${acceptedCollaborators.length}</span>` : '';
+        
         card.innerHTML = `
             <div class="list-card-header">
-                <h3 class="list-title">${list.title}</h3>
+                <h3 class="list-title">${list.title} ${sharingBadge}</h3>
                 <div class="list-actions-mini">
                     <button class="btn-mini" onclick="organizer.loadListFromCloud('${list.id}')" title="Open this list">Open</button>
                     <button class="btn-mini" onclick="organizer.shareListFromCard('${list.id}')" title="Share this list">Share</button>
@@ -560,6 +570,7 @@ class ShoppingListOrganizer {
                 <span>📝 ${totalItems} items</span>
                 <span>📁 ${categories.length} categories</span>
                 <span>📅 ${isRecent ? `Updated ${updatedDate}` : `Created ${createdDate}`}</span>
+                ${isShared ? `<span class="sharing-info">🔗 Shared with ${acceptedCollaborators.length} user${acceptedCollaborators.length !== 1 ? 's' : ''}</span>` : ''}
             </div>
             
             <div class="list-categories-preview">

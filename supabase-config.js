@@ -173,7 +173,10 @@ const database = {
 
         const { data, error } = await supabase
             .from('shopping_lists')
-            .select('*')
+            .select(`
+                *,
+                list_collaborators(id, permission_level, accepted_at)
+            `)
             .eq('owner_id', user.id)
             .order('updated_at', { ascending: false });
         
