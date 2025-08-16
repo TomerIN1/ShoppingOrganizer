@@ -338,6 +338,78 @@ header h1 {
     font-size: 0.9rem;
 }
 
+/* Category Assignment Styles */
+.category-assignment {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.15);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+}
+
+.category-assignment:hover {
+    background: rgba(255,255,255,0.25);
+}
+
+.category-assignment.assigned {
+    background: rgba(46, 204, 113, 0.3);
+    border: 1px solid rgba(46, 204, 113, 0.5);
+}
+
+.category-assignment.unassigned {
+    background: rgba(149, 165, 166, 0.3);
+    border: 1px solid rgba(149, 165, 166, 0.5);
+    color: rgba(255,255,255,0.8);
+}
+
+.assignment-label {
+    font-size: 0.8rem;
+}
+
+.assignment-text {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+.assignment-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.dropdown-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    color: #333;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-option:hover {
+    background: #f8f9fa;
+}
+
+.dropdown-option:first-child {
+    color: #95a5a6;
+    font-style: italic;
+}
+
 .category-content {
     padding: 20px;
 }

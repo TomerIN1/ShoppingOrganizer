@@ -65,6 +65,7 @@ class ShoppingListOrganizer {
         this.currentListName = null; // Track current list name
         this.currentUser = null;
         this.mode = 'guest'; // 'guest' or 'authenticated'
+        this.currentCollaborators = []; // Track current list collaborators for assignments
         
         this.initializeApp();
     }
@@ -369,7 +370,10 @@ class ShoppingListOrganizer {
         
         // Get categories preview
         const categories = Object.keys(list.categories || {});
-        const totalItems = Object.values(list.categories || {}).reduce((sum, items) => sum + items.length, 0);
+        const totalItems = Object.values(list.categories || {}).reduce((sum, categoryData) => {
+            const items = Array.isArray(categoryData) ? categoryData : (categoryData.items || []);
+            return sum + items.length;
+        }, 0);
         
         // Get permission level
         const permission = list.list_collaborators?.[0]?.permission_level || 'view';
@@ -635,7 +639,10 @@ class ShoppingListOrganizer {
         
         // Get categories preview
         const categories = Object.keys(list.categories || {});
-        const totalItems = Object.values(list.categories || {}).reduce((sum, items) => sum + items.length, 0);
+        const totalItems = Object.values(list.categories || {}).reduce((sum, categoryData) => {
+            const items = Array.isArray(categoryData) ? categoryData : (categoryData.items || []);
+            return sum + items.length;
+        }, 0);
         
         // Create sharing badge
         const sharingBadge = isShared ? 
@@ -714,8 +721,21 @@ class ShoppingListOrganizer {
                 return;
             }
 
-            // Load the list data into current state
-            this.currentLists = list.categories || {};
+            // Load the list data into current state and ensure proper format
+            const categories = list.categories || {};
+            this.currentLists = {};
+            
+            // Convert old format (arrays) to new format (objects with items and assignments)
+            Object.entries(categories).forEach(([categoryName, categoryData]) => {
+                if (Array.isArray(categoryData)) {
+                    // Old format - convert to new format
+                    this.currentLists[categoryName] = { items: categoryData };
+                } else {
+                    // New format - use as is
+                    this.currentLists[categoryName] = categoryData;
+                }
+            });
+            
             this.currentListId = list.id;
             this.currentListName = list.title;
             
@@ -896,6 +916,9 @@ class ShoppingListOrganizer {
             console.log('📋 Loading collaborators for list:', this.currentListId);
             const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
             console.log('📊 Found collaborators:', collaborators.length, collaborators);
+            
+            // Store collaborators for use in assignment dropdowns
+            this.currentCollaborators = collaborators;
             
             this.renderCollaborators(collaborators);
             
@@ -1426,13 +1449,22 @@ class ShoppingListOrganizer {
         card.className = 'category-card';
         const categoryId = category.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
         
+        // Get assignment info for this category
+        const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
+        const actualItems = categoryData.items || [];
+        const assignedTo = categoryData.assigned_to;
+        
+        // Generate assignment UI
+        const assignmentUI = this.createAssignmentUI(category, assignedTo);
+        
         card.innerHTML = `
             <div class="category-header">
                 <div class="category-header-left">
                     <h3 class="category-title" onclick="organizer.editCategoryName('${category}')" title="Click to edit category name">${category}</h3>
+                    ${assignmentUI}
                 </div>
                 <div class="category-header-right">
-                    <span class="item-count">${items.length} items</span>
+                    <span class="item-count">${actualItems.length} items</span>
                     <button class="btn-category-action btn-delete-category" onclick="organizer.deleteCategory('${category}')" title="Delete category">×</button>
                 </div>
             </div>
@@ -1442,7 +1474,7 @@ class ShoppingListOrganizer {
                     <button class="btn-add" onclick="organizer.addItem('${category}', this).catch(console.error)">Add</button>
                 </div>
                 <ul class="items-list" id="list-${categoryId}">
-                    ${items.map(item => this.createItemHTML(category, item)).join('')}
+                    ${actualItems.map(item => this.createItemHTML(category, item)).join('')}
                 </ul>
             </div>
         `;
@@ -1454,6 +1486,106 @@ class ShoppingListOrganizer {
         });
 
         return card;
+    }
+
+    createAssignmentUI(category, assignedTo) {
+        // Don't show assignment UI if not in authenticated mode or no collaborators
+        if (this.mode !== 'authenticated' || this.currentCollaborators.length === 0) {
+            return '';
+        }
+        
+        const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
+        const displayText = assignedUser 
+            ? `${assignedUser.profiles?.email || 'Unknown User'}` 
+            : 'Unassigned';
+        
+        const assignedClass = assignedUser ? 'assigned' : 'unassigned';
+        
+        return `
+            <div class="category-assignment ${assignedClass}">
+                <span class="assignment-label">👥</span>
+                <span class="assignment-text" onclick="organizer.showAssignmentDropdown('${category}', this)">${displayText}</span>
+            </div>
+        `;
+    }
+
+    showAssignmentDropdown(category, element) {
+        // Remove any existing dropdown
+        const existingDropdown = document.querySelector('.assignment-dropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+        }
+        
+        // Create dropdown
+        const dropdown = document.createElement('div');
+        dropdown.className = 'assignment-dropdown';
+        
+        // Add unassigned option
+        dropdown.innerHTML = `
+            <div class="dropdown-option" onclick="organizer.assignCategory('${category}', null, this.parentElement)">Unassigned</div>
+        `;
+        
+        // Add collaborator options
+        this.currentCollaborators.forEach(collaborator => {
+            const userEmail = collaborator.profiles?.email || 'Unknown User';
+            dropdown.innerHTML += `
+                <div class="dropdown-option" onclick="organizer.assignCategory('${category}', '${collaborator.user_id}', this.parentElement)">${userEmail}</div>
+            `;
+        });
+        
+        // Position and show dropdown
+        element.style.position = 'relative';
+        element.appendChild(dropdown);
+        
+        // Close dropdown when clicking outside
+        setTimeout(() => {
+            document.addEventListener('click', function closeDropdown(e) {
+                if (!element.contains(e.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }, 100);
+    }
+
+    async assignCategory(category, userId, dropdown) {
+        try {
+            // Update the category data structure
+            if (!this.currentLists[category]) {
+                console.error('Category not found:', category);
+                return;
+            }
+            
+            // Convert to new format if needed
+            if (Array.isArray(this.currentLists[category])) {
+                this.currentLists[category] = {
+                    items: this.currentLists[category]
+                };
+            }
+            
+            // Set or remove assignment
+            if (userId) {
+                this.currentLists[category].assigned_to = userId;
+            } else {
+                delete this.currentLists[category].assigned_to;
+            }
+            
+            // Close dropdown
+            dropdown.remove();
+            
+            // Re-render categories to show the change
+            this.renderCategorizedLists();
+            
+            // Auto-save if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
+            
+            console.log('✅ Category assignment updated:', { category, userId });
+            
+        } catch (error) {
+            console.error('❌ Failed to assign category:', error);
+        }
     }
 
     createItemHTML(category, item) {
@@ -1476,10 +1608,17 @@ class ShoppingListOrganizer {
         
         if (newItem) {
             if (!this.currentLists[category]) {
-                this.currentLists[category] = [];
+                this.currentLists[category] = { items: [] };
             }
             
-            this.currentLists[category].push(newItem);
+            // Convert to new format if needed
+            if (Array.isArray(this.currentLists[category])) {
+                this.currentLists[category] = {
+                    items: this.currentLists[category]
+                };
+            }
+            
+            this.currentLists[category].items.push(newItem);
             
             const categoryId = category.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
             const listElement = document.getElementById(`list-${categoryId}`);
@@ -1489,7 +1628,8 @@ class ShoppingListOrganizer {
             input.value = '';
             
             const categoryHeader = buttonElement.closest('.category-card').querySelector('.item-count');
-            categoryHeader.textContent = `${this.currentLists[category].length} items`;
+            const itemCount = this.currentLists[category].items ? this.currentLists[category].items.length : 0;
+            categoryHeader.textContent = `${itemCount} items`;
 
             // Auto-save to cloud if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {
@@ -1502,8 +1642,15 @@ class ShoppingListOrganizer {
         const itemElement = document.getElementById(itemId);
         const itemIndex = Array.from(itemElement.parentNode.children).indexOf(itemElement);
         
-        if (this.currentLists[category] && this.currentLists[category][itemIndex] !== undefined) {
-            this.currentLists[category][itemIndex] = newValue.trim();
+        // Convert to new format if needed
+        if (Array.isArray(this.currentLists[category])) {
+            this.currentLists[category] = {
+                items: this.currentLists[category]
+            };
+        }
+        
+        if (this.currentLists[category] && this.currentLists[category].items && this.currentLists[category].items[itemIndex] !== undefined) {
+            this.currentLists[category].items[itemIndex] = newValue.trim();
 
             // Auto-save to cloud if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {
@@ -1516,10 +1663,17 @@ class ShoppingListOrganizer {
         const itemElement = document.getElementById(itemId);
         const itemIndex = Array.from(itemElement.parentNode.children).indexOf(itemElement);
         
-        if (this.currentLists[category] && this.currentLists[category][itemIndex] !== undefined) {
-            this.currentLists[category].splice(itemIndex, 1);
+        // Convert to new format if needed
+        if (Array.isArray(this.currentLists[category])) {
+            this.currentLists[category] = {
+                items: this.currentLists[category]
+            };
+        }
+        
+        if (this.currentLists[category] && this.currentLists[category].items && this.currentLists[category].items[itemIndex] !== undefined) {
+            this.currentLists[category].items.splice(itemIndex, 1);
             
-            if (this.currentLists[category].length === 0) {
+            if (this.currentLists[category].items.length === 0) {
                 delete this.currentLists[category];
             }
             
@@ -1529,7 +1683,7 @@ class ShoppingListOrganizer {
             const categoryCard = document.querySelector(`#list-${categoryId}`).closest('.category-card');
             if (this.currentLists[category]) {
                 const categoryHeader = categoryCard.querySelector('.item-count');
-                categoryHeader.textContent = `${this.currentLists[category].length} items`;
+                categoryHeader.textContent = `${this.currentLists[category].items.length} items`;
             } else {
                 categoryCard.remove();
             }
