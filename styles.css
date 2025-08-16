@@ -374,14 +374,33 @@ header h1 {
 .assignment-text {
     font-weight: 500;
     white-space: nowrap;
-    overflow: visible;
+    overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px;
+    max-width: 100px;
     cursor: pointer;
     position: relative;
     padding: 4px 8px;
     border-radius: 3px;
     transition: background-color 0.2s ease;
+    font-size: 0.85rem;
+    min-width: 60px;
+}
+
+/* Mobile responsive assignment text */
+@media (max-width: 768px) {
+    .assignment-text {
+        max-width: 80px;
+        font-size: 0.8rem;
+        padding: 3px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .assignment-text {
+        max-width: 60px;
+        font-size: 0.75rem;
+        padding: 2px 4px;
+    }
 }
 
 .assignment-text:hover {
@@ -394,16 +413,31 @@ header h1 {
     left: 0;
     right: 0;
     background: white;
-    border: 2px solid #007bff;
+    border: 1px solid #ddd;
     border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 10000;
     margin-top: 5px;
     overflow: hidden;
-    min-width: 200px;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    min-width: 160px;
+    max-width: 200px;
+}
+
+/* Mobile responsive dropdown */
+@media (max-width: 768px) {
+    .assignment-dropdown {
+        min-width: 140px;
+        max-width: 180px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+}
+
+@media (max-width: 480px) {
+    .assignment-dropdown {
+        min-width: 120px;
+        max-width: 160px;
+        font-size: 0.85rem;
+    }
 }
 
 .dropdown-option {
@@ -415,9 +449,26 @@ header h1 {
     user-select: none;
     pointer-events: auto;
     position: relative;
-    z-index: 10001;
-    background: #f8f9fa;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-option:last-child {
+    border-bottom: none;
+}
+
+/* Mobile responsive dropdown options */
+@media (max-width: 768px) {
+    .dropdown-option {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .dropdown-option {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
 }
 
 .dropdown-option:hover {

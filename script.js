@@ -1012,6 +1012,25 @@ class ShoppingListOrganizer {
             .join('');
     }
 
+    getDisplayName(userProfile) {
+        // Priority: display_name > name from email > email
+        if (userProfile.display_name) {
+            return userProfile.display_name;
+        }
+        
+        if (userProfile.email) {
+            // Extract name part from email (before @)
+            const emailName = userProfile.email.split('@')[0];
+            // Convert common patterns like first.last to "First Last"
+            return emailName
+                .split(/[._-]/)
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                .join(' ');
+        }
+        
+        return 'User';
+    }
+
     async removeCollaborator(userId) {
         if (!confirm('Are you sure you want to remove this person\'s access to the list?')) {
             return;
@@ -1525,21 +1544,10 @@ class ShoppingListOrganizer {
             return '';
         }
         
-        console.log('🏷️ createAssignmentUI called:', { 
-            category, 
-            assignedTo, 
-            collaboratorsCount: this.currentCollaborators.length,
-            collaborators: this.currentCollaborators.map(c => ({ user_id: c.user_id, email: c.profiles?.email }))
-        });
-        
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
-        console.log('👤 Found assigned user:', assignedUser);
-        
         const displayText = assignedUser 
-            ? `${assignedUser.profiles?.email || assignedUser.profiles?.display_name || 'Unknown User'}` 
+            ? this.getDisplayName(assignedUser.profiles || {})
             : 'Unassigned';
-        
-        console.log('📝 Display text:', displayText);
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
         
@@ -1588,8 +1596,8 @@ class ShoppingListOrganizer {
         } else {
             this.currentCollaborators.forEach(collaborator => {
                 console.log('👤 Processing collaborator:', collaborator);
-                const userEmail = collaborator.profiles?.email || collaborator.profiles?.display_name || `User ${collaborator.user_id?.slice(0, 8)}` || 'Unknown User';
-                const displayName = collaborator.is_owner ? `${userEmail} (Owner)` : userEmail;
+                const userName = this.getDisplayName(collaborator.profiles || {});
+                const displayName = collaborator.is_owner ? `${userName} (Owner)` : userName;
                 
                 const collabOption = document.createElement('div');
                 collabOption.className = 'dropdown-option';
@@ -1609,13 +1617,7 @@ class ShoppingListOrganizer {
         dropdown.style.opacity = '1';
         element.appendChild(dropdown);
         
-        console.log('📍 Dropdown positioned and added:', {
-            dropdownElement: dropdown,
-            parentElement: element,
-            dropdownRect: dropdown.getBoundingClientRect(),
-            parentRect: element.getBoundingClientRect(),
-            childrenCount: dropdown.children.length
-        });
+        // Dropdown successfully positioned and displayed
         
         // Close dropdown when clicking outside
         setTimeout(() => {
@@ -1630,13 +1632,6 @@ class ShoppingListOrganizer {
 
     async assignCategory(category, userId, dropdown) {
         try {
-            console.log('🎯 assignCategory called:', { 
-                category, 
-                userId, 
-                currentCollaborators: this.currentCollaborators.length,
-                currentLists: this.currentLists[category] 
-            });
-            
             // Update the category data structure
             if (!this.currentLists[category]) {
                 console.error('Category not found:', category);
@@ -1645,7 +1640,6 @@ class ShoppingListOrganizer {
             
             // Convert to new format if needed
             if (Array.isArray(this.currentLists[category])) {
-                console.log('🔄 Converting old format to new format for category:', category);
                 this.currentLists[category] = {
                     items: this.currentLists[category]
                 };
@@ -1654,25 +1648,20 @@ class ShoppingListOrganizer {
             // Set or remove assignment
             if (userId) {
                 this.currentLists[category].assigned_to = userId;
-                console.log('✅ Assignment set:', { category, userId, assigned_to: this.currentLists[category].assigned_to });
             } else {
                 delete this.currentLists[category].assigned_to;
-                console.log('🗑️ Assignment removed for category:', category);
             }
             
             // Close dropdown
             dropdown.remove();
             
             // Re-render categories to show the change
-            console.log('🔄 Re-rendering categories after assignment...');
             this.renderCategorizedLists();
             
             // Auto-save if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {
                 await this.autoSaveCurrentList();
             }
-            
-            console.log('✅ Category assignment updated:', { category, userId, finalData: this.currentLists[category] });
             
         } catch (error) {
             console.error('❌ Failed to assign category:', error);
