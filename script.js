@@ -923,6 +923,17 @@ class ShoppingListOrganizer {
             const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
             console.log('📊 Found collaborators:', collaborators.length, collaborators);
             
+            // Debug: Log detailed collaborator structure
+            collaborators.forEach((collab, index) => {
+                console.log(`👤 Collaborator ${index}:`, {
+                    user_id: collab.user_id,
+                    permission_level: collab.permission_level,
+                    profiles: collab.profiles,
+                    email: collab.profiles?.email,
+                    display_name: collab.profiles?.display_name
+                });
+            });
+            
             // Store collaborators for use in assignment dropdowns
             this.currentCollaborators = collaborators;
             
@@ -1530,6 +1541,12 @@ class ShoppingListOrganizer {
     }
 
     showAssignmentDropdown(category, element) {
+        console.log('🎯 showAssignmentDropdown called:', { 
+            category, 
+            collaboratorsCount: this.currentCollaborators.length,
+            collaborators: this.currentCollaborators 
+        });
+        
         // Remove any existing dropdown
         const existingDropdown = document.querySelector('.assignment-dropdown');
         if (existingDropdown) {
@@ -1546,12 +1563,21 @@ class ShoppingListOrganizer {
         `;
         
         // Add collaborator options
-        this.currentCollaborators.forEach(collaborator => {
-            const userEmail = collaborator.profiles?.email || 'Unknown User';
+        if (this.currentCollaborators.length === 0) {
             dropdown.innerHTML += `
-                <div class="dropdown-option" onclick="organizer.assignCategory('${category}', '${collaborator.user_id}', this.parentElement)">${userEmail}</div>
+                <div class="dropdown-option disabled">No collaborators found</div>
             `;
-        });
+            console.warn('⚠️ No collaborators available for assignment');
+        } else {
+            this.currentCollaborators.forEach(collaborator => {
+                console.log('👤 Processing collaborator:', collaborator);
+                const userEmail = collaborator.profiles?.email || collaborator.profiles?.display_name || `User ${collaborator.user_id?.slice(0, 8)}` || 'Unknown User';
+                const displayName = collaborator.is_owner ? `${userEmail} (Owner)` : userEmail;
+                dropdown.innerHTML += `
+                    <div class="dropdown-option" onclick="organizer.assignCategory('${category}', '${collaborator.user_id}', this.parentElement)">${displayName}</div>
+                `;
+            });
+        }
         
         // Position and show dropdown
         element.style.position = 'relative';

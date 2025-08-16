@@ -387,7 +387,19 @@ const database = {
     async getListCollaborators(listId) {
         console.log('Getting collaborators for list:', listId);
         
-        // First get the basic collaborator data
+        // First get the list owner info
+        const { data: listData, error: listError } = await supabase
+            .from('shopping_lists')
+            .select('owner_id, title')
+            .eq('id', listId)
+            .single();
+            
+        if (listError) {
+            console.error('Error getting list info:', listError.message);
+            throw listError;
+        }
+        
+        // Get the basic collaborator data (excluding the owner to avoid duplication)
         const { data: collaborators, error: collabError } = await supabase
             .from('list_collaborators')
             .select('*')
@@ -398,13 +410,27 @@ const database = {
             throw collabError;
         }
         
-        if (!collaborators || collaborators.length === 0) {
+        // Create a list that includes both owner and collaborators
+        const allUsers = [...(collaborators || [])];
+        
+        // Add the list owner as a collaborator with 'edit' permission
+        if (listData.owner_id) {
+            allUsers.unshift({
+                user_id: listData.owner_id,
+                permission_level: 'edit',
+                list_id: listId,
+                is_owner: true,
+                accepted_at: new Date().toISOString()
+            });
+        }
+        
+        if (allUsers.length === 0) {
             return [];
         }
         
-        // Get user profile info for each collaborator using RPC function
+        // Get user profile info for each user (owner + collaborators) using RPC function
         const collaboratorsWithProfiles = await Promise.all(
-            collaborators.map(async (collab) => {
+            allUsers.map(async (collab) => {
                 try {
                     const { data: profile, error: profileError } = await supabase
                         .rpc('get_user_profile_with_email', { user_id: collab.user_id });
