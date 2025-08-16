@@ -453,46 +453,46 @@ class ShoppingListOrganizer {
     }
 
     async enrichListsWithProfiles(lists) {
-        // Enrich lists with actual user profile information for collaborators
+        // Enrich lists with user profile information for collaborators
         const enrichedLists = await Promise.all(lists.map(async (list) => {
             if (list.list_collaborators && list.list_collaborators.length > 0) {
-                // Fetch profile information for each collaborator
+                // Fetch profile information for each collaborator using simple profile table query
                 const enrichedCollaborators = await Promise.all(
                     list.list_collaborators.map(async (collab) => {
                         try {
-                            // Use the database function to get user profile with email
-                            const { data: profileData, error } = await window.SupabaseConfig.client()
-                                .rpc('get_user_profile_with_email', { user_id: collab.user_id });
+                            // Try to get profile from profiles table
+                            const { data: profile, error } = await window.SupabaseConfig.client()
+                                .from('profiles')
+                                .select('display_name, avatar_url')
+                                .eq('id', collab.user_id)
+                                .single();
                             
-                            if (error) {
-                                console.warn('Failed to fetch profile for user:', collab.user_id, error.message);
+                            if (!error && profile) {
                                 return {
                                     ...collab,
-                                    profiles: { 
-                                        display_name: 'Unknown User',
-                                        email: 'unknown@example.com'
+                                    profiles: {
+                                        display_name: profile.display_name || `User ${collab.user_id.slice(0, 8)}`,
+                                        email: `user-${collab.user_id.slice(0, 8)}@example.com`, // Fallback since we can't easily get email
+                                        avatar_url: profile.avatar_url
+                                    }
+                                };
+                            } else {
+                                // Fallback - use a more descriptive name with part of user ID
+                                return {
+                                    ...collab,
+                                    profiles: {
+                                        display_name: `User ${collab.user_id.slice(0, 8)}`,
+                                        email: `user-${collab.user_id.slice(0, 8)}@example.com`
                                     }
                                 };
                             }
-                            
-                            // profileData is an array, get the first result
-                            const profile = profileData && profileData.length > 0 ? profileData[0] : null;
-                            
-                            return {
-                                ...collab,
-                                profiles: {
-                                    display_name: profile?.display_name || profile?.email || 'Unknown User',
-                                    email: profile?.email || 'unknown@example.com',
-                                    avatar_url: profile?.avatar_url
-                                }
-                            };
                         } catch (err) {
                             console.warn('Error fetching profile for user:', collab.user_id, err);
                             return {
                                 ...collab,
-                                profiles: { 
-                                    display_name: 'Unknown User',
-                                    email: 'unknown@example.com'
+                                profiles: {
+                                    display_name: `User ${collab.user_id.slice(0, 8)}`,
+                                    email: `user-${collab.user_id.slice(0, 8)}@example.com`
                                 }
                             };
                         }
