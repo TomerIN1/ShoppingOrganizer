@@ -1407,32 +1407,36 @@ class ShoppingListOrganizer {
         return matrix[str2.length][str1.length];
     }
 
-    // AI-Enhanced Categorization System
+    // AI-Enhanced Three-Step Categorization System
     async categorizeWithAI(items) {
-        console.log('🤖 Starting AI-enhanced categorization for', items.length, 'items');
+        console.log('🤖 Starting three-step AI-enhanced categorization for', items.length, 'items');
         
         try {
-            // First pass: Use existing fast categorization
+            // Step 1: Rule-based categorization (fast, local)
+            console.log('🔄 Step 1: Rule-based categorization...');
             const quickResults = this.categorizeItems(items);
             
-            // Check if we have OpenAI API key and "Other" items to process
+            // Check if we have OpenAI API key
             const config = await this.getEnvironmentConfig();
             if (!config.OPENAI_API_KEY) {
                 console.log('⚠️ No OpenAI API key found, using rule-based categorization only');
                 return quickResults;
             }
             
-            // Second pass: Send "Other" items to AI if any exist
+            // Check if we have "Other" items that need AI processing
             if (quickResults['Other'] && quickResults['Other'].length > 0) {
-                console.log('🔍 Processing', quickResults['Other'].length, 'uncategorized items with AI');
+                console.log('✅ Step 1 complete. Found', quickResults['Other'].length, 'uncategorized items for AI processing');
                 
+                // Steps 2 & 3: AI categorization (strict then flexible)
                 const aiResults = await this.aiCategorizeItems(quickResults['Other']);
                 
-                // Merge AI results back into quick results
-                return this.mergeCategorizationResults(quickResults, aiResults);
+                // Merge results
+                const finalResults = this.mergeCategorizationResults(quickResults, aiResults);
+                console.log('🎉 Three-step categorization complete!');
+                return finalResults;
             }
             
-            console.log('✅ All items categorized with rule-based system');
+            console.log('✅ All items categorized with Step 1 (rule-based) only');
             return quickResults;
             
         } catch (error) {
@@ -1442,22 +1446,149 @@ class ShoppingListOrganizer {
     }
 
     async aiCategorizeItems(items) {
-        const categoriesList = Object.keys(this.categories);
+        console.log('🔄 Step 2: AI strict categorization for remaining items...');
         
-        // Build strict prompt with examples and constraints
+        const categoriesList = Object.keys(this.categories);
         const prompt = this.buildStrictCategorizationPrompt(items, categoriesList);
         
         try {
             const aiResponse = await this.callOpenAI(prompt);
             const validatedResponse = this.validateAndCorrectCategories(aiResponse, categoriesList);
             
-            console.log('✅ AI categorization completed:', validatedResponse);
-            return validatedResponse;
+            // Separate grocery items from "Other" items
+            const groceryItems = {};
+            const otherItems = [];
+            
+            Object.entries(validatedResponse).forEach(([item, category]) => {
+                if (category === 'Other') {
+                    otherItems.push(item);
+                } else {
+                    if (!groceryItems[category]) groceryItems[category] = [];
+                    groceryItems[category].push(item);
+                }
+            });
+            
+            console.log('✅ Step 2 complete. Grocery items:', Object.keys(groceryItems).length, 'categories');
+            console.log('🔄 Step 3: Flexible categorization for', otherItems.length, 'non-grocery items...');
+            
+            // Step 3: Flexible categorization for "Other" items
+            if (otherItems.length > 0) {
+                const flexibleCategories = await this.aiCategorizeItemsFlexible(otherItems);
+                
+                // Merge grocery and flexible categories
+                Object.entries(flexibleCategories).forEach(([category, items]) => {
+                    groceryItems[category] = items;
+                });
+            }
+            
+            console.log('✅ Three-step AI categorization completed:', groceryItems);
+            return groceryItems;
             
         } catch (error) {
-            console.error('❌ OpenAI API call failed:', error.message);
+            console.error('❌ AI categorization failed:', error.message);
             throw error;
         }
+    }
+
+    async aiCategorizeItemsFlexible(items) {
+        if (items.length === 0) return {};
+        
+        try {
+            const flexiblePrompt = this.buildFlexibleCategorizationPrompt(items);
+            const flexibleResponse = await this.callOpenAI(flexiblePrompt);
+            
+            // Group similar categories to avoid duplicates
+            const groupedResponse = this.groupSimilarCategories(flexibleResponse);
+            
+            console.log('✅ Step 3 complete. Flexible categories:', groupedResponse);
+            return groupedResponse;
+            
+        } catch (error) {
+            console.error('❌ Flexible AI categorization failed:', error.message);
+            // Fallback: put all items in "Other" category
+            return { 'Other': items };
+        }
+    }
+
+    buildFlexibleCategorizationPrompt(items) {
+        return `You are a smart categorizer. Categorize these items into appropriate, logical categories.
+
+RULES:
+1. Create appropriate category names that make sense for these items
+2. Group similar items together under the same category
+3. Use clear, descriptive category names (e.g., "Tools & Hardware", "Home Improvement", "Office Supplies")
+4. Avoid creating too many categories - group similar items together
+5. Return only valid JSON in the exact format specified
+
+Items to categorize: ${items.join(', ')}
+
+Respond ONLY with valid JSON in this exact format:
+{"item_name": "Category Name"}
+
+JSON Response:`;
+    }
+
+    groupSimilarCategories(aiResponse) {
+        const grouped = {};
+        const categoryAliases = {};
+        
+        // First pass: collect all categories and their aliases
+        Object.entries(aiResponse).forEach(([item, category]) => {
+            const normalizedCategory = this.normalizeCategoryName(category);
+            
+            // Check if this category is similar to an existing one
+            let targetCategory = normalizedCategory;
+            
+            for (const existingCategory of Object.keys(categoryAliases)) {
+                if (this.areCategoriesSimilar(normalizedCategory, existingCategory)) {
+                    targetCategory = existingCategory;
+                    break;
+                }
+            }
+            
+            // Store the mapping
+            categoryAliases[targetCategory] = true;
+            
+            // Group items
+            if (!grouped[targetCategory]) {
+                grouped[targetCategory] = [];
+            }
+            grouped[targetCategory].push(item);
+        });
+        
+        console.log('📊 Category grouping complete:', {
+            originalCategories: Object.keys(aiResponse).length,
+            groupedCategories: Object.keys(grouped).length,
+            grouped: grouped
+        });
+        
+        return grouped;
+    }
+
+    normalizeCategoryName(category) {
+        // Normalize category names to standard format
+        return category
+            .split(/[\s&\-_]+/)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' & ');
+    }
+
+    areCategoriesSimilar(cat1, cat2) {
+        const normalize = (str) => str.toLowerCase().replace(/[^a-z]/g, '');
+        const norm1 = normalize(cat1);
+        const norm2 = normalize(cat2);
+        
+        // Check for exact match
+        if (norm1 === norm2) return true;
+        
+        // Check for keyword overlap
+        const words1 = norm1.split(/\s+/);
+        const words2 = norm2.split(/\s+/);
+        
+        const commonWords = words1.filter(word => words2.includes(word));
+        const similarity = commonWords.length / Math.max(words1.length, words2.length);
+        
+        return similarity > 0.5; // 50% word overlap threshold
     }
 
     buildStrictCategorizationPrompt(items, categoriesList) {
