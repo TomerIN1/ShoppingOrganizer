@@ -910,10 +910,22 @@ header h1 {
     
     .section-header {
         flex-direction: column;
-        align-items: stretch;
+        align-items: center;
+        text-align: center;
+        gap: 20px;
     }
     
     .list-actions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 15px;
+    }
+    
+    .list-actions .btn-primary,
+    .list-actions .btn-secondary {
+        width: 100%;
+        max-width: 200px;
         justify-content: center;
     }
     
