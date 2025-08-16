@@ -165,15 +165,13 @@ class ShoppingListOrganizer {
         document.getElementById('signInBtn').addEventListener('click', () => this.signIn());
         document.getElementById('signOutBtn').addEventListener('click', () => this.signOut());
         document.getElementById('myListsBtn').addEventListener('click', () => this.showMyLists());
-        document.getElementById('sharedListsBtn').addEventListener('click', () => this.showSharedLists());
 
         // My Lists dashboard event listeners
         document.getElementById('backToMainBtn').addEventListener('click', () => this.backToMain());
         document.getElementById('refreshListsBtn').addEventListener('click', () => this.loadMyLists());
 
         // Shared Lists dashboard event listeners
-        document.getElementById('backToMainFromSharedBtn').addEventListener('click', () => this.backToMainFromShared());
-        document.getElementById('refreshSharedListsBtn').addEventListener('click', () => this.loadSharedLists());
+        // Note: Shared lists are now integrated into My Lists page
 
         // Share functionality event listeners
         document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
@@ -251,24 +249,14 @@ class ShoppingListOrganizer {
         document.querySelector('.input-section').style.display = 'none';
         document.getElementById('myListsSection').style.display = 'block';
 
-        // Load the lists
+        // Load both personal and shared lists
         await this.loadMyLists();
+        await this.loadSharedLists();
     }
 
     async showSharedLists() {
-        if (!window.SupabaseConfig || !this.currentUser) {
-            alert('Please sign in to view shared lists.');
-            return;
-        }
-
-        // Hide other sections and show Shared Lists
-        document.getElementById('organizedSection').style.display = 'none';
-        document.querySelector('.input-section').style.display = 'none';
-        document.getElementById('myListsSection').style.display = 'none';
-        document.getElementById('sharedListsSection').style.display = 'block';
-
-        // Load the shared lists
-        await this.loadSharedLists();
+        // Shared lists are now integrated into My Lists page
+        await this.showMyLists();
     }
 
     backToMain() {
@@ -285,16 +273,8 @@ class ShoppingListOrganizer {
     }
 
     backToMainFromShared() {
-        // Show main sections and hide Shared Lists
-        document.getElementById('sharedListsSection').style.display = 'none';
-        document.querySelector('.input-section').style.display = 'block';
-        
-        // Show organized section if there's a current list
-        if (Object.keys(this.currentLists).length > 0) {
-            document.getElementById('organizedSection').style.display = 'block';
-        }
-        
-        this.updateOrganizeButtonText(); // Update button text based on current state
+        // Since shared lists are now integrated into My Lists page, this should behave like backToMain
+        this.backToMain();
     }
 
     async loadSharedLists() {
