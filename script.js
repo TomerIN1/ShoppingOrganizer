@@ -460,31 +460,54 @@ class ShoppingListOrganizer {
                 const enrichedCollaborators = await Promise.all(
                     list.list_collaborators.map(async (collab) => {
                         try {
-                            // Try to get profile from profiles table
-                            const { data: profile, error } = await window.SupabaseConfig.client()
-                                .from('profiles')
-                                .select('display_name, avatar_url')
-                                .eq('id', collab.user_id)
-                                .single();
+                            // First try to use the database function if it exists
+                            console.log('Trying to fetch profile for user:', collab.user_id);
                             
-                            if (!error && profile) {
+                            const { data: profileData, error: rpcError } = await window.SupabaseConfig.client()
+                                .rpc('get_user_profile_with_email', { user_id: collab.user_id });
+                            
+                            if (!rpcError && profileData && profileData.length > 0) {
+                                const profile = profileData[0];
+                                console.log('Successfully fetched profile via RPC:', profile);
                                 return {
                                     ...collab,
                                     profiles: {
-                                        display_name: profile.display_name || `User ${collab.user_id.slice(0, 8)}`,
-                                        email: `user-${collab.user_id.slice(0, 8)}@example.com`, // Fallback since we can't easily get email
+                                        display_name: profile.display_name || profile.email || `User ${collab.user_id.slice(0, 8)}`,
+                                        email: profile.email || `user-${collab.user_id.slice(0, 8)}@example.com`,
                                         avatar_url: profile.avatar_url
                                     }
                                 };
                             } else {
-                                // Fallback - use a more descriptive name with part of user ID
-                                return {
-                                    ...collab,
-                                    profiles: {
-                                        display_name: `User ${collab.user_id.slice(0, 8)}`,
-                                        email: `user-${collab.user_id.slice(0, 8)}@example.com`
-                                    }
-                                };
+                                console.log('RPC function failed or returned no data:', rpcError);
+                                
+                                // Fallback: try to get profile from profiles table
+                                const { data: profile, error } = await window.SupabaseConfig.client()
+                                    .from('profiles')
+                                    .select('display_name, avatar_url')
+                                    .eq('id', collab.user_id)
+                                    .single();
+                                
+                                if (!error && profile && profile.display_name) {
+                                    console.log('Got profile from profiles table:', profile);
+                                    return {
+                                        ...collab,
+                                        profiles: {
+                                            display_name: profile.display_name,
+                                            email: `user-${collab.user_id.slice(0, 8)}@example.com`,
+                                            avatar_url: profile.avatar_url
+                                        }
+                                    };
+                                } else {
+                                    console.log('No profile data found, using fallback');
+                                    // Final fallback - use a more descriptive name with part of user ID
+                                    return {
+                                        ...collab,
+                                        profiles: {
+                                            display_name: `User ${collab.user_id.slice(0, 8)}`,
+                                            email: `user-${collab.user_id.slice(0, 8)}@example.com`
+                                        }
+                                    };
+                                }
                             }
                         } catch (err) {
                             console.warn('Error fetching profile for user:', collab.user_id, err);
