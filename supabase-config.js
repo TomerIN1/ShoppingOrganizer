@@ -175,7 +175,13 @@ const database = {
             .from('shopping_lists')
             .select(`
                 *,
-                list_collaborators(id, permission_level, accepted_at)
+                list_collaborators(
+                    id, 
+                    user_id,
+                    permission_level, 
+                    accepted_at,
+                    profiles!list_collaborators_user_id_fkey(display_name, avatar_url)
+                )
             `)
             .eq('owner_id', user.id)
             .order('updated_at', { ascending: false });

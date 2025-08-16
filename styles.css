@@ -914,6 +914,22 @@ header h1 {
     padding: 2px 6px;
     border-radius: 6px;
     margin-left: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.sharing-info.clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sharing-info.clickable:hover {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+.expand-icon {
+    margin-left: 4px;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
 }
 
 /* Shared list card styling */
@@ -924,4 +940,86 @@ header h1 {
 
 .list-card.shared:hover {
     border-left-color: #2980b9;
+}
+
+/* Shared Users Section */
+.shared-users-section {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(52, 152, 219, 0.05);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    border-radius: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        max-height: 200px;
+        transform: translateY(0);
+    }
+}
+
+.shared-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shared-user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid rgba(52, 152, 219, 0.1);
+    transition: border-color 0.2s ease;
+}
+
+.shared-user-item:hover {
+    border-color: rgba(52, 152, 219, 0.3);
+}
+
+.shared-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.user-permission {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+/* Mobile responsive styles for shared users */
+@media (max-width: 768px) {
+    .shared-users-section {
+        margin-top: 12px;
+        padding: 10px;
+    }
+    
+    .shared-user-item {
+        padding: 6px 10px;
+    }
+    
+    .user-name {
+        font-size: 0.9rem;
+    }
+    
+    .user-permission {
+        font-size: 0.75rem;
+    }
 }

@@ -570,8 +570,26 @@ class ShoppingListOrganizer {
                 <span>📝 ${totalItems} items</span>
                 <span>📁 ${categories.length} categories</span>
                 <span>📅 ${isRecent ? `Updated ${updatedDate}` : `Created ${createdDate}`}</span>
-                ${isShared ? `<span class="sharing-info">🔗 Shared with ${acceptedCollaborators.length} user${acceptedCollaborators.length !== 1 ? 's' : ''}</span>` : ''}
+                ${isShared ? `<span class="sharing-info clickable" onclick="organizer.toggleSharedUsers('${list.id}')">🔗 Shared with ${acceptedCollaborators.length} user${acceptedCollaborators.length !== 1 ? 's' : ''} <span class="expand-icon">▼</span></span>` : ''}
             </div>
+            
+            ${isShared ? `<div class="shared-users-section" id="shared-users-${list.id}" style="display: none;">
+                <div class="shared-users-list">
+                    ${acceptedCollaborators.map(collab => {
+                        const profile = collab.profiles || {};
+                        const displayName = profile.display_name || 'Unknown User';
+                        const permission = collab.permission_level === 'edit' ? 'Can Edit' : 'View Only';
+                        return `
+                            <div class="shared-user-item">
+                                <div class="shared-user-info">
+                                    <span class="user-name">${displayName}</span>
+                                    <span class="user-permission">${permission}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>` : ''}
             
             <div class="list-categories-preview">
                 ${categories.slice(0, 4).map(cat => 
@@ -581,9 +599,11 @@ class ShoppingListOrganizer {
             </div>
         `;
 
-        // Add click handler to the card (excluding buttons)
+        // Add click handler to the card (excluding buttons and sharing info)
         card.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('btn-mini')) {
+            if (!e.target.classList.contains('btn-mini') && 
+                !e.target.classList.contains('clickable') && 
+                !e.target.closest('.sharing-info')) {
                 this.loadListFromCloud(list.id);
             }
         });
@@ -695,6 +715,21 @@ class ShoppingListOrganizer {
         } catch (error) {
             console.error('Failed to share list:', error);
             alert('Failed to share list. Please try again.');
+        }
+    }
+
+    toggleSharedUsers(listId) {
+        const section = document.getElementById(`shared-users-${listId}`);
+        const sharingInfo = document.querySelector(`[onclick="organizer.toggleSharedUsers('${listId}')"]`);
+        const expandIcon = sharingInfo?.querySelector('.expand-icon');
+        
+        if (section) {
+            const isHidden = section.style.display === 'none';
+            section.style.display = isHidden ? 'block' : 'none';
+            
+            if (expandIcon) {
+                expandIcon.textContent = isHidden ? '▲' : '▼';
+            }
         }
     }
 
