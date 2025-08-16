@@ -1513,14 +1513,22 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `You are a smart categorizer. Categorize these items into appropriate, logical categories.
 
-RULES:
-1. Create appropriate category names that make sense for these items
+CRITICAL RULES:
+1. Create SHORT, appropriate category names (max 3-4 words)
 2. Group similar items together under the same category
-3. Use clear, descriptive category names (e.g., "Tools & Hardware", "Home Improvement", "Office Supplies")
-4. Avoid creating too many categories - group similar items together
-5. Return only valid JSON in the exact format specified
+3. Use clear, descriptive category names (e.g., "Travel Essentials", "Electronics", "Clothing")
+4. NEVER create categories with more than 50 characters
+5. NEVER list multiple items as a single category name
+6. Each item should map to ONE appropriate category
+7. Return only valid JSON in the exact format specified
 
 Items to categorize: ${items.join(', ')}
+
+EXAMPLES:
+- "passport" → "Travel Documents"
+- "phone charger" → "Electronics"
+- "t-shirt" → "Clothing"
+- "sunglasses" → "Accessories"
 
 Respond ONLY with valid JSON in this exact format:
 {"item_name": "Category Name"}
@@ -1704,11 +1712,18 @@ JSON Response:`;
             itemMatches.forEach(match => {
                 const item = match.replace(/"/g, '');
                 
-                // Skip if it looks like a category name
-                if (Object.keys(this.categories).some(cat => 
-                    cat.toLowerCase().includes(item.toLowerCase()) || 
-                    item.toLowerCase().includes(cat.toLowerCase())
-                )) {
+                // Skip if it looks like a category name (too long or contains category keywords)
+                if (item.length > 50 || 
+                    Object.keys(this.categories).some(cat => 
+                        cat.toLowerCase().includes(item.toLowerCase()) || 
+                        item.toLowerCase().includes(cat.toLowerCase())
+                    )) {
+                    return;
+                }
+                
+                // Skip if it contains multiple items (comma separated)
+                if (item.includes(',') && item.split(',').length > 3) {
+                    console.warn('🚫 Skipping suspected multi-item string:', item.substring(0, 50) + '...');
                     return;
                 }
                 
@@ -1723,6 +1738,44 @@ JSON Response:`;
 
     validateAndCorrectCategories(aiResponse, validCategories) {
         const corrected = {};
+        
+        // First, validate the response structure
+        if (!aiResponse || typeof aiResponse !== 'object') {
+            console.error('❌ Invalid AI response structure:', aiResponse);
+            throw new Error('Invalid AI response structure');
+        }
+        
+        // Check for completely wrong responses (items as categories or vice versa)
+        const responseEntries = Object.entries(aiResponse);
+        const suspiciousEntries = responseEntries.filter(([item, category]) => {
+            // Check if item name is suspiciously long (might be a list of items)
+            if (item.length > 100 || (item.includes(',') && item.split(',').length > 5)) {
+                console.warn('🚨 Suspicious item detected (too long/multi-item):', item.substring(0, 50) + '...');
+                return true;
+            }
+            
+            // Check if category is suspiciously long (might be a list of items)
+            if (category.length > 100 || (category.includes(',') && category.split(',').length > 5)) {
+                console.warn('🚨 Suspicious category detected (too long/multi-item):', category.substring(0, 50) + '...');
+                return true;
+            }
+            
+            return false;
+        });
+        
+        // If more than 30% of entries are suspicious, reject the entire response
+        if (suspiciousEntries.length > responseEntries.length * 0.3) {
+            console.error('❌ AI response rejected - too many suspicious entries');
+            throw new Error('AI response contains malformed data');
+        }
+        
+        // Remove suspicious entries
+        const cleanResponse = {};
+        responseEntries.forEach(([item, category]) => {
+            if (!suspiciousEntries.some(([suspItem]) => suspItem === item)) {
+                cleanResponse[item] = category;
+            }
+        });
         
         // Common AI category variations that need correction
         const categoryMappings = {
@@ -1751,7 +1804,7 @@ JSON Response:`;
             'condiments': 'Pantry & Canned Goods'
         };
         
-        for (const [item, category] of Object.entries(aiResponse)) {
+        for (const [item, category] of Object.entries(cleanResponse)) {
             let finalCategory = category;
             
             // Check if it's a valid category
