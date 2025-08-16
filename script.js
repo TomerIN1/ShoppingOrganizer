@@ -1637,14 +1637,26 @@ class ShoppingListOrganizer {
             });
         }
         
-        // Position and show dropdown
+        // Position and show dropdown with FORCE CSS
         element.style.position = 'relative';
-        dropdown.style.display = 'block';
-        dropdown.style.visibility = 'visible';
-        dropdown.style.opacity = '1';
-        dropdown.style.backgroundColor = 'red'; // Emergency visibility test
-        dropdown.style.minHeight = '100px';
-        dropdown.style.width = '200px';
+        dropdown.style.cssText = `
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            background: red !important;
+            border: 3px solid blue !important;
+            border-radius: 5px !important;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
+            z-index: 99999 !important;
+            margin-top: 5px !important;
+            overflow: visible !important;
+            min-width: 200px !important;
+            width: 200px !important;
+            min-height: 100px !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        `;
         
         console.log('📍 BEFORE appendChild:', {
             dropdown,
