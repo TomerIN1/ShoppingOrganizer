@@ -30,7 +30,7 @@ class ShoppingListOrganizer {
                 'vanilla', 'baking powder', 'baking soda', 'spices', 'herbs', 'canned tomatoes', 'tomato sauce',
                 'tomato paste', 'chicken broth', 'vegetable broth', 'beef broth', 'coconut milk', 'canned beans',
                 'black beans', 'kidney beans', 'chickpeas', 'lentils', 'quinoa', 'oats', 'cereal', 'granola',
-                'nuts', 'almonds', 'walnuts', 'peanut butter', 'jam', 'jelly', 'pickles', 'olives'
+                'nuts', 'almonds', 'walnuts', 'peanut butter', 'jam', 'jelly', 'pickles', 'olives', 'tempeh'
             ],
             'Frozen Foods': [
                 'frozen vegetables', 'frozen fruit', 'frozen berries', 'ice cream', 'frozen yogurt', 'frozen pizza',
@@ -1642,6 +1642,13 @@ JSON Response:`;
         try {
             // Use the existing environment config system
             const config = await window.EnvironmentConfig.load();
+            
+            // FOR LOCAL TESTING ONLY - Add your OpenAI key here temporarily if needed
+            // if (!config.OPENAI_API_KEY && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')) {
+            //     config.OPENAI_API_KEY = 'your-openai-api-key-here';
+            //     console.log('🔑 Using hardcoded API key for local testing');
+            // }
+            
             this.cachedConfig = config;
             return config;
         } catch (error) {
