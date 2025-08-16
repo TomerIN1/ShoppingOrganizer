@@ -17,31 +17,37 @@ body {
     padding: 20px;
 }
 
-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-header h1 {
-    color: #2c3e50;
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-}
-
-.auth-section {
+/* Compact Header Styles */
+.app-header {
     background: white;
     border-radius: 10px;
-    padding: 20px;
+    padding: 15px 25px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
 }
 
-.auth-status {
+.header-left .app-title {
+    color: #2c3e50;
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+.header-right {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
     gap: 15px;
+}
+
+.auth-compact {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
 }
 
 .mode-indicator {
@@ -87,73 +93,132 @@ header h1 {
     background: #5a6268;
 }
 
-.user-info {
+/* Compact User Profile */
+.user-profile {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 25px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: 1px solid #e1e8ed;
 }
 
-.user-avatar {
-    width: 40px;
-    height: 40px;
+.user-profile:hover {
+    background: #e9ecef;
+}
+
+.user-avatar-compact {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 2px solid #e1e8ed;
 }
 
-.user-name {
+.user-name-compact {
     font-weight: 600;
     color: #2c3e50;
+    font-size: 14px;
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.cloud-actions {
-    display: flex;
-    gap: 10px;
+.dropdown-arrow {
+    color: #6c757d;
+    font-size: 12px;
+    transition: transform 0.3s ease;
 }
 
+.user-profile.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* User Dropdown */
+.user-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    min-width: 160px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: white;
+    color: #2c3e50;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: #f8f9fa;
+}
+
+.dropdown-item:active {
+    background: #e9ecef;
+}
+
+/* Mobile Header Styles */
 @media (max-width: 768px) {
-    .auth-status {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 20px;
-    }
-    
-    .user-info {
+    .app-header {
         flex-direction: column;
         gap: 15px;
-        align-items: center;
-        width: 100%;
+        padding: 15px 20px;
     }
     
-    .user-avatar {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .user-name {
-        font-size: 18px;
-        margin-bottom: 10px;
-    }
-    
-    .btn-auth-secondary {
-        width: 100%;
-        max-width: 200px;
-        padding: 12px 20px;
-        font-size: 16px;
+    .header-left .app-title {
+        font-size: 1.5rem;
         text-align: center;
     }
     
-    .cloud-actions {
+    .header-right {
         justify-content: center;
         width: 100%;
     }
     
-    .cloud-actions .btn-primary {
+    .auth-compact {
+        justify-content: center;
         width: 100%;
-        max-width: 200px;
-        padding: 14px 20px;
+    }
+    
+    .user-profile {
+        width: 100%;
+        max-width: 250px;
+        justify-content: center;
+        padding: 12px 16px;
+    }
+    
+    .user-name-compact {
+        max-width: 120px;
         font-size: 16px;
-        text-align: center;
+    }
+    
+    .user-dropdown {
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        min-width: 200px;
     }
 }
 

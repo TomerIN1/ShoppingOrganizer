@@ -9,22 +9,27 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Shopping List Organizer</h1>
-            <div class="auth-section">
-                <div id="guestMode" class="auth-status">
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="app-title">Shopping List Organizer</h1>
+            </div>
+            <div class="header-right">
+                <!-- Guest Mode -->
+                <div id="guestMode" class="auth-compact">
                     <span class="mode-indicator">Guest Mode</span>
                     <button id="signInBtn" class="btn-auth">Sign In with Google</button>
-                    <small>Sign in to save lists and collaborate with others</small>
                 </div>
-                <div id="authenticatedMode" class="auth-status" style="display: none;">
-                    <div class="user-info">
-                        <img id="userAvatar" src="" alt="User" class="user-avatar">
-                        <span id="userName" class="user-name"></span>
-                        <button id="signOutBtn" class="btn-auth-secondary">Sign Out</button>
+                
+                <!-- Authenticated Mode -->
+                <div id="authenticatedMode" class="auth-compact" style="display: none;">
+                    <div class="user-profile" id="userProfile">
+                        <img id="userAvatar" src="" alt="User" class="user-avatar-compact">
+                        <span id="userName" class="user-name-compact"></span>
+                        <span class="dropdown-arrow">▼</span>
                     </div>
-                    <div class="cloud-actions">
-                        <button id="myListsBtn" class="btn-primary">My Lists</button>
+                    <div class="user-dropdown" id="userDropdown" style="display: none;">
+                        <button id="myListsBtn" class="dropdown-item">📋 My Lists</button>
+                        <button id="signOutBtn" class="dropdown-item">🚪 Sign Out</button>
                     </div>
                 </div>
             </div>

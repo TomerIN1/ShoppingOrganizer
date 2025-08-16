@@ -166,6 +166,20 @@ class ShoppingListOrganizer {
         document.getElementById('signInBtn').addEventListener('click', () => this.signIn());
         document.getElementById('signOutBtn').addEventListener('click', () => this.signOut());
         document.getElementById('myListsBtn').addEventListener('click', () => this.showMyLists());
+        
+        // User dropdown functionality (safely handle if element doesn't exist)
+        const userProfile = document.getElementById('userProfile');
+        if (userProfile) {
+            userProfile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleUserDropdown();
+            });
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            this.closeUserDropdown();
+        });
 
         // My Lists dashboard event listeners
         document.getElementById('backToMainBtn').addEventListener('click', () => this.backToMain());
@@ -211,19 +225,47 @@ class ShoppingListOrganizer {
             console.error('Sign-out error:', error);
         }
     }
+    
+    toggleUserDropdown() {
+        const dropdown = document.getElementById('userDropdown');
+        const profile = document.getElementById('userProfile');
+        
+        if (dropdown.style.display === 'none' || !dropdown.style.display) {
+            dropdown.style.display = 'block';
+            profile.classList.add('active');
+        } else {
+            dropdown.style.display = 'none';
+            profile.classList.remove('active');
+        }
+    }
+    
+    closeUserDropdown() {
+        const dropdown = document.getElementById('userDropdown');
+        const profile = document.getElementById('userProfile');
+        
+        if (dropdown) {
+            dropdown.style.display = 'none';
+        }
+        if (profile) {
+            profile.classList.remove('active');
+        }
+    }
 
     async switchToAuthenticatedMode(user) {
         this.currentUser = user;
         this.mode = 'authenticated';
         
-        // Update UI
+        // Update UI - hide guest mode, show authenticated mode
         document.getElementById('guestMode').style.display = 'none';
         document.getElementById('authenticatedMode').style.display = 'flex';
         
-        // Update user info
-        document.getElementById('userName').textContent = user.user_metadata?.full_name || user.email;
+        // Update user info in compact header
+        const userName = user.user_metadata?.full_name || user.email;
+        document.getElementById('userName').textContent = userName;
+        
         const avatar = document.getElementById('userAvatar');
-        avatar.src = user.user_metadata?.avatar_url || 'https://via.placeholder.com/40';
+        avatar.src = user.user_metadata?.avatar_url || 'https://via.placeholder.com/32';
+        avatar.alt = userName;
         
         console.log('✅ Switched to authenticated mode');
     }
@@ -232,9 +274,12 @@ class ShoppingListOrganizer {
         this.currentUser = null;
         this.mode = 'guest';
         
-        // Update UI
+        // Update UI - show guest mode, hide authenticated mode
         document.getElementById('guestMode').style.display = 'flex';
         document.getElementById('authenticatedMode').style.display = 'none';
+        
+        // Close dropdown if open
+        this.closeUserDropdown();
         
         console.log('ℹ️ Switched to guest mode');
     }
