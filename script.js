@@ -453,17 +453,62 @@ class ShoppingListOrganizer {
     }
 
     async enrichListsWithProfiles(lists) {
-        // For now, return lists as-is without profile enrichment to fix the loading issue
-        // We can add profile information later when we fix the database query
-        return lists.map(list => {
-            if (list.list_collaborators) {
-                list.list_collaborators = list.list_collaborators.map(collab => ({
-                    ...collab,
-                    profiles: { display_name: 'User' } // Fallback display name
-                }));
+        // Enrich lists with actual user profile information for collaborators
+        const enrichedLists = await Promise.all(lists.map(async (list) => {
+            if (list.list_collaborators && list.list_collaborators.length > 0) {
+                // Fetch profile information for each collaborator
+                const enrichedCollaborators = await Promise.all(
+                    list.list_collaborators.map(async (collab) => {
+                        try {
+                            // Use the database function to get user profile with email
+                            const { data: profileData, error } = await window.SupabaseConfig.client()
+                                .rpc('get_user_profile_with_email', { user_id: collab.user_id });
+                            
+                            if (error) {
+                                console.warn('Failed to fetch profile for user:', collab.user_id, error.message);
+                                return {
+                                    ...collab,
+                                    profiles: { 
+                                        display_name: 'Unknown User',
+                                        email: 'unknown@example.com'
+                                    }
+                                };
+                            }
+                            
+                            // profileData is an array, get the first result
+                            const profile = profileData && profileData.length > 0 ? profileData[0] : null;
+                            
+                            return {
+                                ...collab,
+                                profiles: {
+                                    display_name: profile?.display_name || profile?.email || 'Unknown User',
+                                    email: profile?.email || 'unknown@example.com',
+                                    avatar_url: profile?.avatar_url
+                                }
+                            };
+                        } catch (err) {
+                            console.warn('Error fetching profile for user:', collab.user_id, err);
+                            return {
+                                ...collab,
+                                profiles: { 
+                                    display_name: 'Unknown User',
+                                    email: 'unknown@example.com'
+                                }
+                            };
+                        }
+                    })
+                );
+                
+                return {
+                    ...list,
+                    list_collaborators: enrichedCollaborators
+                };
             }
+            
             return list;
-        });
+        }));
+        
+        return enrichedLists;
     }
 
     async loadMyLists() {
@@ -594,7 +639,7 @@ class ShoppingListOrganizer {
                 <div class="shared-users-list">
                     ${acceptedCollaborators.map(collab => {
                         const profile = collab.profiles || {};
-                        const displayName = profile.display_name || 'Unknown User';
+                        const displayName = profile.display_name || profile.email || 'Unknown User';
                         const permission = collab.permission_level === 'edit' ? 'Can Edit' : 'View Only';
                         return `
                             <div class="shared-user-item">
