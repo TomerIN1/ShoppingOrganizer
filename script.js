@@ -1569,24 +1569,36 @@ class ShoppingListOrganizer {
         dropdown.className = 'assignment-dropdown';
         
         // Add unassigned option
-        dropdown.innerHTML = `
-            <div class="dropdown-option" onclick="organizer.assignCategory('${category}', null, this.parentElement)">Unassigned</div>
-        `;
+        const unassignedOption = document.createElement('div');
+        unassignedOption.className = 'dropdown-option';
+        unassignedOption.textContent = 'Unassigned';
+        unassignedOption.addEventListener('click', () => {
+            console.log('🎯 Unassigned option clicked');
+            this.assignCategory(category, null, dropdown);
+        });
+        dropdown.appendChild(unassignedOption);
         
         // Add collaborator options
         if (this.currentCollaborators.length === 0) {
-            dropdown.innerHTML += `
-                <div class="dropdown-option disabled">No collaborators found</div>
-            `;
+            const noCollabOption = document.createElement('div');
+            noCollabOption.className = 'dropdown-option disabled';
+            noCollabOption.textContent = 'No collaborators found';
+            dropdown.appendChild(noCollabOption);
             console.warn('⚠️ No collaborators available for assignment');
         } else {
             this.currentCollaborators.forEach(collaborator => {
                 console.log('👤 Processing collaborator:', collaborator);
                 const userEmail = collaborator.profiles?.email || collaborator.profiles?.display_name || `User ${collaborator.user_id?.slice(0, 8)}` || 'Unknown User';
                 const displayName = collaborator.is_owner ? `${userEmail} (Owner)` : userEmail;
-                dropdown.innerHTML += `
-                    <div class="dropdown-option" onclick="organizer.assignCategory('${category}', '${collaborator.user_id}', this.parentElement)">${displayName}</div>
-                `;
+                
+                const collabOption = document.createElement('div');
+                collabOption.className = 'dropdown-option';
+                collabOption.textContent = displayName;
+                collabOption.addEventListener('click', () => {
+                    console.log('🎯 Collaborator option clicked:', { collaborator: collaborator.user_id, displayName });
+                    this.assignCategory(category, collaborator.user_id, dropdown);
+                });
+                dropdown.appendChild(collabOption);
             });
         }
         

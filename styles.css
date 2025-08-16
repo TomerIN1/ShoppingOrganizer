@@ -399,6 +399,10 @@ header h1 {
     color: #333;
     font-size: 0.9rem;
     transition: background-color 0.2s ease;
+    user-select: none;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10001;
 }
 
 .dropdown-option:hover {
@@ -408,6 +412,12 @@ header h1 {
 .dropdown-option:first-child {
     color: #95a5a6;
     font-style: italic;
+}
+
+.dropdown-option.disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .category-content {
