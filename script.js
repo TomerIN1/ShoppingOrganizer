@@ -1580,8 +1580,10 @@ class ShoppingListOrganizer {
         const unassignedOption = document.createElement('div');
         unassignedOption.className = 'dropdown-option';
         unassignedOption.textContent = 'Unassigned';
-        unassignedOption.addEventListener('click', () => {
-            console.log('🎯 Unassigned option clicked');
+        unassignedOption.addEventListener('click', (e) => {
+            console.log('🎯 Unassigned option clicked', e);
+            e.preventDefault();
+            e.stopPropagation();
             this.assignCategory(category, null, dropdown);
         });
         dropdown.appendChild(unassignedOption);
@@ -1602,8 +1604,15 @@ class ShoppingListOrganizer {
                 const collabOption = document.createElement('div');
                 collabOption.className = 'dropdown-option';
                 collabOption.textContent = displayName;
-                collabOption.addEventListener('click', () => {
-                    console.log('🎯 Collaborator option clicked:', { collaborator: collaborator.user_id, displayName });
+                collabOption.addEventListener('click', (e) => {
+                    console.log('🎯 Collaborator option clicked:', { 
+                        collaborator: collaborator.user_id, 
+                        displayName,
+                        event: e,
+                        target: e.target
+                    });
+                    e.preventDefault();
+                    e.stopPropagation();
                     this.assignCategory(category, collaborator.user_id, dropdown);
                 });
                 dropdown.appendChild(collabOption);
@@ -1632,6 +1641,8 @@ class ShoppingListOrganizer {
 
     async assignCategory(category, userId, dropdown) {
         try {
+            console.log('✅ assignCategory function called:', { category, userId, dropdown });
+            
             // Update the category data structure
             if (!this.currentLists[category]) {
                 console.error('Category not found:', category);

@@ -450,6 +450,8 @@ header h1 {
     pointer-events: auto;
     position: relative;
     border-bottom: 1px solid #f0f0f0;
+    z-index: 10002;
+    background: white;
 }
 
 .dropdown-option:last-child {
@@ -472,7 +474,8 @@ header h1 {
 }
 
 .dropdown-option:hover {
-    background: #f8f9fa;
+    background: #e3f2fd !important;
+    color: #1976d2;
 }
 
 .dropdown-option:first-child {
