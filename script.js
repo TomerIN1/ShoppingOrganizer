@@ -1727,13 +1727,30 @@ class ShoppingListOrganizer {
 
     createItemHTML(category, item) {
         const itemId = `${category}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Handle both old string format and new object format
+        const itemData = typeof item === 'string' ? { name: item, amount: '', unit: 'pcs' } : item;
+        const itemName = itemData.name || '';
+        const itemAmount = itemData.amount || '';
+        const itemUnit = itemData.unit || 'pcs';
+        
         return `
             <li class="item-row" id="${itemId}">
-                <input type="text" class="item-text" value="${item}" 
-                       onblur="organizer.updateItem('${category}', '${itemId}', this.value).catch(console.error)"
-                       onkeypress="if(event.key==='Enter') this.blur()">
-                <div class="item-actions">
-                    <button class="btn-delete" onclick="organizer.deleteItem('${category}', '${itemId}').catch(console.error)">Delete</button>
+                <div class="item-table">
+                    <input type="text" class="item-name" value="${itemName}" placeholder="Item name"
+                           onblur="organizer.updateItemData('${category}', '${itemId}', 'name', this.value).catch(console.error)"
+                           onkeypress="if(event.key==='Enter') this.blur()">
+                    <input type="number" class="item-amount" value="${itemAmount}" placeholder="Amount" min="0" step="0.1"
+                           onblur="organizer.updateItemData('${category}', '${itemId}', 'amount', this.value).catch(console.error)"
+                           onkeypress="if(event.key==='Enter') this.blur()">
+                    <select class="item-unit" onchange="organizer.updateItemData('${category}', '${itemId}', 'unit', this.value).catch(console.error)">
+                        <option value="pcs" ${itemUnit === 'pcs' ? 'selected' : ''}>pcs</option>
+                        <option value="g" ${itemUnit === 'g' ? 'selected' : ''}>g</option>
+                        <option value="kg" ${itemUnit === 'kg' ? 'selected' : ''}>kg</option>
+                        <option value="L" ${itemUnit === 'L' ? 'selected' : ''}>L</option>
+                        <option value="ml" ${itemUnit === 'ml' ? 'selected' : ''}>ml</option>
+                    </select>
+                    <button class="btn-delete-icon" onclick="organizer.deleteItem('${category}', '${itemId}').catch(console.error)" title="Delete item">🗑️</button>
                 </div>
             </li>
         `;
@@ -1755,11 +1772,13 @@ class ShoppingListOrganizer {
                 };
             }
             
-            this.currentLists[category].items.push(newItem);
+            // Create new item as object
+            const newItemObject = { name: newItem, amount: '', unit: 'pcs' };
+            this.currentLists[category].items.push(newItemObject);
             
             const categoryId = category.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
             const listElement = document.getElementById(`list-${categoryId}`);
-            const itemHTML = this.createItemHTML(category, newItem);
+            const itemHTML = this.createItemHTML(category, newItemObject);
             listElement.insertAdjacentHTML('beforeend', itemHTML);
             
             input.value = '';
@@ -1788,6 +1807,38 @@ class ShoppingListOrganizer {
         
         if (this.currentLists[category] && this.currentLists[category].items && this.currentLists[category].items[itemIndex] !== undefined) {
             this.currentLists[category].items[itemIndex] = newValue.trim();
+
+            // Auto-save to cloud if authenticated
+            if (this.mode === 'authenticated' && this.currentUser) {
+                await this.autoSaveCurrentList();
+            }
+        }
+    }
+
+    async updateItemData(category, itemId, field, value) {
+        const itemElement = document.getElementById(itemId);
+        const itemIndex = Array.from(itemElement.parentNode.children).indexOf(itemElement);
+        
+        // Convert to new format if needed
+        if (Array.isArray(this.currentLists[category])) {
+            this.currentLists[category] = {
+                items: this.currentLists[category].map(item => 
+                    typeof item === 'string' ? { name: item, amount: '', unit: 'pcs' } : item
+                )
+            };
+        }
+        
+        if (this.currentLists[category] && this.currentLists[category].items && this.currentLists[category].items[itemIndex] !== undefined) {
+            let currentItem = this.currentLists[category].items[itemIndex];
+            
+            // Convert string items to object format
+            if (typeof currentItem === 'string') {
+                currentItem = { name: currentItem, amount: '', unit: 'pcs' };
+                this.currentLists[category].items[itemIndex] = currentItem;
+            }
+            
+            // Update the specific field
+            currentItem[field] = value.trim();
 
             // Auto-save to cloud if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {

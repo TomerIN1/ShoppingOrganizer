@@ -651,6 +651,128 @@ header h1 {
     background: #c0392b;
 }
 
+/* New table-like item layout */
+.item-table {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.item-name {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    min-width: 0;
+}
+
+.item-name:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.item-amount {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 70px;
+    text-align: center;
+}
+
+.item-amount:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.item-unit {
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+    width: 60px;
+}
+
+.item-unit:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.btn-delete-icon {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-icon:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+/* Mobile responsive adjustments for item table */
+@media (max-width: 768px) {
+    .item-table {
+        grid-template-columns: 1fr 60px 50px auto;
+        gap: 6px;
+    }
+    
+    .item-name {
+        font-size: 13px;
+        padding: 5px 6px;
+    }
+    
+    .item-amount {
+        width: 60px;
+        font-size: 13px;
+        padding: 5px 6px;
+    }
+    
+    .item-unit {
+        width: 50px;
+        font-size: 12px;
+        padding: 5px 4px;
+    }
+    
+    .btn-delete-icon {
+        font-size: 14px;
+        width: 28px;
+        height: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .item-table {
+        grid-template-columns: 1fr 50px 45px auto;
+        gap: 4px;
+    }
+    
+    .item-amount {
+        width: 50px;
+        font-size: 12px;
+    }
+    
+    .item-unit {
+        width: 45px;
+        font-size: 11px;
+    }
+}
+
 .empty-state {
     text-align: center;
     color: #7f8c8d;
