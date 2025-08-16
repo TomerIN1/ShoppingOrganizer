@@ -318,9 +318,10 @@ header h1 {
     }
     
     .category-header-bottom {
-        flex-direction: column !important;
-        align-items: flex-start !important;
+        justify-content: space-between !important;
+        align-items: center !important;
         gap: 6px !important;
+        flex-wrap: wrap !important;
     }
     
     .category-title {
@@ -339,6 +340,7 @@ header h1 {
     
     .category-header-bottom {
         gap: 4px !important;
+        justify-content: space-between !important;
     }
     
     .category-title {
