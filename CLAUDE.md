@@ -3,12 +3,27 @@
 ## Project Overview
 **Name**: Shopping List Organizer  
 **Purpose**: Collaborative family shopping list app with real-time editing and smart categorization  
-**Tech Stack**: Vanilla JS, Supabase (PostgreSQL), Google OAuth, Vercel deployment  
-**Current Status**: Production-ready with full collaboration features including category assignments
+**Tech Stack**: Vanilla JS, Supabase (PostgreSQL), Google OAuth, Vercel deployment, OpenAI API integration  
+**Deployment**: Automatic deployment via Vercel from `master` branch to production  
+**Current Status**: Production-ready with full collaboration features, AI-enhanced categorization, and email notifications
 
 ## Recent Major Features (Latest First)
 
-### 🎯 **Compact Header Bar & UX Overhaul** (LATEST)
+### 🤖 **AI-Enhanced Categorization System** (LATEST)
+- ✅ **OpenAI Integration**: GPT-3.5-turbo for intelligent item categorization
+- ✅ **Hybrid Approach**: Rule-based categorization first, AI for "Other" items
+- ✅ **Smart Validation**: Automatic correction of AI responses to valid categories
+- ✅ **Fallback Strategy**: Graceful degradation when OpenAI API unavailable
+- ✅ **Environment-Aware**: Configuration through Vercel environment variables
+
+### 📧 **Email Notification System**
+- ✅ **Resend Integration**: Professional email notifications via Edge Functions
+- ✅ **Invitation Emails**: Automatic notifications when lists are shared
+- ✅ **Branded Templates**: HTML email templates with app branding
+- ✅ **Error Handling**: Sharing continues even if email delivery fails
+- ✅ **Production URLs**: Correct callback URLs for production environment
+
+### 🎯 **Compact Header Bar & UX Overhaul**
 - ✅ **Space-Efficient Design**: Reduced header height by ~60% for more content space
 - ✅ **Professional User Dropdown**: Avatar + name + dropdown with "My Lists" and "Sign Out"
 - ✅ **Responsive Layout**: Desktop horizontal, mobile stacked with centered elements
@@ -33,7 +48,8 @@
 - ✅ **Interactive Assignment UI**: Dropdown selection with visual indicators
 - ✅ **Visual Feedback**: Assigned (green) vs unassigned (gray) categories
 - ✅ **Real-time Updates**: Assignment changes sync instantly across devices
-- ✅ **Email Notifications**: Automatic invitations via Resend service
+- ✅ **Owner Integration**: List owners automatically included as collaborators
+- ✅ **Profile Resolution**: Rich user profile display with names and avatars
 
 ## Code Architecture
 
@@ -93,7 +109,10 @@
 
 **Core Functions:**
 - `autoSaveCurrentList()` - Auto-saves changes to Supabase
-- `categorizeItems(items)` - Smart categorization with fuzzy matching
+- `categorizeItems(items)` - Rule-based categorization with fuzzy matching
+- `categorizeWithAI(items)` - AI-enhanced categorization system
+- `aiCategorizeItems(items)` - OpenAI API integration for smart categorization
+- `validateAndCorrectCategories()` - Ensures AI responses match valid categories
 
 #### Assignment Feature Integration
 - Only shows for authenticated users with collaborators
@@ -140,6 +159,8 @@
 - Async/await for all database operations
 - Error handling with try/catch blocks
 - Console logging for debugging (keep comprehensive logs)
+- Environment-based configuration loading
+- Graceful API degradation for optional features
 
 ### Current Development Patterns
 
@@ -196,9 +217,13 @@
 - JSONB field manipulation for category assignments
 
 ### Email System (Resend)
-- Edge function: `supabase/functions/send-invitation-email/`
-- Handles invitation notifications
+- Edge function: `supabase/functions/send-invitation-email/index.ts`
+- Professional HTML email templates with app branding
+- Handles invitation notifications with list details
 - Uses Resend API for reliable delivery
+- CORS-enabled for cross-origin requests
+- Error logging and graceful failure handling
+- Production URL integration for proper callbacks
 
 ### Authentication (Google OAuth)
 - Production OAuth redirect URLs configured
@@ -212,21 +237,38 @@
 - Test assignment features with multiple users
 - Verify backward compatibility with old list formats
 
-### Production Deployment
-- Vercel automatic deployment from `master` branch
-- Environment variables configured in Vercel dashboard
-- OAuth redirect URLs must match production domain
+### Production Deployment (Vercel)
+- **Platform**: Vercel for serverless deployment and hosting
+- **Auto-Deploy**: Automatic deployment from `master` branch to production
+- **Preview Deployments**: Every push to `dev` branch creates preview deployment
+- **Environment Variables** configured in Vercel dashboard:
+  - `SUPABASE_URL` - Supabase project URL
+  - `SUPABASE_ANON_KEY` - Supabase anonymous/public key
+  - `GOOGLE_CLIENT_ID` - Google OAuth client ID
+  - `OPENAI_API_KEY` - OpenAI API key for AI categorization
+  - `RESEND_API_KEY` - Resend API key for email notifications
+- **Custom Domain**: Production URL with SSL/TLS termination
+- **OAuth Configuration**: Redirect URLs must match production domain
+- **API Endpoints**: Serverless functions at `/api/config.js` serve environment configuration
+- **Edge Functions**: Supabase Edge Functions for email notifications
+- **Build Process**: Zero-config deployment with automatic optimization
 
 ## File Structure Context
 ```
 ShoppingOrganizer/
-├── index.html             # Compact header structure with user dropdown
-├── script.js              # Core app logic: items, assignments, auth, dropdown
+├── index.html             # Compact header structure with user dropdown + env config loader
+├── script.js              # Core app logic: items, assignments, auth, AI categorization
 ├── styles.css             # Responsive CSS: compact header, item table, mobile-first
-├── supabase-config.js     # Database config and profile management
+├── supabase-config.js     # Database config, auth, and profile management
 ├── database-schema.sql    # Schema supporting rich item objects & assignments  
-├── database-functions.sql # User profile lookup functions
-└── supabase/functions/    # Email notification edge functions
+├── database-functions.sql # User profile lookup and email resolution functions
+├── vercel.json           # Vercel deployment configuration
+├── package.json          # Project metadata and dependencies
+├── api/
+│   └── config.js         # Serverless function for environment variables
+└── supabase/functions/
+    └── send-invitation-email/
+        └── index.ts      # Email notification edge function
 ```
 
 ## Current State & Stability
@@ -235,32 +277,69 @@ ShoppingOrganizer/
 - Rich item management with amounts and units
 - Mobile-optimized responsive design throughout
 - Category assignment system with real-time sync
+- AI-enhanced categorization with OpenAI integration
+- Email notification system via Resend
 - Backward compatibility with all legacy data formats
-- Comprehensive authentication flow
+- Comprehensive authentication flow with OAuth
+- Environment-based configuration system
+- Serverless deployment on Vercel
 
 ## Next Development Priorities
 1. **Enhanced Shopping Experience**
    - Item completion/checking off functionality
    - Shopping mode with streamlined interface
    - Category-based shopping workflow
+   - Barcode scanning for quick item addition
 
-2. **Advanced Collaboration**
+2. **Advanced AI Features**
+   - Shopping history analysis and suggestions
+   - Seasonal item recommendations
+   - Price estimation and budget tracking
+   - Smart quantity suggestions based on household size
+
+3. **Enhanced Collaboration**
    - Assignment notifications and alerts
    - Category-level permissions and restrictions
    - Assignment history and audit trail
+   - Real-time collaborative editing indicators
 
-3. **Mobile App Features**
+4. **Mobile App Features**
    - PWA implementation for app-like experience
    - Offline mode with sync when connected
    - Push notifications for list updates
+   - Voice input for hands-free list building
 
-4. **Smart Features**
-   - Shopping history and suggestions
-   - Favorite items and quick-add
+5. **Store Integration**
    - Location-based store integration
+   - Store layout optimization
+   - Price comparison across stores
+   - Digital receipt integration
+
+## AI Integration Details
+
+### OpenAI Categorization Pipeline
+1. **Hybrid Approach**: Rule-based categorization first for speed
+2. **AI Processing**: Uncategorized items sent to OpenAI API
+3. **Strict Prompting**: Constrains AI to predefined category list
+4. **Response Validation**: Corrects invalid category names automatically
+5. **Error Handling**: Graceful fallback to rule-based system
+6. **Caching**: Environment config cached for performance
+
+### Email Notification System
+1. **Edge Function Architecture**: Deno-based Supabase function
+2. **Template System**: Professional HTML email templates
+3. **Recipient Resolution**: Database lookup of user emails
+4. **Error Recovery**: Sharing succeeds even if email fails
+5. **Production Integration**: Correct URLs for production environment
+
+### Environment Configuration
+- **Development**: `.env` file support for local testing
+- **Production**: Vercel environment variables
+- **API Endpoint**: `/api/config.js` serves configuration securely
+- **Fallback Handling**: Graceful degradation when configs missing
 
 ---
-**Last Updated**: Compact Header & Advanced Item Management Implementation  
-**Current Phase**: Production-ready app with rich collaboration features  
-**Next Phase**: Enhanced shopping experience and PWA features  
+**Last Updated**: AI-Enhanced Categorization & Email Notification System  
+**Current Phase**: Production-ready app with AI integration and email notifications  
+**Next Phase**: Enhanced shopping experience with advanced AI features  
 **Maintained by**: Claude Code collaborative development
