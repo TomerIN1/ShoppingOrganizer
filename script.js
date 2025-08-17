@@ -1535,10 +1535,14 @@ class ShoppingListOrganizer {
             const flexiblePrompt = this.buildFlexibleCategorizationPrompt(items);
             const flexibleResponse = await this.callOpenAI(flexiblePrompt);
             
+            console.log('🔍 Raw flexible AI response:', flexibleResponse);
+            
             // Group similar categories to avoid duplicates
             const groupedResponse = this.groupSimilarCategories(flexibleResponse);
             
             console.log('✅ Step 3 complete. Flexible categories:', groupedResponse);
+            console.log('📋 Final format check - keys:', Object.keys(groupedResponse));
+            console.log('📋 Final format check - first few entries:', Object.entries(groupedResponse).slice(0, 3));
             return groupedResponse;
             
         } catch (error) {
@@ -1632,12 +1636,14 @@ Example:
         // If more than half the entries look inverted, fix the format
         if (invertedCount > entries.length / 2) {
             console.log('🔄 Detected inverted AI response format, correcting...');
+            console.log('📊 Inverted count:', invertedCount, 'out of', entries.length, 'entries');
             const corrected = {};
             
             entries.forEach(([category, itemsString]) => {
                 if (typeof itemsString === 'string') {
                     // Split the items string and assign each item to the category
                     const items = itemsString.split(',').map(item => item.trim()).filter(item => item);
+                    console.log(`  🔄 Converting "${category}" -> [${items.join(', ')}]`);
                     items.forEach(item => {
                         corrected[item] = category;
                     });
