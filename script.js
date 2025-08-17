@@ -1513,16 +1513,10 @@ class ShoppingListOrganizer {
             if (otherItems.length > 0) {
                 const flexibleCategories = await this.aiCategorizeItemsFlexible(otherItems);
                 
-                console.log('🔀 MERGE DEBUG - groceryItems before merge:', groceryItems);
-                console.log('🔀 MERGE DEBUG - flexibleCategories to merge:', flexibleCategories);
-                
                 // Merge grocery and flexible categories
                 Object.entries(flexibleCategories).forEach(([category, items]) => {
-                    console.log(`🔀 MERGE DEBUG - Adding category "${category}" with items:`, items);
                     groceryItems[category] = items;
                 });
-                
-                console.log('🔀 MERGE DEBUG - groceryItems after merge:', groceryItems);
             }
             
             console.log('✅ Three-step AI categorization completed:', groceryItems);
