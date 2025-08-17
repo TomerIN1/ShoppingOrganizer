@@ -2063,14 +2063,20 @@ Items: ${items.join(', ')}
         const freeTextIndicators = [
             // Questions or conversational text
             /\b(how|what|when|where|why|who|can you|could you|please|help|assist)\b/,
-            // Complete sentences with articles
-            /\b(the|this|that|these|those)\s+\w+\s+(is|are|was|were|will|would|should|could)\b/,
+            // Complete sentences with articles and verbs
+            /\b(the|this|that|these|those)\s+\w+\s+(is|are|was|were|will|would|should|could|fought|guide|guided|whispered|lost|found|made|took|gave|came|went|said|told)\b/,
+            // Narrative/story patterns
+            /\b(inside|outside|meanwhile|suddenly|once upon|lighthouse|storm|sailor|journal|whispered)\b/,
+            // Past tense verbs indicating stories
+            /\b\w+(ed|fought|bought|brought|thought|caught|taught|sought)\s+the\b/,
             // Personal pronouns in conversational context
             /\b(i am|i'm|you are|you're|he is|she is|we are|they are)\b/,
-            // Long sentences (> 15 words)
-            /\b\w+(\s+\w+){15,}\b/,
+            // Long sentences (> 12 words instead of 15)
+            /\b\w+(\s+\w+){12,}\b/,
             // Common non-shopping phrases
             /\b(write me|tell me|explain|describe|create|make|generate|build|develop)\b/,
+            // Story/narrative words
+            /\b(chapter|story|tale|novel|book|poem|verse|narrative|fiction)\b/,
             // Inappropriate content patterns
             /\b(fuck|shit|damn|hell|stupid|idiot|hate|kill|die)\b/i,
         ];
@@ -2109,12 +2115,20 @@ Items: ${items.join(', ')}
         // Check if most items look like shopping items vs sentences
         let sentenceLikeItems = 0;
         for (const item of items) {
-            // Count items that look like sentences (have multiple common words)
-            const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+            // Count items that look like sentences
+            const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'its', 'it', 'a', 'an'];
+            const storyWords = ['fought', 'whispered', 'guiding', 'lost', 'inside', 'lighthouse', 'storm', 'sailor', 'journal'];
             const wordCount = item.split(/\s+/).length;
-            const commonWordCount = commonWords.filter(word => item.includes(` ${word} `)).length;
+            const commonWordCount = commonWords.filter(word => item.includes(` ${word} `) || item.includes(`${word} `) || item.includes(` ${word}`)).length;
+            const storyWordCount = storyWords.filter(word => item.includes(word)).length;
             
-            if (wordCount > 5 && commonWordCount > 1) {
+            // Consider it sentence-like if:
+            // - More than 4 words with common words, or
+            // - Contains story/narrative words, or  
+            // - Has past tense verbs with articles
+            if ((wordCount > 4 && commonWordCount > 0) || 
+                storyWordCount > 0 || 
+                /\b(the|its|a)\s+\w+\s+(fought|guided|whispered|lost)\b/.test(item)) {
                 sentenceLikeItems++;
             }
         }
