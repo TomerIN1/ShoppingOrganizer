@@ -2787,7 +2787,13 @@ Items: ${items.join(', ')}
         const collaboratorMap = {};
         if (collaborators && Array.isArray(collaborators)) {
             collaborators.forEach(collab => {
-                const name = collab.display_name || collab.email || collab.name || `User ${collab.user_id.substring(0, 8)}`;
+                const name = collab.display_name || 
+                            collab.email || 
+                            collab.name ||
+                            collab.profiles?.display_name ||
+                            collab.profiles?.email ||
+                            collab.profiles?.name ||
+                            `User ${collab.user_id.substring(0, 8)}`;
                 console.log('📋 Mapping collaborator:', collab.user_id, '->', name);
                 collaboratorMap[collab.user_id] = name;
             });
