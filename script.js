@@ -2755,9 +2755,7 @@ Items: ${items.join(', ')}
             }
 
             // Get collaborators for assignment info - always load fresh for export
-            console.log('📋 Loading fresh collaborators for export...');
             const collaborators = await this.loadListCollaborators();
-            console.log('📋 Loaded collaborators:', collaborators?.length || 0, collaborators);
             
             // Generate WhatsApp-friendly text
             const whatsappText = await this.generateWhatsAppText(collaborators);
@@ -2765,7 +2763,6 @@ Items: ${items.join(', ')}
             // Copy to clipboard
             await this.copyToClipboard(whatsappText);
             
-            console.log('✅ List copied to clipboard successfully');
             
         } catch (error) {
             console.error('❌ Failed to copy list:', error);
@@ -2775,7 +2772,6 @@ Items: ${items.join(', ')}
 
 
     async generateWhatsAppText(collaborators) {
-        console.log('📋 generateWhatsAppText called with:', collaborators?.length || 0, 'collaborators');
         
         const listTitle = this.currentListName || 'Shopping List';
         const currentDate = new Date().toLocaleDateString();
@@ -2794,7 +2790,6 @@ Items: ${items.join(', ')}
                             collab.profiles?.email ||
                             collab.profiles?.name ||
                             `User ${collab.user_id.substring(0, 8)}`;
-                console.log('📋 Mapping collaborator:', collab.user_id, '->', name);
                 collaboratorMap[collab.user_id] = name;
             });
         }
