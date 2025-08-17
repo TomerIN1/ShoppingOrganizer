@@ -1513,10 +1513,16 @@ class ShoppingListOrganizer {
             if (otherItems.length > 0) {
                 const flexibleCategories = await this.aiCategorizeItemsFlexible(otherItems);
                 
+                console.log('🔀 MERGE DEBUG - groceryItems before merge:', groceryItems);
+                console.log('🔀 MERGE DEBUG - flexibleCategories to merge:', flexibleCategories);
+                
                 // Merge grocery and flexible categories
                 Object.entries(flexibleCategories).forEach(([category, items]) => {
+                    console.log(`🔀 MERGE DEBUG - Adding category "${category}" with items:`, items);
                     groceryItems[category] = items;
                 });
+                
+                console.log('🔀 MERGE DEBUG - groceryItems after merge:', groceryItems);
             }
             
             console.log('✅ Three-step AI categorization completed:', groceryItems);
@@ -1990,19 +1996,33 @@ Items: ${items.join(', ')}
     }
 
     mergeCategorizationResults(quickResults, aiResults) {
+        console.log('🔀 MERGE RESULTS DEBUG - quickResults:', quickResults);
+        console.log('🔀 MERGE RESULTS DEBUG - aiResults:', aiResults);
+        
         const merged = { ...quickResults };
         
         // Remove the "Other" category since we're processing those items
         delete merged['Other'];
         
         // Add AI categorized items to their respective categories
-        for (const [item, category] of Object.entries(aiResults)) {
+        // aiResults is in {category: [items]} format, not {item: category}
+        for (const [category, items] of Object.entries(aiResults)) {
+            console.log(`🔀 MERGE RESULTS DEBUG - Processing category "${category}" with items:`, items);
+            
             if (!merged[category]) {
                 merged[category] = [];
             }
-            merged[category].push(item);
+            
+            // items is an array, so we need to spread it
+            if (Array.isArray(items)) {
+                merged[category].push(...items);
+            } else {
+                // Fallback: if items is not an array, treat as single item
+                merged[category].push(items);
+            }
         }
         
+        console.log('🔀 MERGE RESULTS DEBUG - Final merged result:', merged);
         return merged;
     }
 
