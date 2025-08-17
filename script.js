@@ -2082,14 +2082,18 @@ Items: ${items.join(', ')}
         ];
 
         // Check if input contains obvious free-text patterns
-        for (const pattern of freeTextIndicators) {
+        console.log('🔍 Checking text patterns against:', text.substring(0, 100));
+        for (let i = 0; i < freeTextIndicators.length; i++) {
+            const pattern = freeTextIndicators[i];
             if (pattern.test(text)) {
+                console.log(`❌ Pattern ${i} matched:`, pattern);
                 return {
                     isValid: false,
                     message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nThis app is designed for organizing lists, not general text or questions.'
                 };
             }
         }
+        console.log('✅ No pattern matches found');
 
         // Check for valid shopping list patterns
         const items = text.split(/[,\n]/).map(item => item.trim()).filter(item => item.length > 0);
@@ -2159,11 +2163,15 @@ Items: ${items.join(', ')}
         }
 
         // Validate input to ensure it looks like a shopping list
+        console.log('🔍 Starting input validation...');
         const validationResult = this.validateShoppingListInput(inputText);
+        console.log('🔍 Validation result:', validationResult);
         if (!validationResult.isValid) {
+            console.log('❌ Validation failed, showing alert');
             alert(validationResult.message);
             return;
         }
+        console.log('✅ Validation passed, proceeding...');
 
         // Show loading indicator
         const organizeBtn = document.getElementById('organizeBtn');
