@@ -2751,8 +2751,11 @@ Items: ${items.join(', ')}
                 return;
             }
 
-            // Get collaborators for assignment info
-            const collaborators = await this.loadListCollaboratorsForExport();
+            // Get collaborators for assignment info - use existing collaborators if available
+            let collaborators = this.currentCollaborators || [];
+            if (collaborators.length === 0) {
+                collaborators = await this.loadListCollaborators();
+            }
             
             // Generate WhatsApp-friendly text
             const whatsappText = await this.generateWhatsAppText(collaborators);
@@ -2768,18 +2771,6 @@ Items: ${items.join(', ')}
         }
     }
 
-    async loadListCollaboratorsForExport() {
-        try {
-            if (this.mode === 'authenticated' && this.currentListId && window.SupabaseConfig) {
-                const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
-                console.log('📋 Loaded collaborators for export:', collaborators);
-                return collaborators || [];
-            }
-        } catch (error) {
-            console.warn('Could not load collaborators for export:', error);
-        }
-        return [];
-    }
 
     async generateWhatsAppText(collaborators) {
         const listTitle = this.currentListName || 'Shopping List';
@@ -2791,20 +2782,9 @@ Items: ${items.join(', ')}
         // Create collaborator lookup for assignments
         const collaboratorMap = {};
         collaborators.forEach(collab => {
-            console.log('📋 Processing collaborator:', {
-                user_id: collab.user_id,
-                display_name: collab.display_name,
-                email: collab.email,
-                name: collab.name,
-                profiles: collab.profiles,
-                allKeys: Object.keys(collab)
-            });
             collaboratorMap[collab.user_id] = collab.display_name || 
                                              collab.email || 
                                              collab.name ||
-                                             collab.profiles?.display_name ||
-                                             collab.profiles?.email ||
-                                             collab.profiles?.name ||
                                              `User ${collab.user_id.substring(0, 8)}`;
         });
         
@@ -2818,13 +2798,6 @@ Items: ${items.join(', ')}
             }
         }
         
-        // Debug logging
-        console.log('📋 WhatsApp Export Debug:', {
-            collaboratorsCount: collaborators.length,
-            collaboratorMap,
-            currentLists: this.currentLists,
-            currentUser: this.currentUser?.email
-        });
         
         // Add assignment summary if there are any users in the collaborator map
         if (Object.keys(collaboratorMap).length > 0) {
