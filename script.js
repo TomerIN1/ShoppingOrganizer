@@ -2772,6 +2772,7 @@ Items: ${items.join(', ')}
         try {
             if (this.mode === 'authenticated' && this.currentListId && window.SupabaseConfig) {
                 const collaborators = await window.SupabaseConfig.getListCollaborators(this.currentListId);
+                console.log('📋 Loaded collaborators for export:', collaborators);
                 return collaborators || [];
             }
         } catch (error) {
@@ -2802,6 +2803,14 @@ Items: ${items.join(', ')}
                                                this.currentUser.email;
             }
         }
+        
+        // Debug logging
+        console.log('📋 WhatsApp Export Debug:', {
+            collaboratorsCount: collaborators.length,
+            collaboratorMap,
+            currentLists: this.currentLists,
+            currentUser: this.currentUser?.email
+        });
         
         // Add assignment summary if there are any users in the collaborator map
         if (Object.keys(collaboratorMap).length > 0) {
