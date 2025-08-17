@@ -2791,7 +2791,13 @@ Items: ${items.join(', ')}
         // Create collaborator lookup for assignments
         const collaboratorMap = {};
         collaborators.forEach(collab => {
-            console.log('📋 Processing collaborator:', collab);
+            console.log('📋 Processing collaborator:', {
+                user_id: collab.user_id,
+                display_name: collab.display_name,
+                email: collab.email,
+                name: collab.name,
+                allKeys: Object.keys(collab)
+            });
             collaboratorMap[collab.user_id] = collab.display_name || 
                                              collab.email || 
                                              collab.name || 
