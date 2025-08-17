@@ -1633,8 +1633,8 @@ Example:
             }
         });
         
-        // If more than half the entries look inverted, fix the format
-        if (invertedCount > entries.length / 2) {
+        // If ANY entries look inverted, fix the format (be more aggressive)
+        if (invertedCount > 0) {
             console.log('🔄 Detected inverted AI response format, correcting...');
             console.log('📊 Inverted count:', invertedCount, 'out of', entries.length, 'entries');
             const corrected = {};
@@ -2154,12 +2154,17 @@ Items: ${items.join(', ')}
         const container = document.getElementById('categorizedLists');
         container.innerHTML = '';
 
+        console.log('🎨 renderCategorizedLists called with data:', this.currentLists);
+        console.log('🎨 Data structure check - keys:', Object.keys(this.currentLists));
+        console.log('🎨 First 2 entries:', Object.entries(this.currentLists).slice(0, 2));
+
         if (Object.keys(this.currentLists).length === 0) {
             container.innerHTML = '<div class="empty-state">No items to display</div>';
             return;
         }
 
         Object.entries(this.currentLists).forEach(([category, items]) => {
+            console.log(`🎨 Rendering category: "${category}" with items:`, items);
             const categoryCard = this.createCategoryCard(category, items);
             container.appendChild(categoryCard);
         });
