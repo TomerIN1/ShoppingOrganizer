@@ -2753,8 +2753,11 @@ Items: ${items.join(', ')}
 
             // Get collaborators for assignment info - use existing collaborators if available
             let collaborators = this.currentCollaborators || [];
+            console.log('📋 Current collaborators:', collaborators?.length || 0);
             if (collaborators.length === 0) {
+                console.log('📋 Loading collaborators from database...');
                 collaborators = await this.loadListCollaborators();
+                console.log('📋 Loaded collaborators:', collaborators?.length || 0, collaborators);
             }
             
             // Generate WhatsApp-friendly text
@@ -2773,6 +2776,8 @@ Items: ${items.join(', ')}
 
 
     async generateWhatsAppText(collaborators) {
+        console.log('📋 generateWhatsAppText called with:', collaborators?.length || 0, 'collaborators');
+        
         const listTitle = this.currentListName || 'Shopping List';
         const currentDate = new Date().toLocaleDateString();
         
@@ -2782,10 +2787,9 @@ Items: ${items.join(', ')}
         // Create collaborator lookup for assignments
         const collaboratorMap = {};
         collaborators.forEach(collab => {
-            collaboratorMap[collab.user_id] = collab.display_name || 
-                                             collab.email || 
-                                             collab.name ||
-                                             `User ${collab.user_id.substring(0, 8)}`;
+            const name = collab.display_name || collab.email || collab.name || `User ${collab.user_id.substring(0, 8)}`;
+            console.log('📋 Mapping collaborator:', collab.user_id, '->', name);
+            collaboratorMap[collab.user_id] = name;
         });
         
         // Include current user if authenticated and not already in collaborators
