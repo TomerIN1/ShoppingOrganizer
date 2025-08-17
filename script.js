@@ -188,7 +188,8 @@ class ShoppingListOrganizer {
         // Shared Lists dashboard event listeners
         // Note: Shared lists are now integrated into My Lists page
 
-        // Share functionality event listeners
+        // Share and export functionality event listeners
+        document.getElementById('downloadWhatsAppBtn').addEventListener('click', () => this.downloadWhatsAppExport());
         document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
         document.getElementById('shareModalClose').addEventListener('click', () => this.hideShareModal());
         document.getElementById('shareModalBackdrop').addEventListener('click', () => this.hideShareModal());
@@ -903,6 +904,7 @@ class ShoppingListOrganizer {
 
     updateShareButtonVisibility() {
         const shareButton = document.getElementById('shareListBtn');
+        const whatsappButton = document.getElementById('downloadWhatsAppBtn');
         
         // Show share button only if:
         // 1. User is authenticated
@@ -911,6 +913,13 @@ class ShoppingListOrganizer {
             shareButton.style.display = 'inline-block';
         } else {
             shareButton.style.display = 'none';
+        }
+        
+        // Show WhatsApp export button if there's any current list
+        if (this.currentLists && Object.keys(this.currentLists).length > 0) {
+            whatsappButton.style.display = 'inline-block';
+        } else {
+            whatsappButton.style.display = 'none';
         }
     }
 
@@ -2731,6 +2740,120 @@ Items: ${items.join(', ')}
                 await this.autoSaveCurrentList();
             }
         }
+    }
+
+    async downloadWhatsAppExport() {
+        try {
+            console.log('📱 Generating WhatsApp export...');
+            
+            if (!this.currentLists || Object.keys(this.currentLists).length === 0) {
+                alert('No shopping list to export. Please organize a list first.');
+                return;
+            }
+
+            // Get collaborators for assignment info
+            const collaborators = await this.loadListCollaboratorsForExport();
+            
+            // Generate WhatsApp-friendly text
+            const whatsappText = await this.generateWhatsAppText(collaborators);
+            
+            // Create and download text file
+            this.downloadTextFile(whatsappText, 'shopping-list-whatsapp.txt');
+            
+            console.log('✅ WhatsApp export completed successfully');
+            
+        } catch (error) {
+            console.error('❌ Failed to generate WhatsApp export:', error);
+            alert('Failed to generate WhatsApp export. Please try again.');
+        }
+    }
+
+    async loadListCollaboratorsForExport() {
+        try {
+            if (this.mode === 'authenticated' && this.currentListId && window.SupabaseConfig) {
+                const collaborators = await window.SupabaseConfig.getListCollaborators(this.currentListId);
+                return collaborators || [];
+            }
+        } catch (error) {
+            console.warn('Could not load collaborators for export:', error);
+        }
+        return [];
+    }
+
+    async generateWhatsAppText(collaborators) {
+        const listTitle = this.currentListName || 'Shopping List';
+        const currentDate = new Date().toLocaleDateString();
+        
+        let whatsappText = `🛒 *${listTitle}*\n`;
+        whatsappText += `📅 ${currentDate}\n\n`;
+        
+        // Create collaborator lookup for assignments
+        const collaboratorMap = {};
+        collaborators.forEach(collab => {
+            collaboratorMap[collab.user_id] = collab.display_name || collab.email;
+        });
+        
+        // Process each category
+        Object.entries(this.currentLists).forEach(([categoryName, items]) => {
+            whatsappText += `*${categoryName}*\n`;
+            whatsappText += `${'─'.repeat(Math.min(categoryName.length, 20))}\n`;
+            
+            // Handle category assignment
+            const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
+            const actualItems = categoryData.items || [];
+            const assignedTo = categoryData.assigned_to;
+            
+            if (assignedTo && collaboratorMap[assignedTo]) {
+                whatsappText += `👤 Assigned to: ${collaboratorMap[assignedTo]}\n`;
+            }
+            
+            // Process items
+            if (Array.isArray(actualItems) && actualItems.length > 0) {
+                actualItems.forEach(item => {
+                    const itemData = typeof item === 'string' ? { name: item, amount: '', unit: 'pcs' } : item;
+                    const itemName = itemData.name || '';
+                    const itemAmount = itemData.amount || '';
+                    const itemUnit = itemData.unit || 'pcs';
+                    
+                    let itemLine = `• ${itemName}`;
+                    if (itemAmount && itemAmount.trim()) {
+                        itemLine += ` (${itemAmount} ${itemUnit})`;
+                    }
+                    whatsappText += `${itemLine}\n`;
+                });
+            } else {
+                whatsappText += `• No items\n`;
+            }
+            
+            whatsappText += '\n';
+        });
+        
+        // Add footer
+        whatsappText += `📱 Generated by Shopping List Organizer\n`;
+        whatsappText += `🔗 ${window.location.origin}`;
+        
+        return whatsappText;
+    }
+
+    downloadTextFile(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        
+        // Show user instructions
+        setTimeout(() => {
+            alert('📱 WhatsApp export downloaded!\n\nTo share:\n1. Open the downloaded text file\n2. Copy the content\n3. Paste into WhatsApp chat\n\nThe format is optimized for WhatsApp reading!');
+        }, 100);
     }
 }
 
