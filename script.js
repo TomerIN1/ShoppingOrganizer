@@ -2751,14 +2751,10 @@ Items: ${items.join(', ')}
                 return;
             }
 
-            // Get collaborators for assignment info - use existing collaborators if available
-            let collaborators = this.currentCollaborators || [];
-            console.log('📋 Current collaborators:', collaborators?.length || 0);
-            if (collaborators.length === 0) {
-                console.log('📋 Loading collaborators from database...');
-                collaborators = await this.loadListCollaborators();
-                console.log('📋 Loaded collaborators:', collaborators?.length || 0, collaborators);
-            }
+            // Get collaborators for assignment info - always load fresh for export
+            console.log('📋 Loading fresh collaborators for export...');
+            const collaborators = await this.loadListCollaborators();
+            console.log('📋 Loaded collaborators:', collaborators?.length || 0, collaborators);
             
             // Generate WhatsApp-friendly text
             const whatsappText = await this.generateWhatsAppText(collaborators);
