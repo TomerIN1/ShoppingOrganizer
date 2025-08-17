@@ -2793,8 +2793,18 @@ Items: ${items.join(', ')}
             collaboratorMap[collab.user_id] = collab.display_name || collab.email;
         });
         
-        // Add assignment summary if there are collaborators
-        if (collaborators.length > 0) {
+        // Include current user if authenticated and not already in collaborators
+        if (this.mode === 'authenticated' && this.currentUser) {
+            const currentUserId = this.currentUser.id;
+            if (!collaboratorMap[currentUserId]) {
+                collaboratorMap[currentUserId] = this.currentUser.user_metadata?.full_name || 
+                                               this.currentUser.user_metadata?.name || 
+                                               this.currentUser.email;
+            }
+        }
+        
+        // Add assignment summary if there are any users in the collaborator map
+        if (Object.keys(collaboratorMap).length > 0) {
             const assignments = {};
             Object.entries(this.currentLists).forEach(([categoryName, items]) => {
                 const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
@@ -2822,6 +2832,7 @@ Items: ${items.join(', ')}
             const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
             const actualItems = categoryData.items || [];
             const assignedTo = categoryData.assigned_to;
+            
             
             if (assignedTo && collaboratorMap[assignedTo]) {
                 whatsappText += `*${categoryName}* 👤 (${collaboratorMap[assignedTo]})\n`;
