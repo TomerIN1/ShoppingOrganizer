@@ -1627,9 +1627,15 @@ Example:
         let invertedCount = 0;
         
         entries.forEach(([key, value]) => {
+            console.log(`  🔍 Analyzing entry: "${key}" -> ${typeof value} "${value}"`);
             // If the value contains commas or is very long, it's likely a list of items (inverted format)
             if (typeof value === 'string' && (value.includes(',') || value.length > 50)) {
+                console.log(`    ⚠️ Detected as inverted (string with comma or long)`);
                 invertedCount++;
+            } else if (Array.isArray(value)) {
+                console.log(`    ✅ Detected as array (correct format)`);
+            } else {
+                console.log(`    ❓ Unexpected format`);
             }
         });
         
