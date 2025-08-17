@@ -189,7 +189,7 @@ class ShoppingListOrganizer {
         // Note: Shared lists are now integrated into My Lists page
 
         // Share and export functionality event listeners
-        document.getElementById('downloadWhatsAppBtn').addEventListener('click', () => this.downloadWhatsAppExport());
+        document.getElementById('downloadWhatsAppBtn').addEventListener('click', () => this.copyToWhatsApp());
         document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
         document.getElementById('shareModalClose').addEventListener('click', () => this.hideShareModal());
         document.getElementById('shareModalBackdrop').addEventListener('click', () => this.hideShareModal());
@@ -2742,12 +2742,12 @@ Items: ${items.join(', ')}
         }
     }
 
-    async downloadWhatsAppExport() {
+    async copyToWhatsApp() {
         try {
-            console.log('📱 Generating WhatsApp export...');
+            console.log('📱 Copying list for WhatsApp...');
             
             if (!this.currentLists || Object.keys(this.currentLists).length === 0) {
-                alert('No shopping list to export. Please organize a list first.');
+                alert('No shopping list to copy. Please organize a list first.');
                 return;
             }
 
@@ -2757,14 +2757,14 @@ Items: ${items.join(', ')}
             // Generate WhatsApp-friendly text
             const whatsappText = await this.generateWhatsAppText(collaborators);
             
-            // Create and download text file
-            this.downloadTextFile(whatsappText, 'shopping-list-whatsapp.txt');
+            // Copy to clipboard
+            await this.copyToClipboard(whatsappText);
             
-            console.log('✅ WhatsApp export completed successfully');
+            console.log('✅ List copied to clipboard successfully');
             
         } catch (error) {
-            console.error('❌ Failed to generate WhatsApp export:', error);
-            alert('Failed to generate WhatsApp export. Please try again.');
+            console.error('❌ Failed to copy list:', error);
+            alert('Failed to copy list. Please try again.');
         }
     }
 
@@ -2835,25 +2835,64 @@ Items: ${items.join(', ')}
         return whatsappText;
     }
 
-    downloadTextFile(content, filename) {
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
+    async copyToClipboard(text) {
+        try {
+            // Modern browsers with Clipboard API
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                this.showCopySuccess();
+                return;
+            }
+            
+            // Fallback for older browsers or non-HTTPS
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            if (successful) {
+                this.showCopySuccess();
+            } else {
+                throw new Error('Copy command failed');
+            }
+        } catch (error) {
+            console.error('Failed to copy to clipboard:', error);
+            // Show the text in a popup as last resort
+            this.showTextPopup(text);
+        }
+    }
+
+    showCopySuccess() {
+        // Show success message
+        const button = document.getElementById('downloadWhatsAppBtn');
+        const originalText = button.innerHTML;
         
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.style.display = 'none';
+        button.innerHTML = '✅ Copied!';
+        button.style.backgroundColor = '#22c55e';
         
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.backgroundColor = '';
+        }, 2000);
         
         // Show user instructions
         setTimeout(() => {
-            alert('📱 WhatsApp export downloaded!\n\nTo share:\n1. Open the downloaded text file\n2. Copy the content\n3. Paste into WhatsApp chat\n\nThe format is optimized for WhatsApp reading!');
+            alert('✅ Shopping list copied to clipboard!\n\nNext steps:\n1. Open WhatsApp\n2. Go to your chat\n3. Paste (Ctrl+V or long press)\n\nYour list is ready to share! 📱');
         }, 100);
+    }
+
+    showTextPopup(text) {
+        // Fallback: show text in alert for manual copy
+        const shortText = text.length > 500 ? text.substring(0, 500) + '...' : text;
+        alert('Copy failed. Here\'s your list to copy manually:\n\n' + shortText + '\n\n(Open browser console to see full text)');
+        console.log('Full WhatsApp text for manual copy:', text);
     }
 }
 
