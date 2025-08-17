@@ -2796,11 +2796,15 @@ Items: ${items.join(', ')}
                 display_name: collab.display_name,
                 email: collab.email,
                 name: collab.name,
+                profiles: collab.profiles,
                 allKeys: Object.keys(collab)
             });
             collaboratorMap[collab.user_id] = collab.display_name || 
                                              collab.email || 
-                                             collab.name || 
+                                             collab.name ||
+                                             collab.profiles?.display_name ||
+                                             collab.profiles?.email ||
+                                             collab.profiles?.name ||
                                              `User ${collab.user_id.substring(0, 8)}`;
         });
         
