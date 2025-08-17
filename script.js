@@ -2080,7 +2080,7 @@ Items: ${items.join(', ')}
             if (pattern.test(text)) {
                 return {
                     isValid: false,
-                    message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nThis app is designed for shopping lists, not general text or questions.'
+                    message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nThis app is designed for organizing lists, not general text or questions.'
                 };
             }
         }
