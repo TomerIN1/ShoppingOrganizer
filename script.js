@@ -2771,7 +2771,7 @@ Items: ${items.join(', ')}
     async loadListCollaboratorsForExport() {
         try {
             if (this.mode === 'authenticated' && this.currentListId && window.SupabaseConfig) {
-                const collaborators = await window.SupabaseConfig.getListCollaborators(this.currentListId);
+                const collaborators = await window.SupabaseConfig.database.getListCollaborators(this.currentListId);
                 console.log('📋 Loaded collaborators for export:', collaborators);
                 return collaborators || [];
             }
