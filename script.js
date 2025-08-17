@@ -2062,7 +2062,9 @@ Items: ${items.join(', ')}
         // Check for obvious signs this is not a shopping list
         const freeTextIndicators = [
             // Questions or conversational text
-            /\b(how|what|when|where|why|who|can you|could you|please|help|assist)\b/,
+            /\b(how|what|when|where|why|who|can you|could you|please|help|assist|question|answer)\b/,
+            // Common sentence patterns with "this/that is"
+            /\b(this|that)\s+(is|was|will be|would be|could be)\s+(a|an|the)?\s*\w+/,
             // Complete sentences with articles and verbs
             /\b(the|this|that|these|those)\s+\w+\s+(is|are|was|were|will|would|should|could|fought|guide|guided|whispered|lost|found|made|took|gave|came|went|said|told)\b/,
             // Narrative/story patterns
