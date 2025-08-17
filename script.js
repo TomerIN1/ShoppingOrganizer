@@ -1674,9 +1674,16 @@ Example:
         const grouped = {};
         const categoryAliases = {};
         
+        // Debug the corrected response
+        console.log('🔧 Processing corrected response:', correctedResponse);
+        console.log('🔧 Sample entries:', Object.entries(correctedResponse).slice(0, 5));
+        
         // First pass: collect all categories and their aliases
         Object.entries(correctedResponse).forEach(([item, category]) => {
+            console.log(`🔧 Processing: item="${item}" -> category="${category}"`);
+            
             const normalizedCategory = this.normalizeCategoryName(category);
+            console.log(`🔧 Normalized category: "${normalizedCategory}"`);
             
             // Check if this category is similar to an existing one
             let targetCategory = normalizedCategory;
@@ -1684,6 +1691,7 @@ Example:
             for (const existingCategory of Object.keys(categoryAliases)) {
                 if (this.areCategoriesSimilar(normalizedCategory, existingCategory)) {
                     targetCategory = existingCategory;
+                    console.log(`🔧 Merged with existing category: "${targetCategory}"`);
                     break;
                 }
             }
@@ -1696,6 +1704,7 @@ Example:
                 grouped[targetCategory] = [];
             }
             grouped[targetCategory].push(item);
+            console.log(`🔧 Added "${item}" to category "${targetCategory}". Current items:`, grouped[targetCategory]);
         });
         
         console.log('📊 Category grouping complete:', {
