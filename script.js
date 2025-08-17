@@ -2055,6 +2055,85 @@ Items: ${items.join(', ')}
         }
     }
 
+    validateShoppingListInput(inputText) {
+        // Clean the input text
+        const text = inputText.trim().toLowerCase();
+        
+        // Check for obvious signs this is not a shopping list
+        const freeTextIndicators = [
+            // Questions or conversational text
+            /\b(how|what|when|where|why|who|can you|could you|please|help|assist)\b/,
+            // Complete sentences with articles
+            /\b(the|this|that|these|those)\s+\w+\s+(is|are|was|were|will|would|should|could)\b/,
+            // Personal pronouns in conversational context
+            /\b(i am|i'm|you are|you're|he is|she is|we are|they are)\b/,
+            // Long sentences (> 15 words)
+            /\b\w+(\s+\w+){15,}\b/,
+            // Common non-shopping phrases
+            /\b(write me|tell me|explain|describe|create|make|generate|build|develop)\b/,
+            // Inappropriate content patterns
+            /\b(fuck|shit|damn|hell|stupid|idiot|hate|kill|die)\b/i,
+        ];
+
+        // Check if input contains obvious free-text patterns
+        for (const pattern of freeTextIndicators) {
+            if (pattern.test(text)) {
+                return {
+                    isValid: false,
+                    message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nThis app is designed for shopping lists, not general text or questions.'
+                };
+            }
+        }
+
+        // Check for valid shopping list patterns
+        const items = text.split(/[,\n]/).map(item => item.trim()).filter(item => item.length > 0);
+        
+        // Must have at least 1 item
+        if (items.length === 0) {
+            return {
+                isValid: false,
+                message: '⚠️ Please enter at least one shopping item.'
+            };
+        }
+
+        // Check if items are too long (likely sentences, not items)
+        const maxItemLength = 50;
+        const tooLongItems = items.filter(item => item.length > maxItemLength);
+        if (tooLongItems.length > 0) {
+            return {
+                isValid: false,
+                message: '⚠️ Shopping items should be short (like "milk" or "whole wheat bread").\n\nPlease use commas or new lines to separate items.'
+            };
+        }
+
+        // Check if most items look like shopping items vs sentences
+        let sentenceLikeItems = 0;
+        for (const item of items) {
+            // Count items that look like sentences (have multiple common words)
+            const commonWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'];
+            const wordCount = item.split(/\s+/).length;
+            const commonWordCount = commonWords.filter(word => item.includes(` ${word} `)).length;
+            
+            if (wordCount > 5 && commonWordCount > 1) {
+                sentenceLikeItems++;
+            }
+        }
+
+        // If more than half the items look like sentences, reject
+        if (sentenceLikeItems > items.length / 2) {
+            return {
+                isValid: false,
+                message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nAvoid full sentences and use commas to separate items.'
+            };
+        }
+
+        // Input looks valid
+        return {
+            isValid: true,
+            message: 'Input validation passed'
+        };
+    }
+
     async organizeList() {
         const inputText = document.getElementById('freeTextInput').value;
         console.log('🚀 organizeList called with input text length:', inputText.length);
@@ -2062,6 +2141,13 @@ Items: ${items.join(', ')}
         
         if (!inputText.trim()) {
             alert('Please enter some shopping items first!');
+            return;
+        }
+
+        // Validate input to ensure it looks like a shopping list
+        const validationResult = this.validateShoppingListInput(inputText);
+        if (!validationResult.isValid) {
+            alert(validationResult.message);
             return;
         }
 
