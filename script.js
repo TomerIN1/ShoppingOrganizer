@@ -969,7 +969,7 @@ class ShoppingListOrganizer {
         
         if (!this.currentListId) {
             console.warn('⚠️ No current list ID, skipping collaborator load');
-            return;
+            return [];
         }
 
         try {
@@ -1002,9 +1002,12 @@ class ShoppingListOrganizer {
                 this.renderCollaborators(collaborators);
             }
             
+            return collaborators;
+            
         } catch (error) {
             console.error('❌ Failed to load collaborators:', error);
             document.getElementById('sharedWithSection').style.display = 'none';
+            return [];
         }
     }
 
@@ -2782,11 +2785,13 @@ Items: ${items.join(', ')}
         
         // Create collaborator lookup for assignments
         const collaboratorMap = {};
-        collaborators.forEach(collab => {
-            const name = collab.display_name || collab.email || collab.name || `User ${collab.user_id.substring(0, 8)}`;
-            console.log('📋 Mapping collaborator:', collab.user_id, '->', name);
-            collaboratorMap[collab.user_id] = name;
-        });
+        if (collaborators && Array.isArray(collaborators)) {
+            collaborators.forEach(collab => {
+                const name = collab.display_name || collab.email || collab.name || `User ${collab.user_id.substring(0, 8)}`;
+                console.log('📋 Mapping collaborator:', collab.user_id, '->', name);
+                collaboratorMap[collab.user_id] = name;
+            });
+        }
         
         // Include current user if authenticated and not already in collaborators
         if (this.mode === 'authenticated' && this.currentUser) {
