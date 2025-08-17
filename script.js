@@ -2785,7 +2785,7 @@ Items: ${items.join(', ')}
         const currentDate = new Date().toLocaleDateString();
         
         let whatsappText = `🛒 *${listTitle}*\n`;
-        whatsappText += `📅 ${currentDate}\n\n`;
+        whatsappText += `📅 ${currentDate}\n`;
         
         // Create collaborator lookup for assignments
         const collaboratorMap = {};
@@ -2793,19 +2793,42 @@ Items: ${items.join(', ')}
             collaboratorMap[collab.user_id] = collab.display_name || collab.email;
         });
         
+        // Add assignment summary if there are collaborators
+        if (collaborators.length > 0) {
+            const assignments = {};
+            Object.entries(this.currentLists).forEach(([categoryName, items]) => {
+                const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
+                const assignedTo = categoryData.assigned_to;
+                if (assignedTo && collaboratorMap[assignedTo]) {
+                    const userName = collaboratorMap[assignedTo];
+                    if (!assignments[userName]) assignments[userName] = [];
+                    assignments[userName].push(categoryName);
+                }
+            });
+            
+            if (Object.keys(assignments).length > 0) {
+                whatsappText += '\n👥 *Shopping Assignments:*\n';
+                Object.entries(assignments).forEach(([userName, categories]) => {
+                    whatsappText += `• ${userName}: ${categories.join(', ')}\n`;
+                });
+            }
+        }
+        
+        whatsappText += '\n';
+        
         // Process each category
         Object.entries(this.currentLists).forEach(([categoryName, items]) => {
-            whatsappText += `*${categoryName}*\n`;
-            whatsappText += `${'─'.repeat(Math.min(categoryName.length, 20))}\n`;
-            
             // Handle category assignment
             const categoryData = (typeof items === 'object' && !Array.isArray(items)) ? items : { items: items };
             const actualItems = categoryData.items || [];
             const assignedTo = categoryData.assigned_to;
             
             if (assignedTo && collaboratorMap[assignedTo]) {
-                whatsappText += `👤 Assigned to: ${collaboratorMap[assignedTo]}\n`;
+                whatsappText += `*${categoryName}* 👤 (${collaboratorMap[assignedTo]})\n`;
+            } else {
+                whatsappText += `*${categoryName}*\n`;
             }
+            whatsappText += `${'─'.repeat(Math.min(categoryName.length + 10, 25))}\n`;
             
             // Process items
             if (Array.isArray(actualItems) && actualItems.length > 0) {
