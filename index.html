@@ -12,6 +12,7 @@
         <header class="app-header">
             <div class="header-left">
                 <h1 class="app-title">Shopping List Organizer</h1>
+                <p class="app-tagline">Smart AI organization for shopping and beyond</p>
             </div>
             <div class="header-right">
                 <!-- Guest Mode -->
@@ -38,18 +39,19 @@
         
         <main>
             <section class="input-section">
-                <h2>Enter Your Shopping List</h2>
+                <h2>Enter Your List Items</h2>
+                <p class="section-subtitle">Perfect for shopping, travel packing, DIY projects, and more!</p>
                 <div class="list-name-section">
                     <input 
                         type="text" 
                         id="listNameInput" 
-                        placeholder="List name (e.g., Weekly Shopping, Party Supplies...)"
+                        placeholder="List name (e.g., Weekly Shopping, Travel Packing, DIY Project...)"
                         class="list-name-input"
                     />
                 </div>
                 <textarea 
                     id="freeTextInput" 
-                    placeholder="Enter your shopping items here (e.g., milk, bread, apples, chicken breast, etc.)"
+                    placeholder="Enter your items here (e.g., milk, bread, apples, chicken breast, toothpaste, camera, etc.)"
                     rows="8"
                 ></textarea>
                 <div class="input-actions">
@@ -59,9 +61,40 @@
                 </div>
             </section>
 
+            <!-- Examples Section -->
+            <section class="examples-section">
+                <h3>Use Cases & Examples</h3>
+                <div class="examples-grid">
+                    <div class="example-card">
+                        <div class="example-icon">🛒</div>
+                        <h4>Shopping Lists</h4>
+                        <p>milk, bread, apples, chicken breast, yogurt</p>
+                        <small>Auto-categorized into Dairy, Bakery, Fruits, Meat</small>
+                    </div>
+                    <div class="example-card">
+                        <div class="example-icon">✈️</div>
+                        <h4>Travel Packing</h4>
+                        <p>passport, sunscreen, camera, medications, swimsuit</p>
+                        <small>Organized by Travel Docs, Health, Electronics</small>
+                    </div>
+                    <div class="example-card">
+                        <div class="example-icon">🔨</div>
+                        <h4>DIY Projects</h4>
+                        <p>screws, paint, brushes, sandpaper, gloves</p>
+                        <small>Sorted into Hardware, Supplies, Safety</small>
+                    </div>
+                    <div class="example-card">
+                        <div class="example-icon">🎉</div>
+                        <h4>Event Planning</h4>
+                        <p>balloons, cake, music playlist, invitations</p>
+                        <small>Categorized by Decorations, Food, Entertainment</small>
+                    </div>
+                </div>
+            </section>
+
             <section class="my-lists-section" id="myListsSection" style="display: none;">
                 <div class="section-header">
-                    <h2>My Shopping Lists</h2>
+                    <h2>My Lists</h2>
                     <div class="list-actions">
                         <button id="backToMainBtn" class="btn-secondary">← Back to Main</button>
                         <button id="refreshListsBtn" class="btn-primary">Refresh</button>

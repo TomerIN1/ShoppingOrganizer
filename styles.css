@@ -37,6 +37,14 @@ body {
     font-weight: 700;
 }
 
+.app-tagline {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 2px 0 0 0;
+    font-weight: 400;
+    font-style: italic;
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -250,8 +258,80 @@ body {
 
 .input-section h2 {
     color: #34495e;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     font-size: 1.5rem;
+}
+
+.section-subtitle {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    font-weight: 400;
+}
+
+/* Examples Section */
+.examples-section {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.examples-section h3 {
+    color: #34495e;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.example-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.example-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.example-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.example-card h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.example-card p {
+    color: #5a6c7d;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-family: monospace;
+    background: white;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.example-card small {
+    color: #7f8c8d;
+    font-size: 0.8rem;
+    font-style: italic;
 }
 
 .list-name-section {
@@ -443,6 +523,15 @@ body {
 
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
+    .examples-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .example-card {
+        padding: 15px;
+    }
+    
     .category-header {
         padding: 12px 16px;
     }

@@ -159,7 +159,7 @@ class ToxicContentModerator {
     
     getWarningMessage(warningCount) {
         const messages = {
-            1: '🚨 Warning 1/3: Inappropriate language detected. Please keep your shopping lists family-friendly and revise your text.',
+            1: '🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.',
             2: '🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.',
             3: '🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.'
         };
@@ -1726,7 +1726,7 @@ class ShoppingListOrganizer {
             // Check for validation error from AI
             if (aiResponse.error === 'INVALID_INPUT') {
                 console.log('🚫 AI detected invalid input:', aiResponse.reason);
-                const error = new Error(aiResponse.reason || 'Content appears to be free text rather than shopping items');
+                const error = new Error(aiResponse.reason || 'Content appears to be free text rather than list items');
                 error.type = 'INVALID_INPUT';
                 throw error;
             }
@@ -1778,7 +1778,7 @@ class ShoppingListOrganizer {
             // Check for validation error from AI
             if (flexibleResponse.error === 'INVALID_INPUT') {
                 console.log('🚫 AI detected invalid input in flexible categorization:', flexibleResponse.reason);
-                const error = new Error(flexibleResponse.reason || 'Content appears to be free text rather than shopping items');
+                const error = new Error(flexibleResponse.reason || 'Content appears to be free text rather than list items');
                 error.type = 'INVALID_INPUT';
                 throw error;
             }
@@ -1856,7 +1856,7 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual shopping/grocery items that people would buy in stores.
+FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel, projects, etc.).
 
 If ANY item appears to be:
 - Narrative text, stories, or descriptions
@@ -1866,9 +1866,9 @@ If ANY item appears to be:
 - General text that isn't a shopping list
 
 THEN return this exact error format:
-{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than shopping items"}
+{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
 
-ONLY if ALL items are valid shopping/grocery items, then map each item to ONE category:
+ONLY if ALL items are valid list items, then map each item to ONE category:
 
 Items: ${items.join(', ')}
 
@@ -2009,7 +2009,7 @@ Example:
         
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual shopping/grocery items that people would buy in stores.
+FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel, projects, etc.).
 
 If ANY item appears to be:
 - Narrative text, stories, or descriptions
@@ -2019,9 +2019,9 @@ If ANY item appears to be:
 - General text that isn't a shopping list
 
 THEN return this exact error format:
-{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than shopping items"}
+{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
 
-ONLY if ALL items are valid shopping/grocery items, then categorize each item into EXACTLY ONE category from this list:
+ONLY if ALL items are valid list items, then categorize each item into EXACTLY ONE category from this list:
 ${categoriesText}
 
 Rules:
@@ -2366,7 +2366,7 @@ Items: ${items.join(', ')}
                 console.log(`❌ Pattern ${i} matched:`, pattern);
                 return {
                     isValid: false,
-                    message: '⚠️ Please enter shopping items only (e.g., "milk, bread, apples").\n\nThis app is designed for organizing lists, not general text or questions.'
+                    message: '⚠️ Please enter list items only (e.g., "milk, bread, apples" or "passport, sunscreen, camera").\n\nThis app is designed for organizing item lists, not general text or questions.'
                 };
             }
         }
