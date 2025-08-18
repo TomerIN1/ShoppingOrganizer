@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hebrew i18n Infrastructure Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .test-button:hover {
+            background: #2980b9;
+        }
+        
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .language-demo {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        /* RTL support for testing */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        [dir="rtl"] .test-button {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        
+        /* Hebrew font support */
+        [lang="he"] {
+            font-family: 'Noto Sans Hebrew', 'David', 'Arial Hebrew', sans-serif;
+            line-height: 1.5;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .console-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Hebrew i18n Infrastructure Test Suite</h1>
+        
+        <!-- Language Manager Test -->
+        <div class="test-section">
+            <h2>1. LanguageManager Initialization</h2>
+            <button class="test-button" onclick="testLanguageManager()">Test LanguageManager</button>
+            <div id="languageManagerResult" class="test-result"></div>
+        </div>
+        
+        <!-- Translation Loading Test -->
+        <div class="test-section">
+            <h2>2. Translation Loading</h2>
+            <button class="test-button" onclick="testTranslationLoading()">Load English</button>
+            <button class="test-button" onclick="testHebrewLoading()">Load Hebrew</button>
+            <button class="test-button" onclick="testFallback()">Test Fallback</button>
+            <div id="translationResult" class="test-result"></div>
+        </div>
+        
+        <!-- Language Switching Test -->
+        <div class="test-section">
+            <h2>3. Language Switching</h2>
+            <button class="test-button" onclick="switchToEnglish()">Switch to English</button>
+            <button class="test-button" onclick="switchToHebrew()">Switch to Hebrew</button>
+            <button class="test-button" onclick="testInvalidLanguage()">Test Invalid Language</button>
+            <div id="switchingResult" class="test-result"></div>
+        </div>
+        
+        <!-- Translation Key Test -->
+        <div class="test-section">
+            <h2>4. Translation Key Resolution</h2>
+            <button class="test-button" onclick="testTranslationKeys()">Test Translation Keys</button>
+            <div id="keyResult" class="test-result"></div>
+            
+            <div class="language-demo" id="translationDemo">
+                <p><strong>Current Language:</strong> <span id="currentLang">-</span></p>
+                <p><strong>Header Title:</strong> <span id="headerTitle">-</span></p>
+                <p><strong>Sign In Button:</strong> <span id="signInText">-</span></p>
+                <p><strong>Shopping Category:</strong> <span id="shoppingCategory">-</span></p>
+                <p><strong>Add Item:</strong> <span id="addItemText">-</span></p>
+            </div>
+        </div>
+        
+        <!-- RTL Direction Test -->
+        <div class="test-section">
+            <h2>5. RTL Direction Test</h2>
+            <button class="test-button" onclick="testRTL()">Test RTL Direction</button>
+            <div id="rtlResult" class="test-result"></div>
+        </div>
+        
+        <!-- Browser Storage Test -->
+        <div class="test-section">
+            <h2>6. Browser Storage Test</h2>
+            <button class="test-button" onclick="testLocalStorage()">Test localStorage</button>
+            <button class="test-button" onclick="clearStorage()">Clear Storage</button>
+            <div id="storageResult" class="test-result"></div>
+        </div>
+        
+        <!-- Overall Status -->
+        <div class="test-section">
+            <h2>7. Overall Status</h2>
+            <button class="test-button" onclick="runAllTests()">🧪 Run All Tests</button>
+            <div class="status-grid" id="statusGrid">
+                <!-- Status items will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Console Output -->
+        <div class="test-section">
+            <h2>📟 Console Output</h2>
+            <div id="consoleOutput" class="console-output">
+                Console output will appear here...
+            </div>
+            <button class="test-button" onclick="clearConsole()">Clear Console</button>
+        </div>
+    </div>
+    
+    <!-- Load our i18n infrastructure -->
+    <script src="language-manager.js"></script>
+    <script type="module">
+        // Import i18n loader
+        import I18nLoader from './translations/i18n.js';
+        
+        // Global variables for testing
+        let languageManager = null;
+        let i18nLoader = null;
+        
+        // Console capture for display
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#e74c3c' : type === 'warn' ? '#f39c12' : '#2ecc71';
+            consoleOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            addToConsole(args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalConsoleWarn.apply(console, args);
+            addToConsole(args.join(' '), 'warn');
+        };
+        
+        // Test functions
+        window.testLanguageManager = async function() {
+            const result = document.getElementById('languageManagerResult');
+            
+            try {
+                // Initialize LanguageManager
+                languageManager = new LanguageManager();
+                await languageManager.init();
+                
+                const info = languageManager.getCurrentLanguageInfo();
+                const supported = languageManager.getSupportedLanguages();
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ LanguageManager initialized successfully<br>
+                    📍 Current Language: ${languageManager.currentLanguage} (${info.nativeName})<br>
+                    🌐 Supported Languages: ${supported.map(l => l.code).join(', ')}<br>
+                    🧭 Direction: ${info.direction}<br>
+                    📱 RTL: ${languageManager.isRTL()}
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ LanguageManager test failed: ${error.message}`;
+                console.error('LanguageManager test failed:', error);
+            }
+        };
+        
+        window.testTranslationLoading = async function() {
+            const result = document.getElementById('translationResult');
+            
+            try {
+                if (!i18nLoader) {
+                    i18nLoader = new I18nLoader();
+                }
+                
+                const translation = await i18nLoader.loadTranslation('en');
+                const cacheStatus = i18nLoader.getCacheStatus();
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ English translation loaded<br>
+                    📝 Sections: ${Object.keys(translation).length}<br>
+                    🗂️ Cache: ${cacheStatus.loadedLanguages.join(', ')}<br>
+                    📋 Sample: "${translation.header?.title || 'N/A'}"
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Translation loading failed: ${error.message}`;
+            }
+        };
+        
+        window.testHebrewLoading = async function() {
+            const result = document.getElementById('translationResult');
+            
+            try {
+                if (!i18nLoader) {
+                    i18nLoader = new I18nLoader();
+                }
+                
+                const translation = await i18nLoader.loadTranslation('he');
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ Hebrew translation loaded<br>
+                    📝 Hebrew Title: "${translation.header?.title || 'N/A'}"<br>
+                    🔤 Categories: ${Object.keys(translation.categories || {}).length}<br>
+                    📋 Sample Hebrew: "${translation.header?.tagline || 'N/A'}"
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Hebrew loading failed: ${error.message}`;
+            }
+        };
+        
+        window.switchToEnglish = async function() {
+            const result = document.getElementById('switchingResult');
+            
+            try {
+                if (!languageManager) {
+                    languageManager = new LanguageManager();
+                }
+                
+                const success = await languageManager.switchLanguage('en');
+                
+                if (success) {
+                    result.className = 'test-result success';
+                    result.innerHTML = `✅ Switched to English successfully<br>📍 Current: ${languageManager.currentLanguage}`;
+                    updateTranslationDemo();
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = `❌ Failed to switch to English`;
+                }
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Switch to English failed: ${error.message}`;
+            }
+        };
+        
+        window.switchToHebrew = async function() {
+            const result = document.getElementById('switchingResult');
+            
+            try {
+                if (!languageManager) {
+                    languageManager = new LanguageManager();
+                    await languageManager.init();
+                }
+                
+                const success = await languageManager.switchLanguage('he');
+                
+                if (success) {
+                    result.className = 'test-result success';
+                    result.innerHTML = `✅ Switched to Hebrew successfully<br>📍 Current: ${languageManager.currentLanguage}`;
+                    updateTranslationDemo();
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = `❌ Failed to switch to Hebrew`;
+                }
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Switch to Hebrew failed: ${error.message}`;
+            }
+        };
+        
+        window.testTranslationKeys = async function() {
+            const result = document.getElementById('keyResult');
+            
+            try {
+                if (!languageManager) {
+                    languageManager = new LanguageManager();
+                    await languageManager.init();
+                }
+                
+                const tests = [
+                    { key: 'header.title', expected: 'string' },
+                    { key: 'header.signIn', expected: 'string' },
+                    { key: 'categories.Other', expected: 'string' },
+                    { key: 'nonexistent.key', expected: 'fallback' }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    const value = languageManager.t(test.key);
+                    const status = value && value !== test.key ? '✅' : '❌';
+                    results.push(`${status} ${test.key}: "${value}"`);
+                }
+                
+                result.className = 'test-result success';
+                result.innerHTML = results.join('<br>');
+                updateTranslationDemo();
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Translation key test failed: ${error.message}`;
+            }
+        };
+        
+        window.testRTL = function() {
+            const result = document.getElementById('rtlResult');
+            const html = document.documentElement;
+            
+            try {
+                const currentDir = html.getAttribute('dir');
+                const currentLang = html.getAttribute('lang');
+                const isRTL = languageManager ? languageManager.isRTL() : false;
+                
+                result.className = 'test-result info';
+                result.innerHTML = `
+                    📄 Document Direction: ${currentDir}<br>
+                    🔤 Document Language: ${currentLang}<br>
+                    🧭 Is RTL: ${isRTL}<br>
+                    📱 CSS Direction: ${getComputedStyle(document.body).direction}
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ RTL test failed: ${error.message}`;
+            }
+        };
+        
+        window.testLocalStorage = function() {
+            const result = document.getElementById('storageResult');
+            
+            try {
+                // Test localStorage operations
+                const testKey = 'test_i18n_storage';
+                const testValue = 'test_value_' + Date.now();
+                
+                localStorage.setItem(testKey, testValue);
+                const retrieved = localStorage.getItem(testKey);
+                localStorage.removeItem(testKey);
+                
+                const currentLang = localStorage.getItem('app_language');
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ localStorage working<br>
+                    💾 Test Write/Read: ${retrieved === testValue ? 'Success' : 'Failed'}<br>
+                    🌐 Stored Language: ${currentLang || 'None'}<br>
+                    📊 Available: ${typeof(Storage) !== 'undefined' ? 'Yes' : 'No'}
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ localStorage test failed: ${error.message}`;
+            }
+        };
+        
+        window.updateTranslationDemo = function() {
+            if (!languageManager) return;
+            
+            document.getElementById('currentLang').textContent = languageManager.currentLanguage;
+            document.getElementById('headerTitle').textContent = languageManager.t('header.title');
+            document.getElementById('signInText').textContent = languageManager.t('header.signIn');
+            document.getElementById('shoppingCategory').textContent = languageManager.t('categories.Fruits & Vegetables');
+            document.getElementById('addItemText').textContent = languageManager.t('items.add');
+        };
+        
+        window.runAllTests = async function() {
+            console.log('🧪 Running all tests...');
+            
+            // Run all tests sequentially
+            await testLanguageManager();
+            await testTranslationLoading();
+            await testHebrewLoading();
+            await testTranslationKeys();
+            testRTL();
+            testLocalStorage();
+            
+            // Update status grid
+            updateStatusGrid();
+            
+            console.log('✅ All tests completed');
+        };
+        
+        window.updateStatusGrid = function() {
+            const grid = document.getElementById('statusGrid');
+            const statuses = [
+                { name: 'LanguageManager', element: 'languageManagerResult' },
+                { name: 'Translations', element: 'translationResult' },
+                { name: 'Language Switching', element: 'switchingResult' },
+                { name: 'Translation Keys', element: 'keyResult' },
+                { name: 'RTL Support', element: 'rtlResult' },
+                { name: 'Storage', element: 'storageResult' }
+            ];
+            
+            grid.innerHTML = statuses.map(status => {
+                const element = document.getElementById(status.element);
+                const className = element?.className || '';
+                const statusClass = className.includes('success') ? 'success' : 
+                                  className.includes('error') ? 'error' : 'info';
+                const statusText = statusClass === 'success' ? '✅ PASS' : 
+                                  statusClass === 'error' ? '❌ FAIL' : '⏳ PENDING';
+                
+                return `<div class="status-item ${statusClass}">${status.name}<br>${statusText}</div>`;
+            }).join('');
+        };
+        
+        window.clearConsole = function() {
+            document.getElementById('consoleOutput').innerHTML = 'Console cleared...<br>';
+        };
+        
+        window.clearStorage = function() {
+            localStorage.removeItem('app_language');
+            console.log('🗑️ Cleared language storage');
+            testLocalStorage();
+        };
+        
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            console.log('🌍 i18n Test Suite Loaded');
+            addToConsole('Test suite initialized. Click "Run All Tests" to begin.', 'log');
+        });
+        
+    </script>
+</body>
+</html>

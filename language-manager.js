@@ -149,9 +149,15 @@ class LanguageManager {
         try {
             console.log(`📥 Loading translations for ${language}...`);
             
-            // Import translation file
-            const translationModule = await import(`./translations/${language}.js`);
-            this.translations[language] = translationModule.default || translationModule;
+            // Use I18nLoader if available, otherwise try direct import
+            if (window.I18nLoader) {
+                const loader = new window.I18nLoader();
+                this.translations[language] = await loader.loadTranslation(language);
+            } else {
+                // Fallback: try dynamic import
+                const translationModule = await import(`./translations/${language}.js`);
+                this.translations[language] = translationModule.default || translationModule;
+            }
             
             console.log(`✅ Translations loaded for ${language}`);
             return this.translations[language];

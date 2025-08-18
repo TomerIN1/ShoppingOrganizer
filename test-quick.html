@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick i18n Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; border-color: #c3e6cb; }
+        .error { background: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 8px 16px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Quick i18n Infrastructure Test</h1>
+        
+        <div class="test" id="test1">
+            <h3>Test 1: LanguageManager Loading</h3>
+            <button onclick="test1()">Test LanguageManager</button>
+            <div id="result1"></div>
+        </div>
+        
+        <div class="test" id="test2">
+            <h3>Test 2: Language Detection</h3>
+            <button onclick="test2()">Test Detection</button>
+            <div id="result2"></div>
+        </div>
+        
+        <div class="test" id="test3">
+            <h3>Test 3: Translation Keys</h3>
+            <button onclick="test3()">Test Keys</button>
+            <div id="result3"></div>
+        </div>
+        
+        <div class="test" id="test4">
+            <h3>Test 4: Language Switching</h3>
+            <button onclick="test4()">Switch to Hebrew</button>
+            <div id="result4"></div>
+        </div>
+        
+        <div class="test" id="status">
+            <h3>📊 Current Status</h3>
+            <p><strong>Language:</strong> <span id="currentLang">-</span></p>
+            <p><strong>Direction:</strong> <span id="currentDir">-</span></p>
+            <p><strong>Test Sample:</strong> <span id="sampleText">-</span></p>
+        </div>
+    </div>
+
+    <!-- Load LanguageManager -->
+    <script src="language-manager.js"></script>
+    
+    <script>
+        let manager = null;
+        
+        function updateStatus() {
+            if (manager) {
+                document.getElementById('currentLang').textContent = manager.currentLanguage;
+                document.getElementById('currentDir').textContent = document.documentElement.getAttribute('dir') || 'ltr';
+                document.getElementById('sampleText').textContent = manager.t('header.title') || 'No translation';
+            }
+        }
+        
+        async function test1() {
+            const result = document.getElementById('result1');
+            const test = document.getElementById('test1');
+            
+            try {
+                manager = new LanguageManager();
+                
+                result.innerHTML = `
+                    ✅ LanguageManager created<br>
+                    📍 Current Language: ${manager.currentLanguage}<br>
+                    🌐 Supported: ${manager.supportedLanguages.join(', ')}<br>
+                    🔧 Ready for init: ${typeof manager.init === 'function'}
+                `;
+                test.className = 'test success';
+                updateStatus();
+                
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+                test.className = 'test error';
+                console.error('Test 1 failed:', error);
+            }
+        }
+        
+        async function test2() {
+            const result = document.getElementById('result2');
+            const test = document.getElementById('test2');
+            
+            try {
+                if (!manager) {
+                    manager = new LanguageManager();
+                }
+                
+                const browserLang = manager.getBrowserLanguage();
+                const detectedLang = manager.detectLanguage();
+                const saved = localStorage.getItem('app_language');
+                
+                result.innerHTML = `
+                    ✅ Detection working<br>
+                    🌐 Browser Language: ${navigator.language}<br>
+                    🔍 Detected: ${detectedLang}<br>
+                    💾 Saved: ${saved || 'None'}<br>
+                    📱 Browser Detected: ${browserLang || 'None'}
+                `;
+                test.className = 'test success';
+                updateStatus();
+                
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+                test.className = 'test error';
+            }
+        }
+        
+        async function test3() {
+            const result = document.getElementById('result3');
+            const test = document.getElementById('test3');
+            
+            try {
+                if (!manager) {
+                    manager = new LanguageManager();
+                }
+                
+                // Try some basic translation keys with fallbacks
+                const tests = [
+                    manager.t('header.title', 'Fallback Title'),
+                    manager.t('header.signIn', 'Fallback Sign In'),
+                    manager.t('nonexistent.key', 'Fallback Text')
+                ];
+                
+                result.innerHTML = `
+                    ✅ Translation method working<br>
+                    📝 header.title: "${tests[0]}"<br>
+                    📝 header.signIn: "${tests[1]}"<br>
+                    📝 nonexistent.key: "${tests[2]}"<br>
+                    🔧 Method exists: ${typeof manager.t === 'function'}
+                `;
+                test.className = 'test success';
+                updateStatus();
+                
+            } catch (error) {
+                result.innerHTML = `❌ Error: ${error.message}`;
+                test.className = 'test error';
+            }
+        }
+        
+        async function test4() {
+            const result = document.getElementById('result4');
+            const test = document.getElementById('test4');
+            
+            try {
+                if (!manager) {
+                    manager = new LanguageManager();
+                }
+                
+                const previousLang = manager.currentLanguage;
+                
+                // Try to switch language (will fail gracefully if translations not loaded)
+                const success = await manager.switchLanguage('he');
+                
+                result.innerHTML = `
+                    📍 Switch attempted: ${previousLang} → he<br>
+                    📊 Success: ${success}<br>
+                    📱 Current: ${manager.currentLanguage}<br>
+                    🧭 Document Dir: ${document.documentElement.getAttribute('dir')}<br>
+                    🔧 Method exists: ${typeof manager.switchLanguage === 'function'}
+                `;
+                
+                if (success) {
+                    test.className = 'test success';
+                } else {
+                    test.className = 'test';
+                    result.innerHTML += '<br>ℹ️ Switch failed (expected without translation files)';
+                }
+                updateStatus();
+                
+            } catch (error) {
+                result.innerHTML = `⚠️ Expected error (translation loading): ${error.message}`;
+                test.className = 'test';
+            }
+        }
+        
+        // Initialize on load
+        window.addEventListener('load', function() {
+            console.log('🧪 Quick test suite loaded');
+            updateStatus();
+        });
+    </script>
+</body>
+</html>
