@@ -650,9 +650,98 @@ ShoppingOrganizer/
 - **Environment-Based Configuration**: Vercel deployment with proper secret management
 - **Backward Compatibility**: Seamless migration from legacy data formats
 
-## Next Development Priorities
+## 🚀 **CURRENT ACTIVE PROJECT: Hebrew Language Integration**
 
-### 1. **Enhanced Shopping Experience**
+### **Project Status**: Phase 1 - Infrastructure Setup (In Progress)
+**Timeline**: 3-4 weeks total | **Priority**: HIGH | **Started**: Current session
+
+### **Strategic Approach**: Hebrew First, Then Full-Scale Design
+**Rationale**: 
+- Hebrew RTL requirements will inform design decisions
+- i18n infrastructure affects component structure and styling  
+- Real user feedback in Hebrew before major design investment
+- Technical foundation established before design complexity
+
+### **📋 Complete Hebrew Integration Plan**
+
+#### **Phase 1: i18n Infrastructure Setup (Week 1)** 🔄 *IN PROGRESS*
+- ✅ **Language Detection & Storage**: Browser detection, localStorage persistence
+- 🔄 **LanguageManager Class**: Core language switching functionality
+- ⏳ **Translation Infrastructure**: File structure and loading system
+- ⏳ **Language Switcher UI**: Header toggle with flag icons
+
+#### **Phase 2: Content Translation (Week 2)**
+- **UI Text Translation**: All interface elements, buttons, labels
+- **Hebrew Translations**: Complete translation of all user-facing text
+- **Dynamic Content**: Error messages, notifications, form validation
+- **Category Names**: Hebrew equivalents for all 10 shopping categories
+
+#### **Phase 3: RTL (Right-to-Left) Support (Week 2-3)**
+- **CSS RTL Framework**: Direction switching, layout adjustments
+- **Component-Level RTL**: Input fields, buttons, cards, dropdowns, modals
+- **Hebrew Typography**: Font family, sizing, line-height optimizations
+- **Visual Polish**: Spacing, alignment, cultural UX adaptations
+
+#### **Phase 4: Technical Implementation (Week 3)**
+- **Language Context Integration**: Update ShoppingListOrganizer class
+- **AI Categorization in Hebrew**: Hebrew prompts for GPT-4o
+- **Database Adaptations**: UTF-8 compliance, language preferences
+- **Search & Filtering**: Hebrew text processing
+
+#### **Phase 5: Testing & Quality Assurance (Week 3-4)**
+- **Functionality Testing**: All features work in both languages
+- **Cross-Browser Testing**: Hebrew rendering, RTL CSS support
+- **User Experience Testing**: Native Hebrew speaker validation
+- **Performance Testing**: Load times with translations
+
+#### **Phase 6: Launch & Optimization (Week 4)**
+- **Gradual Rollout**: Beta testing with Hebrew users
+- **A/B Testing**: Language detection accuracy
+- **SEO & Marketing**: Hebrew meta tags, keywords, social content
+- **Documentation**: Hebrew help content and user guides
+
+### **📁 Required File Structure Changes**
+```
+ShoppingOrganizer/
+├── translations/
+│   ├── en.json          # English translations
+│   ├── he.json          # Hebrew translations  
+│   └── i18n.js          # Translation loader
+├── styles/
+│   ├── styles.css       # Base styles
+│   ├── rtl.css          # New RTL-specific styles
+│   └── hebrew.css       # Hebrew typography & cultural adaptations
+├── scripts/
+│   ├── script.js        # Updated with i18n support
+│   └── language-manager.js  # New language management system
+```
+
+### **🎯 Technical Implementation Targets**
+- **Language Switching**: Seamless toggle between English/Hebrew
+- **RTL Layout**: Complete right-to-left reading experience
+- **AI Integration**: GPT-4o categorization in Hebrew
+- **Performance**: No significant impact on load times
+- **Cultural UX**: Hebrew reading patterns and expectations
+- **Mobile-First**: RTL support across all device sizes
+
+### **🌍 Expected Multilingual Outcomes**
+- **Market Expansion**: Access to Hebrew-speaking user base
+- **Technical Foundation**: Scalable i18n infrastructure for future languages
+- **User Experience**: Native language support with cultural appropriateness
+- **Competitive Advantage**: Bilingual capability in niche market
+- **Future-Proofing**: Easy addition of additional languages
+
+---
+
+## Next Development Priorities (Post-Hebrew Integration)
+
+### 1. **Full-Scale Design Overhaul**
+- **Modern Design System**: Comprehensive visual redesign with bilingual support
+- **Enhanced Branding**: Professional visual identity for both languages
+- **Advanced Responsive Design**: Mobile-first approach with RTL considerations
+- **Component Library**: Reusable design components for both languages
+
+### 2. **Enhanced Shopping Experience**
 - **Shopping Mode**: Streamlined interface for in-store use
 - **Item Completion**: Check-off functionality with progress tracking
 - **Category Navigation**: Store layout optimization
@@ -712,18 +801,31 @@ ShoppingOrganizer/
 
 ---
 
-**Last Updated**: Enhanced Toxic Content Moderation with Specific Word Detection & Versatile App Branding  
-**Current Phase**: Production-ready app with comprehensive moderation, enhanced UX, delete functionality, and versatile branding  
-**Next Phase**: Enhanced shopping experience with advanced AI features and mobile optimization  
+**Last Updated**: Hebrew Language Integration Plan & GPT-4o Upgrade with Enhanced AI Validation  
+**Current Phase**: 🌍 **HEBREW INTEGRATION PROJECT** - Phase 1: i18n Infrastructure Setup (Active)  
+**Next Phase**: Phase 2: Content Translation & Hebrew UI Implementation  
+**Strategic Goal**: Bilingual Hebrew/English support before full-scale design overhaul  
 **Repository**: https://github.com/TomerIN1/ShoppingOrganizer.git  
 **Live Demo**: https://shopping-organizer.vercel.app  
 **Maintained by**: Claude Code collaborative development
+
+## 🔄 **Current Session Continuation Point**
+**Active Task**: Phase 1 - Infrastructure Setup
+**Next Step**: Create LanguageManager class with detection and storage
+**Implementation Status**: Ready to begin coding infrastructure
+**Files to Create**: translations/ directory, language-manager.js, i18n.js
 
 ## Quick Reference Commands
 
 **Reset Moderation System** (for testing/support):
 ```javascript
 organizer.resetModerationSystem()
+```
+
+**Check Current Language** (after implementation):
+```javascript
+console.log('Current Language:', organizer.languageManager.currentLanguage)
+organizer.languageManager.switchLanguage('he') // Switch to Hebrew
 ```
 
 **Check Moderation Status**:
