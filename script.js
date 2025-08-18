@@ -108,17 +108,18 @@ class ToxicContentModerator {
         }
         
         // Check for toxic content
-        const detectedCategory = this.detectToxicContent(inputText);
+        const detectionResult = this.detectToxicContent(inputText);
         
-        if (detectedCategory) {
+        if (detectionResult) {
             this.tracker.addWarning();
             
             return {
                 isValid: false,
                 isBlocked: this.tracker.isBlocked,
                 warningCount: this.tracker.warningCount,
-                category: detectedCategory,
-                message: this.getWarningMessage(this.tracker.warningCount)
+                category: detectionResult.category,
+                detectedWords: detectionResult.detectedWords,
+                message: this.getWarningMessage(this.tracker.warningCount, detectionResult.detectedWords)
             };
         }
         
@@ -127,6 +128,8 @@ class ToxicContentModerator {
     
     detectToxicContent(text) {
         const normalizedText = text.toLowerCase().trim();
+        const detectedWords = [];
+        let detectedCategory = null;
         
         // Check each category for toxic words
         for (const [category, words] of Object.entries(this.toxicWords)) {
@@ -135,7 +138,8 @@ class ToxicContentModerator {
                 const wordRegex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
                 if (wordRegex.test(normalizedText)) {
                     console.log(`🚨 Toxic content detected: "${word}" in category "${category}"`);
-                    return category;
+                    detectedWords.push(word);
+                    if (!detectedCategory) detectedCategory = category;
                 }
                 
                 // Also check for simple character substitutions
@@ -149,19 +153,32 @@ class ToxicContentModerator {
                 
                 if (wordRegex.test(substitutedText)) {
                     console.log(`🚨 Toxic content detected (substituted): "${word}" in category "${category}"`);
-                    return category;
+                    if (!detectedWords.includes(word)) {
+                        detectedWords.push(word);
+                    }
+                    if (!detectedCategory) detectedCategory = category;
                 }
             }
+        }
+        
+        if (detectedCategory) {
+            return {
+                category: detectedCategory,
+                detectedWords: detectedWords
+            };
         }
         
         return null;
     }
     
-    getWarningMessage(warningCount) {
+    getWarningMessage(warningCount, detectedWords = []) {
+        const wordList = detectedWords.length > 0 ? 
+            `\n\nDetected words: "${detectedWords.join('", "')}"` : '';
+        
         const messages = {
-            1: '🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.',
-            2: '🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.',
-            3: '🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.'
+            1: `🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.${wordList}`,
+            2: `🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.${wordList}`,
+            3: `🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.${wordList}`
         };
         
         return messages[warningCount] || messages[3];
