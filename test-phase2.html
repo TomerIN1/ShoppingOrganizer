@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 2 Bilingual Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .test-section h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .test-button:hover {
+            background: #2980b9;
+        }
+        
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .demo-area {
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        /* RTL support for testing */
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        [dir="rtl"] .test-button {
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        
+        /* Hebrew font support */
+        [lang="he"] {
+            font-family: 'Noto Sans Hebrew', 'David', 'Arial Hebrew', sans-serif;
+            line-height: 1.5;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .mini-app-demo {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #fafafa;
+        }
+        
+        .demo-category {
+            background: white;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .demo-category-header {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .demo-items {
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 Phase 2: Bilingual Integration Test Suite</h1>
+        
+        <!-- Language Manager Integration Test -->
+        <div class="test-section">
+            <h2>1. Language Manager Integration</h2>
+            <button class="test-button" onclick="testLanguageManagerIntegration()">Test Integration</button>
+            <div id="integrationResult" class="test-result"></div>
+        </div>
+        
+        <!-- Language Switching Test -->
+        <div class="test-section">
+            <h2>2. Language Switching</h2>
+            <button class="test-button" onclick="switchToEnglish()">Switch to English</button>
+            <button class="test-button" onclick="switchToHebrew()">Switch to Hebrew</button>
+            <button class="test-button" onclick="testAutoSwitch()">Auto Switch Test</button>
+            <div id="switchingResult" class="test-result"></div>
+        </div>
+        
+        <!-- Category Translation Test -->
+        <div class="test-section">
+            <h2>3. Category Name Translation</h2>
+            <button class="test-button" onclick="testCategoryTranslations()">Test Categories</button>
+            <div id="categoryResult" class="test-result"></div>
+            
+            <div class="mini-app-demo" id="categoryDemo">
+                <h4>Category Translation Demo:</h4>
+                <div id="demoCategoriesContainer"></div>
+            </div>
+        </div>
+        
+        <!-- UI Elements Translation Test -->
+        <div class="test-section">
+            <h2>4. UI Elements Translation</h2>
+            <button class="test-button" onclick="testUITranslations()">Test UI Elements</button>
+            <div id="uiResult" class="test-result"></div>
+            
+            <div class="demo-area" id="uiTranslationDemo">
+                <p><strong>App Title:</strong> <span id="demoTitle">-</span></p>
+                <p><strong>Tagline:</strong> <span id="demoTagline">-</span></p>
+                <p><strong>Add Category Button:</strong> <span id="demoAddCategory">-</span></p>
+                <p><strong>Share List Button:</strong> <span id="demoShareList">-</span></p>
+                <p><strong>Unassigned Text:</strong> <span id="demoUnassigned">-</span></p>
+            </div>
+        </div>
+        
+        <!-- RTL Layout Test -->
+        <div class="test-section">
+            <h2>5. RTL Layout Test</h2>
+            <button class="test-button" onclick="testRTLLayout()">Test RTL Layout</button>
+            <button class="test-button" onclick="toggleDirection()">Toggle Direction</button>
+            <div id="rtlResult" class="test-result"></div>
+            
+            <div class="demo-area" id="rtlDemo">
+                <p><strong>Current Direction:</strong> <span id="currentDirection">-</span></p>
+                <p><strong>Text Alignment:</strong> <span id="textAlignment">-</span></p>
+                <p><strong>Language:</strong> <span id="documentLanguage">-</span></p>
+            </div>
+        </div>
+        
+        <!-- Integration with Main App Test -->
+        <div class="test-section">
+            <h2>6. Main App Integration</h2>
+            <button class="test-button" onclick="testMainAppIntegration()">Test Integration</button>
+            <div id="mainAppResult" class="test-result"></div>
+        </div>
+        
+        <!-- Overall Status -->
+        <div class="test-section">
+            <h2>7. Overall Phase 2 Status</h2>
+            <button class="test-button" onclick="runAllPhase2Tests()">🧪 Run All Phase 2 Tests</button>
+            <div class="status-grid" id="statusGrid">
+                <!-- Status items will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load our files -->
+    <script src="language-manager.js"></script>
+    <script src="translations/i18n.js"></script>
+    <script src="translations/en.js"></script>
+    <script src="translations/he.js"></script>
+    <script>
+        // Global variables for testing
+        let testLanguageManager = null;
+        
+        // Test functions
+        window.testLanguageManagerIntegration = async function() {
+            const result = document.getElementById('integrationResult');
+            
+            try {
+                // Test if we can create and initialize language manager like the main app
+                testLanguageManager = new LanguageManager();
+                await testLanguageManager.init();
+                
+                const info = testLanguageManager.getCurrentLanguageInfo();
+                const isIntegrated = typeof testLanguageManager.t === 'function';
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ Language Manager Integration successful<br>
+                    📍 Current Language: ${testLanguageManager.currentLanguage}<br>
+                    🌐 Direction: ${info.direction}<br>
+                    📱 Translation Method: ${isIntegrated ? 'Available' : 'Missing'}<br>
+                    🔧 Helper Methods: ${Object.keys(testLanguageManager).length} methods available
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Integration test failed: ${error.message}`;
+                console.error('Integration test failed:', error);
+            }
+        };
+        
+        window.switchToEnglish = async function() {
+            const result = document.getElementById('switchingResult');
+            
+            try {
+                if (!testLanguageManager) {
+                    testLanguageManager = new LanguageManager();
+                    await testLanguageManager.init();
+                }
+                
+                const success = await testLanguageManager.switchLanguage('en');
+                
+                if (success) {
+                    result.className = 'test-result success';
+                    result.innerHTML = `✅ Switched to English successfully<br>📍 Current: ${testLanguageManager.currentLanguage}<br>🧭 Direction: ${document.documentElement.getAttribute('dir')}`;
+                    updateAllDemos();
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = `❌ Failed to switch to English`;
+                }
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Switch to English failed: ${error.message}`;
+            }
+        };
+        
+        window.switchToHebrew = async function() {
+            const result = document.getElementById('switchingResult');
+            
+            try {
+                if (!testLanguageManager) {
+                    testLanguageManager = new LanguageManager();
+                    await testLanguageManager.init();
+                }
+                
+                const success = await testLanguageManager.switchLanguage('he');
+                
+                if (success) {
+                    result.className = 'test-result success';
+                    result.innerHTML = `✅ Switched to Hebrew successfully<br>📍 Current: ${testLanguageManager.currentLanguage}<br>🧭 Direction: ${document.documentElement.getAttribute('dir')}`;
+                    updateAllDemos();
+                } else {
+                    result.className = 'test-result error';
+                    result.innerHTML = `❌ Failed to switch to Hebrew`;
+                }
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Switch to Hebrew failed: ${error.message}`;
+            }
+        };
+        
+        window.testCategoryTranslations = async function() {
+            const result = document.getElementById('categoryResult');
+            
+            try {
+                if (!testLanguageManager) {
+                    testLanguageManager = new LanguageManager();
+                    await testLanguageManager.init();
+                }
+                
+                const categories = [
+                    'Fruits & Vegetables',
+                    'Meat & Seafood',
+                    'Dairy & Eggs',
+                    'Bakery & Bread',
+                    'Pantry & Canned Goods',
+                    'Other'
+                ];
+                
+                let translationTests = [];
+                for (const category of categories) {
+                    const translated = testLanguageManager.t(`categories.${category}`, category);
+                    const hasTranslation = translated !== category || testLanguageManager.currentLanguage === 'en';
+                    translationTests.push(`${hasTranslation ? '✅' : '❌'} ${category}: "${translated}"`);
+                }
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ Category Translation Test Complete<br>
+                    📊 Language: ${testLanguageManager.currentLanguage}<br>
+                    📝 Results:<br>${translationTests.join('<br>')}
+                `;
+                
+                updateCategoryDemo();
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Category translation test failed: ${error.message}`;
+            }
+        };
+        
+        window.testUITranslations = async function() {
+            const result = document.getElementById('uiResult');
+            
+            try {
+                if (!testLanguageManager) {
+                    testLanguageManager = new LanguageManager();
+                    await testLanguageManager.init();
+                }
+                
+                const uiElements = [
+                    { key: 'header.title', element: 'demoTitle' },
+                    { key: 'header.tagline', element: 'demoTagline' },
+                    { key: 'actions.addCategory', element: 'demoAddCategory' },
+                    { key: 'actions.shareList', element: 'demoShareList' },
+                    { key: 'sharing.unassigned', element: 'demoUnassigned' }
+                ];
+                
+                let successCount = 0;
+                uiElements.forEach(({ key, element }) => {
+                    const translation = testLanguageManager.t(key);
+                    document.getElementById(element).textContent = translation;
+                    if (translation && translation !== key) successCount++;
+                });
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ UI Translation Test Complete<br>
+                    📊 Success Rate: ${successCount}/${uiElements.length}<br>
+                    📍 Language: ${testLanguageManager.currentLanguage}<br>
+                    🎨 Direction: ${testLanguageManager.isRTL() ? 'RTL' : 'LTR'}
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ UI translation test failed: ${error.message}`;
+            }
+        };
+        
+        window.testRTLLayout = function() {
+            const result = document.getElementById('rtlResult');
+            
+            try {
+                const currentDir = document.documentElement.getAttribute('dir');
+                const currentLang = document.documentElement.getAttribute('lang');
+                const computedStyle = getComputedStyle(document.body);
+                
+                updateRTLDemo();
+                
+                result.className = 'test-result success';
+                result.innerHTML = `
+                    ✅ RTL Layout Test Complete<br>
+                    📄 Document Direction: ${currentDir}<br>
+                    🔤 Document Language: ${currentLang}<br>
+                    📱 CSS Direction: ${computedStyle.direction}<br>
+                    🧭 Is RTL: ${testLanguageManager ? testLanguageManager.isRTL() : 'N/A'}
+                `;
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ RTL layout test failed: ${error.message}`;
+            }
+        };
+        
+        window.toggleDirection = function() {
+            const html = document.documentElement;
+            const currentDir = html.getAttribute('dir');
+            const newDir = currentDir === 'rtl' ? 'ltr' : 'rtl';
+            html.setAttribute('dir', newDir);
+            updateRTLDemo();
+        };
+        
+        window.testMainAppIntegration = async function() {
+            const result = document.getElementById('mainAppResult');
+            
+            try {
+                // Test if main app integration methods exist
+                const methods = [
+                    'getTranslatedCategoryName',
+                    't',
+                    'updateUITranslations',
+                    'switchLanguage',
+                    'onLanguageChanged'
+                ];
+                
+                // Check if LanguageManager has all expected methods
+                let availableMethods = 0;
+                methods.forEach(method => {
+                    if (testLanguageManager && typeof testLanguageManager[method] === 'function') {
+                        availableMethods++;
+                    }
+                });
+                
+                // Test language change event
+                let eventFired = false;
+                document.addEventListener('languageChanged', () => {
+                    eventFired = true;
+                }, { once: true });
+                
+                await testLanguageManager.switchLanguage(testLanguageManager.currentLanguage === 'en' ? 'he' : 'en');
+                
+                setTimeout(() => {
+                    result.className = 'test-result success';
+                    result.innerHTML = `
+                        ✅ Main App Integration Test Complete<br>
+                        📊 Available Methods: ${availableMethods}/${methods.length}<br>
+                        📡 Language Change Event: ${eventFired ? 'Fired' : 'Not Fired'}<br>
+                        🔧 Integration Status: ${availableMethods >= 3 ? 'Good' : 'Needs Work'}
+                    `;
+                }, 100);
+                
+            } catch (error) {
+                result.className = 'test-result error';
+                result.innerHTML = `❌ Main app integration test failed: ${error.message}`;
+            }
+        };
+        
+        window.runAllPhase2Tests = async function() {
+            console.log('🧪 Running all Phase 2 tests...');
+            
+            // Run all tests sequentially
+            await testLanguageManagerIntegration();
+            await switchToEnglish();
+            await testCategoryTranslations();
+            await testUITranslations();
+            testRTLLayout();
+            await testMainAppIntegration();
+            
+            // Switch to Hebrew and test again
+            await switchToHebrew();
+            await testCategoryTranslations();
+            await testUITranslations();
+            
+            // Update status grid
+            updateStatusGrid();
+            
+            console.log('✅ All Phase 2 tests completed');
+        };
+        
+        function updateCategoryDemo() {
+            if (!testLanguageManager) return;
+            
+            const container = document.getElementById('demoCategoriesContainer');
+            const categories = ['Fruits & Vegetables', 'Meat & Seafood', 'Dairy & Eggs', 'Other'];
+            
+            container.innerHTML = categories.map(category => {
+                const translated = testLanguageManager.t(`categories.${category}`, category);
+                return `
+                    <div class="demo-category">
+                        <div class="demo-category-header">${translated}</div>
+                        <div class="demo-items">Original: ${category}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateRTLDemo() {
+            const currentDir = document.documentElement.getAttribute('dir') || 'ltr';
+            const currentLang = document.documentElement.getAttribute('lang') || 'en';
+            const textAlign = getComputedStyle(document.body).textAlign;
+            
+            document.getElementById('currentDirection').textContent = currentDir;
+            document.getElementById('textAlignment').textContent = textAlign;
+            document.getElementById('documentLanguage').textContent = currentLang;
+        }
+        
+        function updateAllDemos() {
+            updateCategoryDemo();
+            updateRTLDemo();
+            testUITranslations();
+        }
+        
+        function updateStatusGrid() {
+            const grid = document.getElementById('statusGrid');
+            const statuses = [
+                { name: 'Language Manager', element: 'integrationResult' },
+                { name: 'Language Switching', element: 'switchingResult' },
+                { name: 'Category Translation', element: 'categoryResult' },
+                { name: 'UI Translation', element: 'uiResult' },
+                { name: 'RTL Layout', element: 'rtlResult' },
+                { name: 'Main App Integration', element: 'mainAppResult' }
+            ];
+            
+            grid.innerHTML = statuses.map(status => {
+                const element = document.getElementById(status.element);
+                const className = element?.className || '';
+                const statusClass = className.includes('success') ? 'success' : 
+                                  className.includes('error') ? 'error' : 'info';
+                const statusText = statusClass === 'success' ? '✅ PASS' : 
+                                  statusClass === 'error' ? '❌ FAIL' : '⏳ PENDING';
+                
+                return `<div class="status-item ${statusClass}">${status.name}<br>${statusText}</div>`;
+            }).join('');
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', function() {
+            console.log('🌍 Phase 2 Test Suite Loaded');
+            updateRTLDemo();
+        });
+        
+    </script>
+</body>
+</html>

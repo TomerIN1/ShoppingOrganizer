@@ -31,20 +31,31 @@ class I18nLoader {
             
             let translation;
             
-            // Dynamic import based on language
-            switch (language) {
-                case 'en':
-                    const enModule = await import('./en.js');
-                    translation = enModule.default;
-                    break;
-                    
-                case 'he':
-                    const heModule = await import('./he.js');
-                    translation = heModule.default;
-                    break;
-                    
-                default:
-                    throw new Error(`No translation file found for language: ${language}`);
+            // Try global variables first (for non-module environments)
+            if (language === 'en' && window.EnglishTranslations) {
+                translation = window.EnglishTranslations;
+            } else if (language === 'he' && window.HebrewTranslations) {
+                translation = window.HebrewTranslations;
+            } else {
+                // Fallback to dynamic import for module environments
+                try {
+                    switch (language) {
+                        case 'en':
+                            const enModule = await import('./en.js');
+                            translation = enModule.default;
+                            break;
+                            
+                        case 'he':
+                            const heModule = await import('./he.js');
+                            translation = heModule.default;
+                            break;
+                            
+                        default:
+                            throw new Error(`No translation file found for language: ${language}`);
+                    }
+                } catch (importError) {
+                    throw new Error(`Failed to load translation for ${language}: ${importError.message}`);
+                }
             }
             
             // Validate translation structure
@@ -238,5 +249,5 @@ class I18nLoader {
 // Create global instance
 window.I18nLoader = I18nLoader;
 
-// Export for module usage
-export default I18nLoader;
+// Export for module usage - uncomment when using as module
+// export default I18nLoader;

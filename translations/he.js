@@ -1,5 +1,5 @@
 // Hebrew translations for Shopping List Organizer
-export default {
+const hebrewTranslations = {
     // Header section
     header: {
         title: "מארגן רשימת קניות",
@@ -89,7 +89,9 @@ export default {
         sharedWith: "משותף עם",
         sharedLists: "רשימות קניות משותפות",
         collaborators: "משתתף",
-        collaboratorsPlural: "משתתפים"
+        collaboratorsPlural: "משתתפים",
+        unassigned: "לא משויך",
+        unknownUser: "משתמש לא מוכר"
     },
     
     // Item management
@@ -172,3 +174,9 @@ export default {
         categories: "קטגוריות"
     }
 };
+
+// Export for ES6 modules - uncomment when using as module
+// export default hebrewTranslations;
+
+// Export as global for script tag usage
+window.HebrewTranslations = hebrewTranslations;

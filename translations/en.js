@@ -1,5 +1,5 @@
 // English translations for Shopping List Organizer
-export default {
+const englishTranslations = {
     // Header section
     header: {
         title: "Shopping List Organizer",
@@ -89,7 +89,9 @@ export default {
         sharedWith: "Shared With",
         sharedLists: "Shared Shopping Lists",
         collaborators: "collaborator",
-        collaboratorsPlural: "collaborators"
+        collaboratorsPlural: "collaborators",
+        unassigned: "Unassigned",
+        unknownUser: "Unknown User"
     },
     
     // Item management
@@ -172,3 +174,9 @@ export default {
         categories: "categories"
     }
 };
+
+// Export for ES6 modules - uncomment when using as module
+// export default englishTranslations;
+
+// Export as global for script tag usage
+window.EnglishTranslations = englishTranslations;

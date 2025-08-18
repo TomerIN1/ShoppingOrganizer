@@ -149,14 +149,23 @@ class LanguageManager {
         try {
             console.log(`📥 Loading translations for ${language}...`);
             
-            // Use I18nLoader if available, otherwise try direct import
-            if (window.I18nLoader) {
+            // Try global variables first (for file:// and non-module environments)
+            if (language === 'en' && window.EnglishTranslations) {
+                this.translations[language] = window.EnglishTranslations;
+            } else if (language === 'he' && window.HebrewTranslations) {
+                this.translations[language] = window.HebrewTranslations;
+            } else if (window.I18nLoader) {
+                // Use I18nLoader as secondary option
                 const loader = new window.I18nLoader();
                 this.translations[language] = await loader.loadTranslation(language);
             } else {
-                // Fallback: try dynamic import
-                const translationModule = await import(`./translations/${language}.js`);
-                this.translations[language] = translationModule.default || translationModule;
+                // Fallback: try dynamic import (may fail in file:// protocol)
+                try {
+                    const translationModule = await import(`./translations/${language}.js`);
+                    this.translations[language] = translationModule.default || translationModule;
+                } catch (importError) {
+                    throw new Error(`Failed to load translations for ${language}. Ensure translation files are properly loaded as scripts.`);
+                }
             }
             
             console.log(`✅ Translations loaded for ${language}`);

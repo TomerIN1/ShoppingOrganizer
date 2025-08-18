@@ -293,10 +293,16 @@ class ShoppingListOrganizer {
         // Initialize toxic content moderation system
         this.moderator = new ToxicContentModerator();
         
+        // Initialize language management system
+        this.languageManager = null;
+        
         this.initializeApp();
     }
 
     async initializeApp() {
+        // Initialize language manager first
+        await this.initializeLanguage();
+        
         this.initializeEventListeners();
         
         // Wait for Supabase to initialize
@@ -304,6 +310,225 @@ class ShoppingListOrganizer {
         
         // Check for existing authentication
         await this.checkAuthStatus();
+    }
+
+    async initializeLanguage() {
+        try {
+            console.log('🌍 Initializing language manager...');
+            
+            // Create and initialize language manager
+            this.languageManager = new LanguageManager();
+            await this.languageManager.init();
+            
+            // Set up language change event listener
+            document.addEventListener('languageChanged', (event) => {
+                console.log('🌍 Language changed:', event.detail);
+                this.onLanguageChanged(event.detail);
+            });
+            
+            // Initialize language switcher UI
+            this.initializeLanguageSwitcher();
+            
+            console.log('✅ Language manager initialized successfully');
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize language manager:', error);
+            // Continue without language management if it fails
+            this.languageManager = null;
+        }
+    }
+
+    initializeLanguageSwitcher() {
+        const languageToggle = document.getElementById('languageToggle');
+        const languageDropdown = document.getElementById('languageDropdown');
+        
+        if (languageToggle) {
+            languageToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = languageDropdown.style.display === 'block';
+                languageDropdown.style.display = isOpen ? 'none' : 'block';
+            });
+        }
+        
+        // Language option clicks
+        const languageOptions = document.querySelectorAll('.language-option');
+        languageOptions.forEach(option => {
+            option.addEventListener('click', async (e) => {
+                const lang = e.currentTarget.getAttribute('data-lang');
+                await this.switchLanguage(lang);
+                languageDropdown.style.display = 'none';
+            });
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (languageDropdown && !e.target.closest('.language-switcher')) {
+                languageDropdown.style.display = 'none';
+            }
+        });
+        
+        // Update UI with current language
+        this.updateLanguageSwitcherUI();
+    }
+
+    async switchLanguage(newLanguage) {
+        if (!this.languageManager) {
+            console.warn('⚠️ Language manager not available');
+            return false;
+        }
+        
+        try {
+            console.log(`🌍 Switching language to: ${newLanguage}`);
+            const success = await this.languageManager.switchLanguage(newLanguage);
+            
+            if (success) {
+                this.updateLanguageSwitcherUI();
+                // Language change event will trigger onLanguageChanged
+                console.log('✅ Language switched successfully');
+            }
+            
+            return success;
+            
+        } catch (error) {
+            console.error('❌ Failed to switch language:', error);
+            return false;
+        }
+    }
+
+    updateLanguageSwitcherUI() {
+        if (!this.languageManager) return;
+        
+        const currentLangInfo = this.languageManager.getCurrentLanguageInfo();
+        const flagElement = document.getElementById('currentLanguageFlag');
+        const nameElement = document.getElementById('currentLanguageName');
+        
+        if (flagElement && nameElement && currentLangInfo) {
+            flagElement.textContent = currentLangInfo.flag;
+            nameElement.textContent = currentLangInfo.nativeName;
+        }
+    }
+
+    onLanguageChanged(detail) {
+        console.log('🌍 Processing language change:', detail);
+        
+        // Update UI elements with new translations
+        this.updateUITranslations();
+        
+        // Update language switcher
+        this.updateLanguageSwitcherUI();
+        
+        // Refresh any displayed lists to show translated categories
+        if (this.currentLists && Object.keys(this.currentLists).length > 0) {
+            this.renderCategorizedLists();
+        }
+    }
+
+    updateUITranslations() {
+        if (!this.languageManager) return;
+        
+        try {
+            // Update header elements
+            const appTitle = document.querySelector('.app-title');
+            const appTagline = document.querySelector('.app-tagline');
+            
+            if (appTitle) {
+                appTitle.textContent = this.languageManager.t('header.title');
+            }
+            
+            if (appTagline) {
+                appTagline.textContent = this.languageManager.t('header.tagline');
+            }
+            
+            // Update button texts
+            this.updateButtonTexts();
+            
+            // Update input placeholders
+            this.updateInputPlaceholders();
+            
+            // Update section headers
+            this.updateSectionHeaders();
+            
+            console.log('✅ UI translations updated');
+            
+        } catch (error) {
+            console.error('❌ Failed to update UI translations:', error);
+        }
+    }
+
+    updateButtonTexts() {
+        if (!this.languageManager) return;
+        
+        const buttonMappings = {
+            'signInBtn': 'header.signIn',
+            'signOutBtn': 'header.signOut',
+            'myListsBtn': 'header.myLists',
+            'organizeBtn': 'navigation.organizeList',
+            'clearBtn': 'navigation.clear',
+            'newListBtn': 'navigation.newList',
+            'addCategoryBtn': 'actions.addCategory',
+            'shareListBtn': 'actions.shareList',
+            'deleteListBtn': 'actions.deleteList'
+        };
+        
+        Object.entries(buttonMappings).forEach(([buttonId, translationKey]) => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                const translation = this.languageManager.t(translationKey);
+                // Preserve icons if present
+                const hasIcon = button.textContent.match(/^[\u{1F000}-\u{1F9FF}]/u);
+                if (hasIcon && translationKey === 'actions.deleteList') {
+                    button.textContent = `🗑️ ${translation.replace('🗑️ ', '')}`;
+                } else if (hasIcon && translationKey === 'actions.copyForWhatsApp') {
+                    button.textContent = `📋 ${translation.replace('📋 ', '')}`;
+                } else {
+                    button.textContent = translation;
+                }
+            }
+        });
+    }
+
+    updateInputPlaceholders() {
+        if (!this.languageManager) return;
+        
+        const listNameInput = document.getElementById('listNameInput');
+        const freeTextInput = document.getElementById('freeTextInput');
+        
+        if (listNameInput) {
+            listNameInput.placeholder = this.languageManager.t('input.listNamePlaceholder');
+        }
+        
+        if (freeTextInput) {
+            freeTextInput.placeholder = this.languageManager.t('input.itemsPlaceholder');
+        }
+    }
+
+    updateSectionHeaders() {
+        if (!this.languageManager) return;
+        
+        // Update input section
+        const enterItemsHeader = document.querySelector('.input-section h2');
+        const sectionSubtitle = document.querySelector('.section-subtitle');
+        
+        if (enterItemsHeader) {
+            enterItemsHeader.textContent = this.languageManager.t('input.enterItems');
+        }
+        
+        if (sectionSubtitle) {
+            sectionSubtitle.textContent = this.languageManager.t('input.subtitle');
+        }
+    }
+
+    // Helper method to get translated category name
+    t(key, fallback = null) {
+        if (this.languageManager) {
+            return this.languageManager.t(key, fallback);
+        }
+        return fallback || key;
+    }
+
+    // Helper method to get translated category name specifically
+    getTranslatedCategoryName(categoryName) {
+        return this.t(`categories.${categoryName}`, categoryName);
     }
 
     async waitForSupabase() {
@@ -2654,7 +2879,8 @@ Items: ${items.join(', ')}
         console.log('🎨 First 2 entries:', Object.entries(this.currentLists).slice(0, 2));
 
         if (Object.keys(this.currentLists).length === 0) {
-            container.innerHTML = '<div class="empty-state">No items to display</div>';
+            const emptyMessage = this.t('status.noLists', 'No items to display');
+            container.innerHTML = `<div class="empty-state">${emptyMessage}</div>`;
             return;
         }
 
@@ -2678,10 +2904,14 @@ Items: ${items.join(', ')}
         // Generate assignment UI
         const assignmentUI = this.createAssignmentUI(category, assignedTo);
         
+        // Get translated category name for display
+        const translatedCategoryName = this.getTranslatedCategoryName(category);
+        const addItemPlaceholder = this.t('items.addNew', 'Add new item...');
+
         card.innerHTML = `
             <div class="category-header">
                 <div class="category-header-top">
-                    <h3 class="category-title" onclick="organizer.editCategoryName('${category}')" title="Click to edit category name">${category}</h3>
+                    <h3 class="category-title" onclick="organizer.editCategoryName('${category}')" title="Click to edit category name">${translatedCategoryName}</h3>
                     <button class="btn-category-action btn-delete-category" onclick="organizer.deleteCategory('${category}')" title="Delete category">×</button>
                 </div>
                 <div class="category-header-bottom">
@@ -2691,7 +2921,7 @@ Items: ${items.join(', ')}
             </div>
             <div class="category-content">
                 <div class="add-item-form">
-                    <input type="text" class="add-item-input" placeholder="Add new item...">
+                    <input type="text" class="add-item-input" placeholder="${addItemPlaceholder}">
                     <button class="btn-add" onclick="organizer.addItem('${category}', this).catch(console.error)">+</button>
                 </div>
                 <ul class="items-list" id="list-${categoryId}">
@@ -2717,8 +2947,8 @@ Items: ${items.join(', ')}
         
         const assignedUser = this.currentCollaborators.find(c => c.user_id === assignedTo);
         const displayText = assignedUser 
-            ? (assignedUser.profiles?.display_name || assignedUser.profiles?.email || 'Unknown User')
-            : 'Unassigned';
+            ? (assignedUser.profiles?.display_name || assignedUser.profiles?.email || this.t('sharing.unknownUser', 'Unknown User'))
+            : this.t('sharing.unassigned', 'Unassigned');
         
         const assignedClass = assignedUser ? 'assigned' : 'unassigned';
         

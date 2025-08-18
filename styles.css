@@ -1699,3 +1699,283 @@ body {
         font-size: 0.75rem;
     }
 }
+
+/* ========================================
+   RTL (Right-to-Left) Language Support
+   ======================================== */
+
+/* Hebrew language and RTL direction support */
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Hebrew font family */
+[lang="he"] {
+    font-family: 'Segoe UI', 'Noto Sans Hebrew', 'Arial Hebrew', 'David', Arial, sans-serif;
+    line-height: 1.7;
+}
+
+/* Header RTL adjustments */
+[dir="rtl"] .app-header {
+    direction: rtl;
+}
+
+[dir="rtl"] .header-left {
+    text-align: right;
+}
+
+[dir="rtl"] .app-tagline {
+    margin: 2px 0 0 0;
+    text-align: right;
+}
+
+/* Language switcher RTL */
+[dir="rtl"] .language-dropdown {
+    left: auto;
+    right: 0;
+}
+
+/* Button spacing RTL */
+[dir="rtl"] .language-btn {
+    gap: 6px;
+}
+
+[dir="rtl"] .user-profile {
+    gap: 8px;
+}
+
+/* Form inputs RTL */
+[dir="rtl"] input[type="text"],
+[dir="rtl"] input[type="email"],
+[dir="rtl"] textarea {
+    text-align: right;
+    direction: rtl;
+}
+
+[dir="rtl"] input::placeholder {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Category cards RTL */
+[dir="rtl"] .category-header-top {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .category-header-bottom {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .category-assignment {
+    flex-direction: row-reverse;
+    gap: 8px;
+}
+
+[dir="rtl"] .assignment-label {
+    order: 2;
+}
+
+[dir="rtl"] .assignment-text {
+    order: 1;
+}
+
+/* Item forms RTL */
+[dir="rtl"] .add-item-form {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .add-item-input {
+    border-radius: 8px 0 0 8px;
+}
+
+[dir="rtl"] .btn-add {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Items list RTL */
+[dir="rtl"] .item-row {
+    direction: rtl;
+}
+
+[dir="rtl"] .item-content {
+    flex-direction: row-reverse;
+    gap: 10px;
+}
+
+[dir="rtl"] .item-name {
+    text-align: right;
+}
+
+[dir="rtl"] .item-details {
+    flex-direction: row-reverse;
+    gap: 5px;
+}
+
+[dir="rtl"] .item-amount-container {
+    flex-direction: row-reverse;
+    gap: 4px;
+}
+
+/* Dropdown menus RTL */
+[dir="rtl"] .assignment-dropdown {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .user-dropdown {
+    left: auto;
+    right: 0;
+}
+
+/* Modal dialogs RTL */
+[dir="rtl"] .modal-content {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .modal-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .close-modal {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Share form RTL */
+[dir="rtl"] .share-form {
+    direction: rtl;
+}
+
+[dir="rtl"] .share-email-input {
+    text-align: right;
+}
+
+[dir="rtl"] .permission-options {
+    flex-direction: row-reverse;
+    gap: 10px;
+}
+
+/* List actions RTL */
+[dir="rtl"] .list-actions {
+    flex-direction: row-reverse;
+    gap: 10px;
+}
+
+[dir="rtl"] .organized-section-header {
+    flex-direction: row-reverse;
+}
+
+/* Navigation RTL */
+[dir="rtl"] .navigation-section .btn-secondary {
+    margin-left: 0;
+    margin-right: 10px;
+}
+
+/* Examples section RTL */
+[dir="rtl"] .examples-grid {
+    direction: rtl;
+}
+
+[dir="rtl"] .example-card {
+    text-align: right;
+}
+
+[dir="rtl"] .example-title {
+    text-align: right;
+}
+
+[dir="rtl"] .example-items {
+    text-align: right;
+}
+
+[dir="rtl"] .example-description {
+    text-align: right;
+}
+
+/* List cards RTL */
+[dir="rtl"] .list-card {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .list-card-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .list-actions-mini {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* My Lists section RTL */
+[dir="rtl"] .my-lists-header {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .lists-grid {
+    direction: rtl;
+}
+
+/* Shared users RTL */
+[dir="rtl"] .shared-user-item {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+[dir="rtl"] .shared-user-info {
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+[dir="rtl"] .shared-user-actions {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/* Status messages RTL */
+[dir="rtl"] .empty-state,
+[dir="rtl"] .status-message,
+[dir="rtl"] .error-message {
+    text-align: right;
+    direction: rtl;
+}
+
+/* Mobile RTL adjustments */
+@media (max-width: 768px) {
+    [dir="rtl"] .app-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    [dir="rtl"] .header-left {
+        text-align: center;
+    }
+    
+    [dir="rtl"] .category-header-top,
+    [dir="rtl"] .category-header-bottom {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    [dir="rtl"] .add-item-form {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    [dir="rtl"] .add-item-input,
+    [dir="rtl"] .btn-add {
+        border-radius: 8px;
+        width: 100%;
+    }
+    
+    [dir="rtl"] .item-content {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    [dir="rtl"] .item-details {
+        justify-content: center;
+    }
+}
