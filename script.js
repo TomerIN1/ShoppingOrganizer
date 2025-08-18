@@ -1905,17 +1905,27 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel, projects, etc.).
+FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel packing, DIY projects, event planning, birthday parties, etc.).
 
 If ANY item appears to be:
 - Narrative text, stories, or descriptions
 - Questions or general conversation  
 - Complete sentences that aren't item names
 - Creative writing or fictional content
-- General text that isn't a shopping list
+- Random text that isn't an organized list
 
 THEN return this exact error format:
 {"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
+
+VALID LIST TYPES include:
+- Shopping lists (groceries, household items)
+- Travel packing lists (passport, clothes, toiletries)
+- DIY project lists (tools, materials, supplies)
+- Event planning lists (decorations, food, equipment)
+- Birthday party lists (cake, balloons, games, supplies)
+- Work project lists (documents, meetings, tasks)
+- Moving lists (boxes, tape, bubble wrap)
+- Any organized collection of physical items or tasks
 
 ONLY if ALL items are valid list items, then map each item to ONE category:
 
@@ -2058,17 +2068,27 @@ Example:
         
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel, projects, etc.).
+FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel packing, DIY projects, event planning, birthday parties, etc.).
 
 If ANY item appears to be:
 - Narrative text, stories, or descriptions
 - Questions or general conversation  
 - Complete sentences that aren't item names
 - Creative writing or fictional content
-- General text that isn't a shopping list
+- Random text that isn't an organized list
 
 THEN return this exact error format:
 {"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
+
+VALID LIST TYPES include:
+- Shopping lists (groceries, household items)
+- Travel packing lists (passport, clothes, toiletries)
+- DIY project lists (tools, materials, supplies)
+- Event planning lists (decorations, food, equipment)
+- Birthday party lists (cake, balloons, games, supplies)
+- Work project lists (documents, meetings, tasks)
+- Moving lists (boxes, tape, bubble wrap)
+- Any organized collection of physical items or tasks
 
 ONLY if ALL items are valid list items, then categorize each item into EXACTLY ONE category from this list:
 ${categoriesText}
