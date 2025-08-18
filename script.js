@@ -2101,7 +2101,7 @@ Items: ${items.join(', ')}
                 'Authorization': `Bearer ${config.OPENAI_API_KEY}`
             },
             body: JSON.stringify({
-                model: 'gpt-3.5-turbo',
+                model: 'gpt-4o',
                 messages: [
                     {
                         role: 'system',
