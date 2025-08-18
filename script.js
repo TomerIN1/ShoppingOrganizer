@@ -1503,6 +1503,15 @@ class ShoppingListOrganizer {
         
         try {
             const aiResponse = await this.callOpenAI(prompt);
+            
+            // Check for validation error from AI
+            if (aiResponse.error === 'INVALID_INPUT') {
+                console.log('🚫 AI detected invalid input:', aiResponse.reason);
+                const error = new Error(aiResponse.reason || 'Content appears to be free text rather than shopping items');
+                error.type = 'INVALID_INPUT';
+                throw error;
+            }
+            
             const validatedResponse = this.validateAndCorrectCategories(aiResponse, [...categoriesList, 'Other']);
             
             // Separate grocery items from "Other" items
@@ -1546,6 +1555,14 @@ class ShoppingListOrganizer {
         try {
             const flexiblePrompt = this.buildFlexibleCategorizationPrompt(items);
             const flexibleResponse = await this.callOpenAI(flexiblePrompt);
+            
+            // Check for validation error from AI
+            if (flexibleResponse.error === 'INVALID_INPUT') {
+                console.log('🚫 AI detected invalid input in flexible categorization:', flexibleResponse.reason);
+                const error = new Error(flexibleResponse.reason || 'Content appears to be free text rather than shopping items');
+                error.type = 'INVALID_INPUT';
+                throw error;
+            }
             
             console.log('🔍 Raw flexible AI response:', flexibleResponse);
             
@@ -1620,7 +1637,19 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-Map each item to ONE category:
+FIRST: Validate that all items represent actual shopping/grocery items that people would buy in stores.
+
+If ANY item appears to be:
+- Narrative text, stories, or descriptions
+- Questions or general conversation  
+- Complete sentences that aren't item names
+- Creative writing or fictional content
+- General text that isn't a shopping list
+
+THEN return this exact error format:
+{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than shopping items"}
+
+ONLY if ALL items are valid shopping/grocery items, then map each item to ONE category:
 
 Items: ${items.join(', ')}
 
@@ -1761,7 +1790,19 @@ Example:
         
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-Categorize each item into EXACTLY ONE category from this list:
+FIRST: Validate that all items represent actual shopping/grocery items that people would buy in stores.
+
+If ANY item appears to be:
+- Narrative text, stories, or descriptions
+- Questions or general conversation  
+- Complete sentences that aren't item names
+- Creative writing or fictional content
+- General text that isn't a shopping list
+
+THEN return this exact error format:
+{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than shopping items"}
+
+ONLY if ALL items are valid shopping/grocery items, then categorize each item into EXACTLY ONE category from this list:
 ${categoriesText}
 
 Rules:
@@ -2228,7 +2269,13 @@ Items: ${items.join(', ')}
             
         } catch (error) {
             console.error('❌ Error organizing list:', error);
-            alert('Failed to organize list. Please try again.');
+            
+            // Handle AI validation errors specifically
+            if (error.type === 'INVALID_INPUT') {
+                alert(`⚠️ ${error.message}\n\nThis app is designed for organizing shopping lists, not general text or questions.`);
+            } else {
+                alert('Failed to organize list. Please try again.');
+            }
         } finally {
             // Restore button state
             organizeBtn.textContent = originalText;
