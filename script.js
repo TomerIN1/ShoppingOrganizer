@@ -56,16 +56,16 @@ class ToxicContentModerator {
                 'death', 'die', 'dying', 'dead', 'harm', 'hurt', 'injure', 'fight'
             ],
             drugs: [
-                'cocaine', 'coke', 'heroin', 'meth', 'methamphetamine', 'weed',
-                'marijuana', 'cannabis', 'drug', 'drugs', 'crack', 'ecstasy',
-                'lsd', 'acid', 'pills', 'dope', 'joint', 'high', 'stoned',
+                'cocaine', 'heroin', 'meth', 'methamphetamine', 'weed',
+                'marijuana', 'cannabis', 'drugs', 'ecstasy',
+                'lsd', 'dope', 'stoned',
                 'dealer', 'dealing', 'narcotics', 'substance abuse', 'overdose'
             ],
             harassment: [
                 'idiot', 'idiots', 'stupid', 'stupidity', 'moron', 'moronic',
-                'retard', 'retarded', 'loser', 'losers', 'ugly', 'fat', 'fatso',
-                'worthless', 'useless', 'pathetic', 'freak', 'freaky', 'weird',
-                'weirdo', 'crazy', 'insane', 'psycho', 'mental', 'nuts'
+                'retard', 'retarded', 'loser', 'losers', 'ugly', 'fatso',
+                'worthless', 'useless', 'pathetic', 'freak', 'freaky',
+                'weirdo', 'crazy', 'insane', 'psycho', 'mental'
             ],
             self_harm: [
                 'suicide', 'suicidal', 'kill myself', 'self harm', 'self-harm',
@@ -80,20 +80,44 @@ class ToxicContentModerator {
                 'money laundering', 'embezzle', 'con artist', 'rip off'
             ],
             trolling: [
-                'troll', 'trolling', 'spam', 'spamming', 'toxic', 'cancer',
-                'trash', 'garbage', 'flame', 'flaming', 'bait', 'baiting',
+                'troll', 'trolling', 'spam', 'spamming', 'toxic',
+                'garbage', 'flame', 'flaming', 'bait', 'baiting',
                 'provocative', 'annoying', 'irritating', 'pest', 'disruptive',
                 'inflammatory', 'offensive', 'inappropriate'
             ],
             personal_attacks: [
                 'dumbass', 'dumb ass', 'jackass', 'jerk', 'jerks', 'prick',
                 'creep', 'creepy', 'weirdo', 'sicko', 'pervert', 'perverted',
-                'disgusting', 'gross', 'nasty', 'vile', 'evil', 'horrible',
+                'disgusting', 'nasty', 'vile', 'evil', 'horrible',
                 'terrible', 'awful', 'repulsive', 'revolting'
             ]
         };
         
         this.tracker = new UserModerationTracker();
+        
+        // Shopping context whitelist - legitimate shopping terms that might contain flagged words
+        this.shoppingWhitelist = [
+            // Food and nutrition
+            'high protein', 'high fiber', 'high quality', 'high calcium',
+            'fat free', 'fat-free', 'low fat', 'no fat', 'reduced fat',
+            'nuts', 'peanuts', 'mixed nuts', 'tree nuts', 'cashew nuts',
+            'trash bags', 'trash cans', 'garbage bags', 'garbage disposal',
+            'diet coke', 'diet pepsi', 'diet soda', 'diet drinks',
+            'gross weight', 'gross quantity',
+            
+            // Medical and health
+            'vitamin pills', 'birth control pills', 'supplement pills',
+            'joint support', 'joint supplements', 'joint health',
+            'citric acid', 'folic acid', 'omega-3 acid', 'ascorbic acid',
+            
+            // Household items
+            'crack filler', 'crack sealant', 'wall crack repair',
+            'cancer awareness', 'cancer support', 'cancer prevention',
+            
+            // Food products
+            'crackers', 'graham crackers', 'rice crackers',
+            'weird al', 'weird shaped', // brand names or descriptions
+        ];
     }
     
     validateContent(inputText) {
@@ -130,6 +154,14 @@ class ToxicContentModerator {
         const normalizedText = text.toLowerCase().trim();
         const detectedWords = [];
         let detectedCategory = null;
+        
+        // First check if the text contains whitelisted shopping terms
+        for (const whitelistTerm of this.shoppingWhitelist) {
+            if (normalizedText.includes(whitelistTerm.toLowerCase())) {
+                console.log(`✅ Whitelisted shopping term detected: "${whitelistTerm}" - allowing content`);
+                return null; // Allow the content, it's a legitimate shopping item
+            }
+        }
         
         // Check each category for toxic words
         for (const [category, words] of Object.entries(this.toxicWords)) {
