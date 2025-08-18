@@ -1,3 +1,177 @@
+// User moderation tracking for toxic content filtering
+class UserModerationTracker {
+    constructor() {
+        // Track warnings in localStorage (session-based)
+        this.warningCount = parseInt(localStorage.getItem('moderation_warnings') || '0');
+        this.isBlocked = localStorage.getItem('moderation_blocked') === 'true';
+    }
+    
+    addWarning() {
+        this.warningCount++;
+        localStorage.setItem('moderation_warnings', this.warningCount.toString());
+        
+        if (this.warningCount >= 3) {
+            this.blockUser();
+        }
+    }
+    
+    blockUser() {
+        this.isBlocked = true;
+        localStorage.setItem('moderation_blocked', 'true');
+    }
+    
+    reset() {
+        this.warningCount = 0;
+        this.isBlocked = false;
+        localStorage.removeItem('moderation_warnings');
+        localStorage.removeItem('moderation_blocked');
+    }
+}
+
+// Toxic content moderation system
+class ToxicContentModerator {
+    constructor() {
+        this.toxicWords = {
+            profanity: [
+                'fuck', 'fucking', 'fucker', 'fucked', 'fck', 'f*ck', 'f**k', 'fuk',
+                'shit', 'shitting', 'shitty', 'sht', 'sh*t', 'sh**', 'crap', 'crappy',
+                'damn', 'dammit', 'damnit', 'damned', 'bitch', 'bitchy', 'bitches',
+                'ass', 'asshole', 'asses', 'bastard', 'piss', 'pissed', 'pissing'
+            ],
+            hate_speech: [
+                'hate', 'nazi', 'terrorist', 'racism', 'racist', 'homophobe', 'bigot',
+                'fascist', 'xenophobe', 'antisemite', 'supremacist', 'genocide',
+                'ethnic cleansing', 'discrimination', 'prejudice', 'intolerance'
+            ],
+            sexual_content: [
+                'sex', 'sexual', 'porn', 'pornography', 'naked', 'nude', 'nudity',
+                'breast', 'boob', 'boobs', 'tits', 'cock', 'dick', 'penis',
+                'pussy', 'vagina', 'orgasm', 'masturbate', 'horny', 'sexy',
+                'erotic', 'explicit', 'adult content', 'xxx', 'nsfw'
+            ],
+            violence: [
+                'kill', 'killing', 'murder', 'murderer', 'shoot', 'shooting', 'shot',
+                'gun', 'guns', 'weapon', 'weapons', 'knife', 'knives', 'stab',
+                'bomb', 'bombing', 'explosive', 'terror', 'attack', 'assault',
+                'death', 'die', 'dying', 'dead', 'harm', 'hurt', 'injure', 'fight'
+            ],
+            drugs: [
+                'cocaine', 'coke', 'heroin', 'meth', 'methamphetamine', 'weed',
+                'marijuana', 'cannabis', 'drug', 'drugs', 'crack', 'ecstasy',
+                'lsd', 'acid', 'pills', 'dope', 'joint', 'high', 'stoned',
+                'dealer', 'dealing', 'narcotics', 'substance abuse', 'overdose'
+            ],
+            harassment: [
+                'idiot', 'idiots', 'stupid', 'stupidity', 'moron', 'moronic',
+                'retard', 'retarded', 'loser', 'losers', 'ugly', 'fat', 'fatso',
+                'worthless', 'useless', 'pathetic', 'freak', 'freaky', 'weird',
+                'weirdo', 'crazy', 'insane', 'psycho', 'mental', 'nuts'
+            ],
+            self_harm: [
+                'suicide', 'suicidal', 'kill myself', 'self harm', 'self-harm',
+                'cut myself', 'cutting', 'self injury', 'overdose', 'hang myself',
+                'jump', 'poison', 'blade', 'razor', 'harm myself', 'hurt myself',
+                'end it all', 'take my life', 'not worth living'
+            ],
+            fraud: [
+                'scam', 'scammer', 'fraud', 'fraudulent', 'steal', 'stealing',
+                'theft', 'stolen', 'robbery', 'rob', 'cheat', 'cheating',
+                'fake', 'counterfeit', 'illegal', 'crime', 'criminal',
+                'money laundering', 'embezzle', 'con artist', 'rip off'
+            ],
+            trolling: [
+                'troll', 'trolling', 'spam', 'spamming', 'toxic', 'cancer',
+                'trash', 'garbage', 'flame', 'flaming', 'bait', 'baiting',
+                'provocative', 'annoying', 'irritating', 'pest', 'disruptive',
+                'inflammatory', 'offensive', 'inappropriate'
+            ],
+            personal_attacks: [
+                'dumbass', 'dumb ass', 'jackass', 'jerk', 'jerks', 'prick',
+                'creep', 'creepy', 'weirdo', 'sicko', 'pervert', 'perverted',
+                'disgusting', 'gross', 'nasty', 'vile', 'evil', 'horrible',
+                'terrible', 'awful', 'repulsive', 'revolting'
+            ]
+        };
+        
+        this.tracker = new UserModerationTracker();
+    }
+    
+    validateContent(inputText) {
+        // Check if user is already blocked
+        if (this.tracker.isBlocked) {
+            return {
+                isValid: false,
+                isBlocked: true,
+                message: '🔒 Access temporarily restricted. Please refresh the page to reset and use appropriate language only.',
+                warningCount: this.tracker.warningCount
+            };
+        }
+        
+        // Check for toxic content
+        const detectedCategory = this.detectToxicContent(inputText);
+        
+        if (detectedCategory) {
+            this.tracker.addWarning();
+            
+            return {
+                isValid: false,
+                isBlocked: this.tracker.isBlocked,
+                warningCount: this.tracker.warningCount,
+                category: detectedCategory,
+                message: this.getWarningMessage(this.tracker.warningCount)
+            };
+        }
+        
+        return { isValid: true };
+    }
+    
+    detectToxicContent(text) {
+        const normalizedText = text.toLowerCase().trim();
+        
+        // Check each category for toxic words
+        for (const [category, words] of Object.entries(this.toxicWords)) {
+            for (const word of words) {
+                // Check for exact word matches with word boundaries
+                const wordRegex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+                if (wordRegex.test(normalizedText)) {
+                    console.log(`🚨 Toxic content detected: "${word}" in category "${category}"`);
+                    return category;
+                }
+                
+                // Also check for simple character substitutions
+                const substitutedText = normalizedText
+                    .replace(/\*/g, '')
+                    .replace(/[@4]/g, 'a')
+                    .replace(/[3]/g, 'e')
+                    .replace(/[1!]/g, 'i')
+                    .replace(/[0]/g, 'o')
+                    .replace(/[5$]/g, 's');
+                
+                if (wordRegex.test(substitutedText)) {
+                    console.log(`🚨 Toxic content detected (substituted): "${word}" in category "${category}"`);
+                    return category;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    getWarningMessage(warningCount) {
+        const messages = {
+            1: '🚨 Warning 1/3: Inappropriate language detected. Please keep your shopping lists family-friendly and revise your text.',
+            2: '🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.',
+            3: '🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.'
+        };
+        
+        return messages[warningCount] || messages[3];
+    }
+    
+    reset() {
+        this.tracker.reset();
+    }
+}
+
 class ShoppingListOrganizer {
     constructor() {
         this.categories = {
@@ -66,6 +240,9 @@ class ShoppingListOrganizer {
         this.currentUser = null;
         this.mode = 'guest'; // 'guest' or 'authenticated'
         this.currentCollaborators = []; // Track current list collaborators for assignments
+        
+        // Initialize toxic content moderation system
+        this.moderator = new ToxicContentModerator();
         
         this.initializeApp();
     }
@@ -974,6 +1151,36 @@ class ShoppingListOrganizer {
     hideShareModal() {
         document.getElementById('shareModal').style.display = 'none';
         this.hideShareStatus();
+    }
+
+    // Show moderation alert with appropriate styling and options
+    showModerationAlert(validationResult) {
+        const { message, isBlocked, warningCount } = validationResult;
+        
+        if (isBlocked) {
+            // User is blocked - show blocking message with refresh option
+            const refreshPage = confirm(`${message}\n\nClick OK to refresh the page and reset your warnings, or Cancel to stay on this page.`);
+            if (refreshPage) {
+                window.location.reload();
+            }
+        } else {
+            // User got a warning - show warning with edit option
+            const warningText = `${message}\n\nWarnings: ${warningCount}/3`;
+            const editText = confirm(`${warningText}\n\nClick OK to edit your text, or Cancel to clear the input field.`);
+            
+            if (!editText) {
+                // Clear the input field if user doesn't want to edit
+                document.getElementById('freeTextInput').value = '';
+            }
+            // If user clicks OK, they can edit the text in the field (no action needed)
+        }
+        
+        // Focus back on the input field for user convenience
+        if (!isBlocked) {
+            setTimeout(() => {
+                document.getElementById('freeTextInput').focus();
+            }, 100);
+        }
     }
 
     async loadListCollaborators() {
@@ -2109,6 +2316,21 @@ Items: ${items.join(', ')}
     }
 
     validateShoppingListInput(inputText) {
+        // Check for toxic content first (highest priority)
+        console.log('🔍 Starting toxic content validation...');
+        const moderationResult = this.moderator.validateContent(inputText);
+        if (!moderationResult.isValid) {
+            console.log('❌ Toxic content validation failed:', moderationResult);
+            return {
+                isValid: false,
+                message: moderationResult.message,
+                isModerationBlock: true,
+                isBlocked: moderationResult.isBlocked,
+                warningCount: moderationResult.warningCount
+            };
+        }
+        console.log('✅ Toxic content validation passed');
+        
         // Clean the input text
         const text = inputText.trim().toLowerCase();
         
@@ -2223,7 +2445,13 @@ Items: ${items.join(', ')}
         console.log('🔍 Validation result:', validationResult);
         if (!validationResult.isValid) {
             console.log('❌ Validation failed, showing alert');
-            alert(validationResult.message);
+            
+            // Handle moderation blocks differently from regular validation
+            if (validationResult.isModerationBlock) {
+                this.showModerationAlert(validationResult);
+            } else {
+                alert(validationResult.message);
+            }
             return;
         }
         console.log('✅ Validation passed, proceeding...');
@@ -2647,6 +2875,14 @@ Items: ${items.join(', ')}
         const newItem = input.value.trim();
         
         if (newItem) {
+            // Check for toxic content in individual item additions
+            const moderationResult = this.moderator.validateContent(newItem);
+            if (!moderationResult.isValid) {
+                console.log('❌ Toxic content detected in item addition:', moderationResult);
+                this.showModerationAlert(moderationResult);
+                input.value = ''; // Clear the input
+                return;
+            }
             if (!this.currentLists[category]) {
                 this.currentLists[category] = { items: [] };
             }
@@ -2884,6 +3120,14 @@ Items: ${items.join(', ')}
         const categoryName = prompt('Enter the name for the new category:');
         if (categoryName && categoryName.trim()) {
             const trimmedName = categoryName.trim();
+            
+            // Check for toxic content in category names
+            const moderationResult = this.moderator.validateContent(trimmedName);
+            if (!moderationResult.isValid) {
+                console.log('❌ Toxic content detected in category name:', moderationResult);
+                this.showModerationAlert(moderationResult);
+                return;
+            }
             
             if (this.currentLists[trimmedName]) {
                 alert('A category with this name already exists!');
@@ -3124,6 +3368,14 @@ Items: ${items.join(', ')}
         const shortText = text.length > 500 ? text.substring(0, 500) + '...' : text;
         alert('Copy failed. Here\'s your list to copy manually:\n\n' + shortText + '\n\n(Open browser console to see full text)');
         console.log('Full WhatsApp text for manual copy:', text);
+    }
+
+    // Admin/Testing method to reset moderation system
+    resetModerationSystem() {
+        console.log('🔄 Resetting moderation system...');
+        this.moderator.reset();
+        console.log('✅ Moderation system reset complete');
+        alert('Moderation system has been reset. All warnings cleared.');
     }
 }
 
