@@ -191,6 +191,7 @@ class ShoppingListOrganizer {
         // Share and export functionality event listeners
         document.getElementById('downloadWhatsAppBtn').addEventListener('click', () => this.copyToWhatsApp());
         document.getElementById('shareListBtn').addEventListener('click', () => this.showShareModal());
+        document.getElementById('deleteListBtn').addEventListener('click', () => this.deleteCurrentList());
         document.getElementById('shareModalClose').addEventListener('click', () => this.hideShareModal());
         document.getElementById('shareModalBackdrop').addEventListener('click', () => this.hideShareModal());
         document.getElementById('sendInviteBtn').addEventListener('click', () => this.sendListInvitation());
@@ -905,6 +906,7 @@ class ShoppingListOrganizer {
     updateShareButtonVisibility() {
         const shareButton = document.getElementById('shareListBtn');
         const whatsappButton = document.getElementById('downloadWhatsAppBtn');
+        const deleteButton = document.getElementById('deleteListBtn');
         
         // Show share button only if:
         // 1. User is authenticated
@@ -913,6 +915,16 @@ class ShoppingListOrganizer {
             shareButton.style.display = 'inline-block';
         } else {
             shareButton.style.display = 'none';
+        }
+        
+        // Show delete button only if:
+        // 1. User is authenticated
+        // 2. There is a current list with ID (saved to cloud)
+        // 3. User is the owner of the list (can delete their own lists)
+        if (this.mode === 'authenticated' && this.currentUser && this.currentListId) {
+            deleteButton.style.display = 'inline-block';
+        } else {
+            deleteButton.style.display = 'none';
         }
         
         // Show WhatsApp export button if there's any current list
@@ -2835,6 +2847,32 @@ Items: ${items.join(', ')}
                 this.updateOrganizeButtonText(); // Reset button text
             }
         }
+    }
+
+    async deleteCurrentList() {
+        // Check if user is authenticated
+        if (!this.currentUser) {
+            alert('Please sign in to delete lists.');
+            return;
+        }
+
+        // Check if there's a current list to delete
+        if (!this.currentListId) {
+            alert('No saved list to delete. Please save a list first.');
+            return;
+        }
+
+        // Double confirmation for safety
+        const listTitle = this.currentListName || 'this list';
+        if (!confirm(`Are you sure you want to permanently delete "${listTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        // Use the existing deleteCloudList method
+        await this.deleteCloudList(this.currentListId);
+        
+        // Update button visibility since list is now deleted
+        this.updateShareButtonVisibility();
     }
 
     async addNewCategory() {

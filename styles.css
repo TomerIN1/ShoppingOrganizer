@@ -335,6 +335,22 @@ body {
     background: #7f8c8d;
 }
 
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
 .organized-section, .my-lists-section, .shared-lists-section {
     background: white;
     border-radius: 10px;
