@@ -1905,27 +1905,21 @@ class ShoppingListOrganizer {
     buildFlexibleCategorizationPrompt(items) {
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel packing, DIY projects, event planning, birthday parties, etc.).
+VALIDATION: Be very permissive - ONLY reject obvious non-list content.
 
-If ANY item appears to be:
-- Narrative text, stories, or descriptions
-- Questions or general conversation  
-- Complete sentences that aren't item names
-- Creative writing or fictional content
-- Random text that isn't an organized list
+ONLY reject if the content is clearly:
+- A full story, essay, or narrative paragraph
+- Questions directed at a person (like "Can you help me?")
+- Conversational text (like "I was thinking about...")
+- Pure creative writing or fiction
 
-THEN return this exact error format:
-{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
+ACCEPT ALL types of organized lists, including:
+- Any shopping, travel, project, event, or organizational lists
+- Collections of items, tasks, supplies, or things to get/do
+- Lists with unusual items, creative projects, or niche categories
 
-VALID LIST TYPES include:
-- Shopping lists (groceries, household items)
-- Travel packing lists (passport, clothes, toiletries)
-- DIY project lists (tools, materials, supplies)
-- Event planning lists (decorations, food, equipment)
-- Birthday party lists (cake, balloons, games, supplies)
-- Work project lists (documents, meetings, tasks)
-- Moving lists (boxes, tape, bubble wrap)
-- Any organized collection of physical items or tasks
+If rejecting (very rare), return:
+{"error": "INVALID_INPUT", "reason": "Content appears to be narrative text rather than a list"}
 
 ONLY if ALL items are valid list items, then map each item to ONE category:
 
@@ -2068,27 +2062,21 @@ Example:
         
         return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
-FIRST: Validate that all items represent actual items that people would organize in lists (shopping, travel packing, DIY projects, event planning, birthday parties, etc.).
+VALIDATION: Be very permissive - ONLY reject obvious non-list content.
 
-If ANY item appears to be:
-- Narrative text, stories, or descriptions
-- Questions or general conversation  
-- Complete sentences that aren't item names
-- Creative writing or fictional content
-- Random text that isn't an organized list
+ONLY reject if the content is clearly:
+- A full story, essay, or narrative paragraph
+- Questions directed at a person (like "Can you help me?")
+- Conversational text (like "I was thinking about...")
+- Pure creative writing or fiction
 
-THEN return this exact error format:
-{"error": "INVALID_INPUT", "reason": "Content appears to be free text rather than list items"}
+ACCEPT ALL types of organized lists, including:
+- Any shopping, travel, project, event, or organizational lists
+- Collections of items, tasks, supplies, or things to get/do
+- Lists with unusual items, creative projects, or niche categories
 
-VALID LIST TYPES include:
-- Shopping lists (groceries, household items)
-- Travel packing lists (passport, clothes, toiletries)
-- DIY project lists (tools, materials, supplies)
-- Event planning lists (decorations, food, equipment)
-- Birthday party lists (cake, balloons, games, supplies)
-- Work project lists (documents, meetings, tasks)
-- Moving lists (boxes, tape, bubble wrap)
-- Any organized collection of physical items or tasks
+If rejecting (very rare), return:
+{"error": "INVALID_INPUT", "reason": "Content appears to be narrative text rather than a list"}
 
 ONLY if ALL items are valid list items, then categorize each item into EXACTLY ONE category from this list:
 ${categoriesText}
