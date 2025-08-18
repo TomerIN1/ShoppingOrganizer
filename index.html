@@ -15,6 +15,25 @@
                 <p class="app-tagline">Smart AI organization for shopping and beyond</p>
             </div>
             <div class="header-right">
+                <!-- Language Switcher -->
+                <div class="language-switcher">
+                    <button id="languageToggle" class="language-btn" title="Switch Language">
+                        <span id="currentLanguageFlag">🇺🇸</span>
+                        <span id="currentLanguageName">English</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="language-dropdown" id="languageDropdown" style="display: none;">
+                        <button class="language-option" data-lang="en">
+                            <span class="flag">🇺🇸</span>
+                            <span class="name">English</span>
+                        </button>
+                        <button class="language-option" data-lang="he">
+                            <span class="flag">🇮🇱</span>
+                            <span class="name">עברית</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Guest Mode -->
                 <div id="guestMode" class="auth-compact">
                     <span class="mode-indicator">Guest Mode</span>
@@ -251,6 +270,8 @@
         // Create global instance
         window.EnvironmentConfig = new EnvironmentConfig();
     </script>
+    <script src="language-manager.js"></script>
+    <script src="translations/i18n.js" type="module"></script>
     <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
