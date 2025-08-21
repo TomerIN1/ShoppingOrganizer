@@ -411,32 +411,67 @@ class ShoppingListOrganizer {
     onLanguageChanged(detail) {
         console.log('🌍 Processing language change:', detail);
         
-        // Update UI elements with new translations
-        this.updateUITranslations();
-        
-        // Update language switcher
-        this.updateLanguageSwitcherUI();
-        
-        // Refresh any displayed lists to show translated categories
-        if (this.currentLists && Object.keys(this.currentLists).length > 0) {
-            this.renderCategorizedLists();
+        try {
+            // Update UI elements with new translations
+            this.updateUITranslations();
+            
+            // Update language switcher
+            this.updateLanguageSwitcherUI();
+            
+            // Refresh any displayed lists to show translated categories
+            if (this.currentLists && Object.keys(this.currentLists).length > 0) {
+                console.log('🔄 Re-rendering categories with new language');
+                // Small delay to ensure translations are fully loaded
+                setTimeout(() => {
+                    this.renderCategorizedLists();
+                    console.log('✅ Categories re-rendered with new translations');
+                }, 50);
+            }
+            
+            console.log('✅ Language change processing completed');
+            
+        } catch (error) {
+            console.error('❌ Error processing language change:', error);
         }
     }
 
     updateUITranslations() {
-        if (!this.languageManager) return;
+        if (!this.languageManager) {
+            console.warn('⚠️ Language manager not available for UI update');
+            return;
+        }
         
         try {
-            // Update header elements
+            // Ensure translations are loaded for current language
+            const currentLang = this.languageManager.currentLanguage;
+            if (!this.languageManager.translations[currentLang]) {
+                console.warn(`⚠️ Translations not loaded for ${currentLang}, deferring UI update`);
+                // Try to reload translations and update UI after delay
+                setTimeout(async () => {
+                    try {
+                        await this.languageManager.loadTranslations(currentLang);
+                        this.updateUITranslations();
+                    } catch (error) {
+                        console.error('❌ Failed to reload translations:', error);
+                    }
+                }, 100);
+                return;
+            }
+            
+            // Update header elements with validation
             const appTitle = document.querySelector('.app-title');
             const appTagline = document.querySelector('.app-tagline');
             
             if (appTitle) {
-                appTitle.textContent = this.languageManager.t('header.title');
+                const titleText = this.languageManager.t('header.title', 'Shopping List Organizer');
+                appTitle.textContent = titleText;
+                console.log(`📝 Updated title: "${titleText}"`);
             }
             
             if (appTagline) {
-                appTagline.textContent = this.languageManager.t('header.tagline');
+                const taglineText = this.languageManager.t('header.tagline', 'Smart AI organization for shopping and beyond');
+                appTagline.textContent = taglineText;
+                console.log(`📝 Updated tagline: "${taglineText}"`);
             }
             
             // Update button texts
@@ -448,7 +483,7 @@ class ShoppingListOrganizer {
             // Update section headers
             this.updateSectionHeaders();
             
-            console.log('✅ UI translations updated');
+            console.log('✅ UI translations updated successfully');
             
         } catch (error) {
             console.error('❌ Failed to update UI translations:', error);
@@ -528,7 +563,23 @@ class ShoppingListOrganizer {
 
     // Helper method to get translated category name specifically
     getTranslatedCategoryName(categoryName) {
-        return this.t(`categories.${categoryName}`, categoryName);
+        if (!this.languageManager) {
+            console.warn('⚠️ Language manager not available for category translation');
+            return categoryName;
+        }
+        
+        const currentLang = this.languageManager.currentLanguage;
+        const translationKey = `categories.${categoryName}`;
+        
+        // Get translation with detailed logging
+        const translated = this.languageManager.t(translationKey, categoryName);
+        
+        if (currentLang === 'he' && translated === categoryName) {
+            console.log(`🔍 Hebrew translation missing for category "${categoryName}"`);
+        }
+        
+        console.log(`📝 Category "${categoryName}" translated to "${translated}" (${currentLang})`);
+        return translated;
     }
 
     async waitForSupabase() {

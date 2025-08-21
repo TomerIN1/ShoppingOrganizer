@@ -152,23 +152,33 @@ class LanguageManager {
             // Try global variables first (for file:// and non-module environments)
             if (language === 'en' && window.EnglishTranslations) {
                 this.translations[language] = window.EnglishTranslations;
+                console.log(`✅ English translations loaded from global variable`);
             } else if (language === 'he' && window.HebrewTranslations) {
                 this.translations[language] = window.HebrewTranslations;
+                console.log(`✅ Hebrew translations loaded from global variable`);
             } else if (window.I18nLoader) {
                 // Use I18nLoader as secondary option
                 const loader = new window.I18nLoader();
                 this.translations[language] = await loader.loadTranslation(language);
+                console.log(`✅ Translations loaded via I18nLoader for ${language}`);
             } else {
                 // Fallback: try dynamic import (may fail in file:// protocol)
                 try {
                     const translationModule = await import(`./translations/${language}.js`);
                     this.translations[language] = translationModule.default || translationModule;
+                    console.log(`✅ Translations loaded via dynamic import for ${language}`);
                 } catch (importError) {
                     throw new Error(`Failed to load translations for ${language}. Ensure translation files are properly loaded as scripts.`);
                 }
             }
             
-            console.log(`✅ Translations loaded for ${language}`);
+            // Validate that translation object has required structure
+            if (!this.translations[language] || !this.translations[language].header) {
+                console.error(`❌ Invalid translation structure for ${language}:`, this.translations[language]);
+                throw new Error(`Invalid translation structure for ${language} - missing required sections`);
+            }
+            
+            console.log(`✅ Translations validated and loaded for ${language}`);
             return this.translations[language];
             
         } catch (error) {
