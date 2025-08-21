@@ -1710,10 +1710,123 @@ body {
     text-align: right;
 }
 
-/* Hebrew font family */
+/* Enhanced Hebrew Typography with Google Fonts */
 [lang="he"] {
-    font-family: 'Segoe UI', 'Noto Sans Hebrew', 'Arial Hebrew', 'David', Arial, sans-serif;
-    line-height: 1.7;
+    font-family: 'Assistant', 'Noto Sans Hebrew', 'Segoe UI', 'Arial Hebrew', 'David', Arial, sans-serif;
+    line-height: 1.8;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+/* Hebrew headings optimization */
+[lang="he"] h1, [lang="he"] h2, [lang="he"] h3, [lang="he"] h4, [lang="he"] h5, [lang="he"] h6 {
+    font-family: 'Noto Sans Hebrew', 'Assistant', 'David', Arial, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+/* Hebrew button text optimization */
+[lang="he"] button, [lang="he"] .btn {
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    font-weight: 500;
+}
+
+/* Hebrew form inputs optimization */
+[lang="he"] input, [lang="he"] textarea, [lang="he"] select {
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    font-weight: 400;
+}
+
+/* Hebrew category names - stronger weight for readability */
+[lang="he"] .category h3, [lang="he"] .category-header-left h3 {
+    font-family: 'Noto Sans Hebrew', 'Assistant', Arial, sans-serif;
+    font-weight: 700;
+}
+
+/* Hebrew list items - optimized readability */
+[lang="he"] .list-item, [lang="he"] .item-name {
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* Hebrew Input Optimization */
+[lang="he"] input[type="text"], [lang="he"] textarea {
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    font-size: 16px; /* Prevent zoom on iOS */
+    text-align: right;
+    direction: rtl;
+    -webkit-text-size-adjust: 100%;
+    -webkit-appearance: none;
+}
+
+/* Hebrew placeholder text styling */
+[lang="he"] input::placeholder, [lang="he"] textarea::placeholder {
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+    color: #666;
+    font-style: normal;
+    opacity: 0.7;
+}
+
+/* Hebrew input focus states */
+[lang="he"] input:focus, [lang="he"] textarea:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+    border-color: #007bff;
+}
+
+/* Hebrew autocomplete styling */
+[lang="he"] input:-webkit-autofill {
+    -webkit-text-fill-color: #333 !important;
+    font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif !important;
+}
+
+/* Hebrew search input specific styling */
+[lang="he"] input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Hebrew mobile keyboard optimization */
+@media screen and (max-width: 768px) {
+    [lang="he"] input[type="text"], [lang="he"] textarea {
+        font-size: 18px; /* Prevent zoom on mobile */
+        padding: 12px 16px;
+        border-radius: 8px;
+    }
+    
+    /* Hebrew virtual keyboard spacing */
+    [lang="he"] .add-item-form {
+        margin-bottom: 20px; /* Extra space for virtual keyboard */
+    }
+}
+
+/* Hebrew text selection */
+[lang="he"] ::selection {
+    background-color: #007bff;
+    color: white;
+    direction: rtl;
+}
+
+[lang="he"] ::-moz-selection {
+    background-color: #007bff;
+    color: white;
+    direction: rtl;
+}
+
+/* Hebrew spellcheck and autocorrect */
+[lang="he"] input, [lang="he"] textarea {
+    -webkit-autocorrect: on;
+    -webkit-spellcheck: on;
+    spellcheck: true;
+    autocomplete: on;
+    autocapitalize: off; /* Hebrew doesn't use capitalization */
+}
+
+/* Hebrew input method editor (IME) support */
+[lang="he"] input:focus, [lang="he"] textarea:focus {
+    ime-mode: active;
+    -webkit-ime-mode: active;
 }
 
 /* Header RTL adjustments */

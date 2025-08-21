@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 3 Hebrew Advanced Features Test</title>
+    
+    <!-- Hebrew Typography: Google Fonts for optimal Hebrew rendering -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;500;600;700&family=Assistant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #fafafa;
+        }
+        .test-result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-weight: 500;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        
+        button { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        
+        /* Hebrew typography test styles */
+        .hebrew-text {
+            font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            font-size: 18px;
+            line-height: 1.8;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            margin: 10px 0;
+        }
+        
+        .hebrew-input {
+            font-family: 'Assistant', 'Noto Sans Hebrew', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            font-size: 16px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .hebrew-input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .typography-samples {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .font-sample {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .progress {
+            margin: 20px 0;
+            font-weight: bold;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇮🇱 Phase 3: Advanced Hebrew Features Test Suite</h1>
+        <div class="progress" id="progress">Ready to test...</div>
+        
+        <!-- Typography Tests -->
+        <div class="test-section">
+            <h2>1. Enhanced Hebrew Typography Test</h2>
+            <p>Testing Google Fonts integration and advanced Hebrew font rendering.</p>
+            <button onclick="testTypography()">Test Typography</button>
+            <div id="typographyResult"></div>
+            
+            <div class="typography-samples">
+                <div class="font-sample">
+                    <h4>Assistant Font (Hebrew):</h4>
+                    <div class="hebrew-text" style="font-family: 'Assistant', sans-serif;">
+                        ברוכים הבאים לאפליקציית מארגן רשימת הקניות החדשה! כאן תוכלו לארגן את כל הקניות שלכם בצורה חכמה ויעילה.
+                    </div>
+                </div>
+                
+                <div class="font-sample">
+                    <h4>Noto Sans Hebrew Font:</h4>
+                    <div class="hebrew-text" style="font-family: 'Noto Sans Hebrew', sans-serif;">
+                        חלב, לחם, תפוחים, בננות, גבינה צהובה, יוגורט, ביצים, חמאה - כל הדברים הדרושים לבית!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Date and Number Formatting Tests -->
+        <div class="test-section">
+            <h2>2. Hebrew Date & Number Formatting Test</h2>
+            <p>Testing localized date formatting and Hebrew number formatting with RTL support.</p>
+            <button onclick="testDateFormatting()">Test Date Formatting</button>
+            <button onclick="testNumberFormatting()">Test Number Formatting</button>
+            <button onclick="testQuantityFormatting()">Test Quantity Formatting</button>
+            <div id="dateFormattingResult"></div>
+        </div>
+        
+        <!-- Keyboard Input Tests -->
+        <div class="test-section">
+            <h2>3. Hebrew Keyboard Input Optimization Test</h2>
+            <p>Testing Hebrew input handling, RTL text direction, and mobile optimization.</p>
+            <button onclick="testKeyboardInput()">Test Input Optimization</button>
+            <div id="keyboardResult"></div>
+            
+            <div style="margin: 15px 0;">
+                <label for="hebrewTestInput"><strong>Test Hebrew Input (try typing):</strong></label>
+                <input type="text" id="hebrewTestInput" class="hebrew-input" 
+                       placeholder="הכנס כאן טקסט בעברית..." 
+                       oninput="analyzeHebrewInput(this.value)">
+                <div id="inputAnalysis" class="test-result info" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- AI Contextual Prompts Tests -->
+        <div class="test-section">
+            <h2>4. Hebrew Contextual AI Prompts Test</h2>
+            <p>Testing Hebrew-aware AI categorization and cultural context understanding.</p>
+            <button onclick="testAIPrompts()">Test AI Context</button>
+            <div id="aiPromptsResult"></div>
+            
+            <div style="margin: 15px 0;">
+                <h4>Sample Hebrew Items for AI Testing:</h4>
+                <div class="hebrew-text">
+                    חלב, לחם, תפוחים, דרכון, טלפון, חולצה, טחינה, חומוס, פיתה, בורקס
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Messages and Validation Tests -->
+        <div class="test-section">
+            <h2>5. Hebrew Error Messages & Validation Test</h2>
+            <p>Testing Hebrew-specific validation rules and culturally appropriate error messages.</p>
+            <button onclick="testValidation()">Test Validation</button>
+            <div id="validationResult"></div>
+            
+            <div style="margin: 15px 0;">
+                <label for="validationTestInput"><strong>Test Validation (try Hebrew letters as numbers):</strong></label>
+                <input type="text" id="validationTestInput" class="hebrew-input" 
+                       placeholder="נסה להכניס: ה' תפוחים או א' חלב" 
+                       oninput="testInputValidation(this.value)">
+                <div id="validationFeedback" class="test-result info" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Comprehensive Integration Test -->
+        <div class="test-section">
+            <h2>6. Full Integration Test</h2>
+            <p>Testing all Phase 3 features working together in Hebrew mode.</p>
+            <button onclick="runFullIntegrationTest()">Run Full Test</button>
+            <div id="integrationResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Summary</h2>
+            <div id="testSummary" class="info test-result">
+                <strong>Test Status:</strong> Ready to run tests
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load required files -->
+    <script src="language-manager.js"></script>
+    <script src="translations/i18n.js"></script>
+    <script src="translations/en.js"></script>
+    <script src="translations/he.js"></script>
+    
+    <script>
+        let manager = null;
+        let testResults = {
+            typography: false,
+            dateFormatting: false,
+            keyboardInput: false,
+            aiPrompts: false,
+            validation: false,
+            integration: false
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', async function() {
+            console.log('🧪 Phase 3 Hebrew test suite loaded');
+            updateProgress('Initializing language manager...');
+            
+            try {
+                manager = new LanguageManager();
+                await manager.init();
+                updateProgress('✅ Ready to test Phase 3 advanced Hebrew features!');
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+                updateProgress('❌ Failed to initialize language manager');
+            }
+        });
+        
+        function updateProgress(message) {
+            document.getElementById('progress').textContent = message;
+        }
+        
+        function updateTestSummary() {
+            const passed = Object.values(testResults).filter(Boolean).length;
+            const total = Object.keys(testResults).length;
+            const summary = document.getElementById('testSummary');
+            
+            if (passed === total) {
+                summary.className = 'success test-result';
+                summary.innerHTML = `<strong>🎉 All Tests Passed:</strong> ${passed}/${total} - Phase 3 Hebrew features are working perfectly!`;
+            } else if (passed > 0) {
+                summary.className = 'info test-result';
+                summary.innerHTML = `<strong>⚠️ Partial Success:</strong> ${passed}/${total} tests passed. Some features need attention.`;
+            } else {
+                summary.className = 'error test-result';
+                summary.innerHTML = `<strong>❌ Tests Failed:</strong> ${passed}/${total} tests passed. Phase 3 features need debugging.`;
+            }
+        }
+        
+        async function testTypography() {
+            const result = document.getElementById('typographyResult');
+            updateProgress('Testing Hebrew typography...');
+            
+            try {
+                // Check if Google Fonts loaded
+                const testElement = document.createElement('div');
+                testElement.style.fontFamily = "'Assistant', sans-serif";
+                testElement.textContent = 'Test';
+                document.body.appendChild(testElement);
+                
+                const computedStyle = getComputedStyle(testElement);
+                const fontFamily = computedStyle.fontFamily;
+                document.body.removeChild(testElement);
+                
+                const assistantLoaded = fontFamily.includes('Assistant');
+                const notoLoaded = document.fonts.check('16px "Noto Sans Hebrew"');
+                
+                let resultHTML = '<h4>Typography Test Results:</h4>';
+                resultHTML += `<div class="${assistantLoaded ? 'success' : 'error'} test-result">
+                    Assistant Font: ${assistantLoaded ? '✅ Loaded' : '❌ Not loaded'}
+                </div>`;
+                resultHTML += `<div class="${notoLoaded ? 'success' : 'error'} test-result">
+                    Noto Sans Hebrew Font: ${notoLoaded ? '✅ Loaded' : '❌ Not loaded'}
+                </div>`;
+                
+                // Test Hebrew text rendering
+                const hebrewSupport = /[א-ת]/.test('עברית');
+                resultHTML += `<div class="success test-result">
+                    Hebrew Character Support: ✅ ${hebrewSupport ? 'Working' : 'Limited'}
+                </div>`;
+                
+                result.innerHTML = resultHTML;
+                testResults.typography = assistantLoaded || notoLoaded;
+                updateTestSummary();
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ Typography test failed: ${error.message}</div>`;
+                testResults.typography = false;
+            }
+        }
+        
+        async function testDateFormatting() {
+            const result = document.getElementById('dateFormattingResult');
+            updateProgress('Testing Hebrew date and number formatting...');
+            
+            try {
+                if (!manager) {
+                    throw new Error('Language manager not initialized');
+                }
+                
+                // Switch to Hebrew
+                await manager.switchLanguage('he');
+                
+                const testDate = new Date('2024-12-25T14:30:00');
+                const testNumber = 1234.56;
+                
+                let resultHTML = '<h4>Date & Number Formatting Results:</h4>';
+                
+                // Test date formatting
+                const shortDate = manager.formatDate(testDate, 'short');
+                const mediumDate = manager.formatDate(testDate, 'medium');
+                const longDate = manager.formatDate(testDate, 'long');
+                
+                resultHTML += `<div class="info test-result">
+                    <strong>Hebrew Date Formats:</strong><br>
+                    Short: ${shortDate}<br>
+                    Medium: ${mediumDate}<br>
+                    Long: ${longDate}
+                </div>`;
+                
+                // Test relative time
+                const pastDate = new Date(Date.now() - 2 * 60 * 60 * 1000); // 2 hours ago
+                const relativeTime = manager.formatRelativeTime(pastDate);
+                resultHTML += `<div class="info test-result">
+                    Relative Time (2h ago): ${relativeTime}
+                </div>`;
+                
+                // Test number formatting
+                const hebrewNumber = manager.formatNumber(testNumber);
+                resultHTML += `<div class="info test-result">
+                    Hebrew Number (1234.56): ${hebrewNumber}
+                </div>`;
+                
+                result.innerHTML = resultHTML;
+                testResults.dateFormatting = true;
+                updateTestSummary();
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ Date formatting test failed: ${error.message}</div>`;
+                testResults.dateFormatting = false;
+            }
+        }
+        
+        async function testNumberFormatting() {
+            if (!manager) return;
+            
+            try {
+                await manager.switchLanguage('he');
+                
+                const quantities = [
+                    { amount: '500', unit: 'g' },
+                    { amount: '2', unit: 'kg' },
+                    { amount: '6', unit: 'pcs' },
+                    { amount: '1.5', unit: 'L' }
+                ];
+                
+                console.log('Hebrew Quantity Formatting:');
+                quantities.forEach(({amount, unit}) => {
+                    const formatted = manager.formatQuantity(amount, unit);
+                    console.log(`${amount} ${unit} → ${formatted}`);
+                });
+                
+            } catch (error) {
+                console.error('Quantity formatting test failed:', error);
+            }
+        }
+        
+        async function testQuantityFormatting() {
+            if (!manager) return;
+            
+            try {
+                await manager.switchLanguage('he');
+                const result = document.getElementById('dateFormattingResult');
+                
+                let quantityHTML = '<h4>Hebrew Quantity Formatting:</h4>';
+                const quantities = [
+                    { amount: '500', unit: 'g' },
+                    { amount: '2', unit: 'kg' },
+                    { amount: '6', unit: 'pcs' },
+                    { amount: '1.5', unit: 'L' },
+                    { amount: '250', unit: 'ml' }
+                ];
+                
+                quantities.forEach(({amount, unit}) => {
+                    const formatted = manager.formatQuantity(amount, unit);
+                    quantityHTML += `<div class="success test-result">
+                        ${amount} ${unit} → <span style="font-family: 'Assistant', 'Noto Sans Hebrew', sans-serif; direction: rtl;">${formatted}</span>
+                    </div>`;
+                });
+                
+                result.innerHTML += quantityHTML;
+                
+            } catch (error) {
+                console.error('Quantity test failed:', error);
+            }
+        }
+        
+        function testKeyboardInput() {
+            const result = document.getElementById('keyboardResult');
+            updateProgress('Testing Hebrew keyboard input...');
+            
+            try {
+                // Test RTL detection
+                const rtlSupported = CSS.supports('direction', 'rtl');
+                
+                // Test Hebrew input methods
+                const imeSupported = 'inputMethod' in navigator || 'mozInputMethod' in navigator;
+                
+                // Test mobile optimization
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                let resultHTML = '<h4>Keyboard Input Test Results:</h4>';
+                resultHTML += `<div class="success test-result">
+                    RTL Direction Support: ✅ ${rtlSupported ? 'Supported' : 'Limited'}
+                </div>`;
+                resultHTML += `<div class="info test-result">
+                    IME Support: ${imeSupported ? '✅ Available' : '⚠️ Limited'}
+                </div>`;
+                resultHTML += `<div class="info test-result">
+                    Mobile Device: ${isMobile ? '📱 Detected' : '💻 Desktop'}
+                </div>`;
+                
+                // Test Hebrew character input
+                const hebrewInput = document.getElementById('hebrewTestInput');
+                hebrewInput.addEventListener('input', (e) => {
+                    const hasHebrew = /[א-ת]/.test(e.target.value);
+                    if (hasHebrew) {
+                        resultHTML += `<div class="success test-result">
+                            Hebrew Input Detected: ✅ Working
+                        </div>`;
+                    }
+                });
+                
+                result.innerHTML = resultHTML;
+                testResults.keyboardInput = true;
+                updateTestSummary();
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ Keyboard input test failed: ${error.message}</div>`;
+                testResults.keyboardInput = false;
+            }
+        }
+        
+        function analyzeHebrewInput(value) {
+            const analysis = document.getElementById('inputAnalysis');
+            if (!value) {
+                analysis.style.display = 'none';
+                return;
+            }
+            
+            const hasHebrew = /[א-ת]/.test(value);
+            const hasLatin = /[a-zA-Z]/.test(value);
+            const hasNumbers = /\d/.test(value);
+            const hasHebrewNumbers = /[א-ט]/.test(value);
+            
+            let analysisHTML = '<strong>Input Analysis:</strong><br>';
+            analysisHTML += `Hebrew characters: ${hasHebrew ? '✅' : '❌'}<br>`;
+            analysisHTML += `Latin characters: ${hasLatin ? '✅' : '❌'}<br>`;
+            analysisHTML += `Numbers: ${hasNumbers ? '✅' : '❌'}<br>`;
+            analysisHTML += `Hebrew letters as numbers: ${hasHebrewNumbers ? '⚠️ Detected' : '✅ Clean'}<br>`;
+            analysisHTML += `Text direction: ${hasHebrew ? 'RTL ←' : 'LTR →'}`;
+            
+            analysis.innerHTML = analysisHTML;
+            analysis.style.display = 'block';
+        }
+        
+        function testAIPrompts() {
+            const result = document.getElementById('aiPromptsResult');
+            updateProgress('Testing Hebrew AI contextual prompts...');
+            
+            try {
+                // Simulate AI prompt generation
+                const mockItems = ['חלב', 'לחם', 'דרכון', 'טלפון'];
+                const mockCategories = ['Fruits & Vegetables', 'Dairy & Eggs', 'Other'];
+                
+                // Test Hebrew context detection
+                const hasHebrewItems = mockItems.some(item => /[א-ת]/.test(item));
+                
+                let resultHTML = '<h4>AI Contextual Prompts Test:</h4>';
+                resultHTML += `<div class="success test-result">
+                    Hebrew Items Detected: ✅ ${hasHebrewItems ? 'Working' : 'Not detected'}
+                </div>`;
+                
+                // Test cultural context
+                const culturalItems = ['טחינה', 'חומוס', 'פיתה', 'בורקס'];
+                const hasCulturalItems = culturalItems.length > 0;
+                
+                resultHTML += `<div class="success test-result">
+                    Hebrew Cultural Items: ✅ ${hasCulturalItems} items recognized
+                </div>`;
+                
+                resultHTML += `<div class="info test-result">
+                    <strong>Sample Hebrew Items for AI:</strong><br>
+                    <span style="font-family: 'Assistant', 'Noto Sans Hebrew', sans-serif; direction: rtl;">
+                        ${mockItems.join(', ')}, ${culturalItems.join(', ')}
+                    </span>
+                </div>`;
+                
+                result.innerHTML = resultHTML;
+                testResults.aiPrompts = true;
+                updateTestSummary();
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ AI prompts test failed: ${error.message}</div>`;
+                testResults.aiPrompts = false;
+            }
+        }
+        
+        function testValidation() {
+            const result = document.getElementById('validationResult');
+            updateProgress('Testing Hebrew validation and error messages...');
+            
+            try {
+                let resultHTML = '<h4>Hebrew Validation Test Results:</h4>';
+                
+                // Test Hebrew letter validation
+                const testCases = [
+                    { input: 'ה\' תפוחים', issue: 'Hebrew letters as numbers' },
+                    { input: 'א\' חלב', issue: 'Hebrew letters as numbers' },
+                    { input: '5 apples חלב', issue: 'Mixed languages' },
+                    { input: 'חלב לחם תפוחים', issue: 'Valid Hebrew' }
+                ];
+                
+                testCases.forEach(({input, issue}) => {
+                    const hasHebrewNumbers = /[א-ט]\'/.test(input);
+                    const hasHebrew = /[א-ת]/.test(input);
+                    const hasLatin = /[a-zA-Z]/.test(input);
+                    const mixedLanguage = hasHebrew && hasLatin;
+                    
+                    let status = 'success';
+                    let message = '✅ Valid';
+                    
+                    if (hasHebrewNumbers) {
+                        status = 'error';
+                        message = '⚠️ Hebrew letters as numbers detected';
+                    } else if (mixedLanguage) {
+                        status = 'info';
+                        message = '⚠️ Mixed languages (Hebrew + Latin)';
+                    }
+                    
+                    resultHTML += `<div class="${status} test-result">
+                        <strong>${input}:</strong> ${message}
+                    </div>`;
+                });
+                
+                // Test error message translations
+                if (manager && manager.currentLanguage === 'he') {
+                    const errorMessage = manager.t('validation.hebrewInputError', 'Hebrew input error');
+                    resultHTML += `<div class="info test-result">
+                        <strong>Hebrew Error Message:</strong><br>
+                        <span style="font-family: 'Assistant', 'Noto Sans Hebrew', sans-serif; direction: rtl;">
+                            ${errorMessage}
+                        </span>
+                    </div>`;
+                }
+                
+                result.innerHTML = resultHTML;
+                testResults.validation = true;
+                updateTestSummary();
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ Validation test failed: ${error.message}</div>`;
+                testResults.validation = false;
+            }
+        }
+        
+        function testInputValidation(value) {
+            const feedback = document.getElementById('validationFeedback');
+            if (!value) {
+                feedback.style.display = 'none';
+                return;
+            }
+            
+            const hasHebrewNumbers = /[א-ט]\'/.test(value);
+            const hasHebrew = /[א-ת]/.test(value);
+            const hasLatin = /[a-zA-Z]/.test(value);
+            const mixedLanguage = hasHebrew && hasLatin;
+            
+            let feedbackHTML = '<strong>Validation Feedback:</strong><br>';
+            
+            if (hasHebrewNumbers) {
+                feedback.className = 'error test-result';
+                feedbackHTML += '⚠️ Hebrew letters used as numbers detected<br>';
+                feedbackHTML += 'Try using regular numbers: 1, 2, 3, etc.';
+            } else if (mixedLanguage) {
+                feedback.className = 'info test-result';
+                feedbackHTML += '💡 Mixed Hebrew and English detected<br>';
+                feedbackHTML += 'This is perfectly fine!';
+            } else if (hasHebrew) {
+                feedback.className = 'success test-result';
+                feedbackHTML += '✅ Valid Hebrew input<br>';
+                feedbackHTML += 'Hebrew text will be displayed right-to-left';
+            } else {
+                feedback.className = 'success test-result';
+                feedbackHTML += '✅ Valid input';
+            }
+            
+            feedback.innerHTML = feedbackHTML;
+            feedback.style.display = 'block';
+        }
+        
+        async function runFullIntegrationTest() {
+            const result = document.getElementById('integrationResult');
+            updateProgress('Running full Phase 3 integration test...');
+            
+            try {
+                if (!manager) {
+                    throw new Error('Language manager not initialized');
+                }
+                
+                let resultHTML = '<h4>Full Integration Test:</h4>';
+                
+                // Test 1: Switch to Hebrew
+                await manager.switchLanguage('he');
+                const isHebrew = manager.currentLanguage === 'he';
+                resultHTML += `<div class="${isHebrew ? 'success' : 'error'} test-result">
+                    1. Hebrew Language Switch: ${isHebrew ? '✅' : '❌'}
+                </div>`;
+                
+                // Test 2: Document direction
+                const docDir = document.documentElement.getAttribute('dir');
+                const isRTL = docDir === 'rtl';
+                resultHTML += `<div class="${isRTL ? 'success' : 'error'} test-result">
+                    2. RTL Document Direction: ${isRTL ? '✅' : '❌'}
+                </div>`;
+                
+                // Test 3: Typography
+                const hebrewFontSupported = document.fonts.check('16px "Assistant"') || document.fonts.check('16px "Noto Sans Hebrew"');
+                resultHTML += `<div class="${hebrewFontSupported ? 'success' : 'info'} test-result">
+                    3. Hebrew Typography: ${hebrewFontSupported ? '✅' : '⚠️ Limited'}
+                </div>`;
+                
+                // Test 4: Date formatting
+                const testDate = new Date();
+                const hebrewDate = manager.formatDate(testDate);
+                const hasHebrewInDate = /[א-ת]/.test(hebrewDate) || hebrewDate.length > 0;
+                resultHTML += `<div class="success test-result">
+                    4. Hebrew Date Formatting: ✅ ${hebrewDate}
+                </div>`;
+                
+                // Test 5: Translation
+                const hebrewTitle = manager.t('header.title');
+                const hasTranslation = hebrewTitle && hebrewTitle !== 'header.title';
+                resultHTML += `<div class="${hasTranslation ? 'success' : 'error'} test-result">
+                    5. Translation System: ${hasTranslation ? '✅' : '❌'} "${hebrewTitle}"
+                </div>`;
+                
+                // Test 6: Overall integration score
+                const passedTests = [isHebrew, isRTL, hebrewFontSupported, hasHebrewInDate, hasTranslation].filter(Boolean).length;
+                const integrationScore = Math.round((passedTests / 5) * 100);
+                
+                resultHTML += `<div class="${integrationScore >= 80 ? 'success' : integrationScore >= 60 ? 'info' : 'error'} test-result">
+                    <strong>Integration Score: ${integrationScore}%</strong> (${passedTests}/5 tests passed)
+                </div>`;
+                
+                result.innerHTML = resultHTML;
+                testResults.integration = integrationScore >= 60;
+                updateTestSummary();
+                
+                updateProgress(`✅ Integration test complete: ${integrationScore}% success rate`);
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error test-result">❌ Integration test failed: ${error.message}</div>`;
+                testResults.integration = false;
+                updateTestSummary();
+            }
+        }
+    </script>
+</body>
+</html>

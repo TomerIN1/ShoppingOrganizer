@@ -291,6 +291,166 @@ class LanguageManager {
     }
     
     /**
+     * Format date according to current language
+     * @param {Date} date - Date object to format
+     * @param {string} style - 'short', 'medium', 'long', 'full'
+     */
+    formatDate(date, style = 'medium') {
+        try {
+            const options = this.getDateFormatOptions(style);
+            const locale = this.currentLanguage === 'he' ? 'he-IL' : 'en-US';
+            
+            return new Intl.DateTimeFormat(locale, options).format(date);
+        } catch (error) {
+            console.warn(`⚠️ Date formatting failed, using fallback:`, error);
+            return date.toLocaleDateString();
+        }
+    }
+    
+    /**
+     * Format number according to current language
+     * @param {number} number - Number to format
+     * @param {object} options - Formatting options
+     */
+    formatNumber(number, options = {}) {
+        try {
+            const locale = this.currentLanguage === 'he' ? 'he-IL' : 'en-US';
+            
+            // Default options for Hebrew: RTL-friendly number formatting
+            const defaultOptions = this.currentLanguage === 'he' ? 
+                { style: 'decimal', useGrouping: true, minimumFractionDigits: 0 } : 
+                { style: 'decimal' };
+                
+            const formatOptions = { ...defaultOptions, ...options };
+            
+            return new Intl.NumberFormat(locale, formatOptions).format(number);
+        } catch (error) {
+            console.warn(`⚠️ Number formatting failed, using fallback:`, error);
+            return number.toString();
+        }
+    }
+    
+    /**
+     * Format time according to current language
+     * @param {Date} date - Date object to format time from
+     * @param {boolean} includeSeconds - Whether to include seconds
+     */
+    formatTime(date, includeSeconds = false) {
+        try {
+            const locale = this.currentLanguage === 'he' ? 'he-IL' : 'en-US';
+            const options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                ...(includeSeconds && { second: '2-digit' })
+            };
+            
+            return new Intl.DateTimeFormat(locale, options).format(date);
+        } catch (error) {
+            console.warn(`⚠️ Time formatting failed, using fallback:`, error);
+            const timeString = includeSeconds ? date.toLocaleTimeString() : date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            return timeString;
+        }
+    }
+    
+    /**
+     * Format relative time (e.g., "2 minutes ago", "לפני 2 דקות")
+     * @param {Date} date - Date to compare to now
+     */
+    formatRelativeTime(date) {
+        try {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (this.currentLanguage === 'he') {
+                if (diffMinutes < 1) return 'עכשיו';
+                if (diffMinutes < 60) return `לפני ${diffMinutes} דקות`;
+                if (diffHours < 24) return `לפני ${diffHours} שעות`;
+                if (diffDays < 7) return `לפני ${diffDays} ימים`;
+                return this.formatDate(date, 'short');
+            } else {
+                if (diffMinutes < 1) return 'just now';
+                if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+                if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+                return this.formatDate(date, 'short');
+            }
+        } catch (error) {
+            console.warn(`⚠️ Relative time formatting failed:`, error);
+            return this.formatDate(date, 'short');
+        }
+    }
+    
+    /**
+     * Get date format options based on style
+     * @private
+     */
+    getDateFormatOptions(style) {
+        const optionsMap = {
+            short: { 
+                year: '2-digit', 
+                month: 'numeric', 
+                day: 'numeric' 
+            },
+            medium: { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            },
+            long: { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long'
+            },
+            full: { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long',
+                hour: '2-digit',
+                minute: '2-digit'
+            }
+        };
+        
+        return optionsMap[style] || optionsMap.medium;
+    }
+    
+    /**
+     * Format quantities with Hebrew-appropriate units
+     * @param {string|number} amount - Quantity amount  
+     * @param {string} unit - Unit type
+     */
+    formatQuantity(amount, unit) {
+        if (!amount || amount === '') return '';
+        
+        try {
+            const formattedAmount = this.formatNumber(parseFloat(amount));
+            
+            if (this.currentLanguage === 'he') {
+                // Hebrew unit translations
+                const hebrewUnits = {
+                    'g': 'גרם',
+                    'kg': 'ק"ג',
+                    'pcs': 'יח\'',
+                    'L': 'ליטר', 
+                    'ml': 'מ"ל'
+                };
+                
+                const hebrewUnit = hebrewUnits[unit] || unit;
+                return `${formattedAmount} ${hebrewUnit}`;
+            } else {
+                return `${formattedAmount} ${unit}`;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Quantity formatting failed:`, error);
+            return `${amount} ${unit}`;
+        }
+    }
+
+    /**
      * Initialize language manager (call after DOM is ready)
      */
     async init() {

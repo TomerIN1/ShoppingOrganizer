@@ -2128,25 +2128,42 @@ class ShoppingListOrganizer {
     }
 
     buildFlexibleCategorizationPrompt(items) {
-        return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
+        // Get current language for contextual prompting
+        const isHebrew = this.languageManager && this.languageManager.currentLanguage === 'he';
+        
+        const basePrompt = `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
 VALIDATION: Be very permissive - ONLY reject obvious non-list content.
 
 ONLY reject if the content is clearly:
 - A full story, essay, or narrative paragraph
-- Questions directed at a person (like "Can you help me?")
-- Conversational text (like "I was thinking about...")
+- Questions directed at a person (like "Can you help me?" / "אתה יכול לעזור לי?")
+- Conversational text (like "I was thinking about..." / "חשבתי על...")
 - Pure creative writing or fiction
 
 ACCEPT ALL types of organized lists, including:
 - Any shopping, travel, project, event, or organizational lists
 - Collections of items, tasks, supplies, or things to get/do
 - Lists with unusual items, creative projects, or niche categories
+- Items in ANY language (English, Hebrew, Arabic, etc.)
 
 If rejecting (very rare), return:
 {"error": "INVALID_INPUT", "reason": "Content appears to be narrative text rather than a list"}
 
 ONLY if ALL items are valid list items, then map each item to ONE category:
+${isHebrew ? `
+HEBREW CONTEXT:
+- User is using Hebrew interface, items may be in Hebrew
+- Create Hebrew category names when appropriate (e.g., "מסמכי נסיעה" for travel docs)
+- Understand Hebrew items: "דרכון" = passport, "טלפון" = phone, "חולצה" = shirt
+- Hebrew cultural items: "טחינה" = tahini, "פיתה" = pita, "בורקס" = bourekas
+- Hebrew measurements: "ק״ג" = kg, "גרם" = grams, "יח׳" = pieces
+- Local Israeli products and brands are normal
+
+CATEGORY NAMING:
+- Use Hebrew category names for Hebrew items when culturally appropriate
+- Examples: "מזון" (Food), "בגדים" (Clothing), "אלקטרוניקה" (Electronics)
+- Use English if no good Hebrew equivalent or international items` : ''}
 
 Items: ${items.join(', ')}
 
@@ -2154,7 +2171,9 @@ REQUIRED FORMAT (item -> category):
 {"item_name": "category_name", "item_name": "category_name"}
 
 Example:
-{"passport": "Travel Documents", "phone": "Electronics", "shirt": "Clothing"}`;
+${isHebrew ? `{"דרכון": "מסמכי נסיעה", "טלפון": "אלקטרוניקה", "חולצה": "בגדים"}` : `{"passport": "Travel Documents", "phone": "Electronics", "shirt": "Clothing"}`}`;
+        
+        return basePrompt;
     }
 
     correctInvertedAIResponse(aiResponse) {
@@ -2285,20 +2304,24 @@ Example:
         const validCategories = [...categoriesList, 'Other'];
         const categoriesText = validCategories.map((cat, i) => `${i+1}. ${cat}`).join('\n');
         
-        return `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
+        // Get current language for contextual prompting
+        const isHebrew = this.languageManager && this.languageManager.currentLanguage === 'he';
+        
+        const basePrompt = `RETURN ONLY VALID JSON. NO TEXT BEFORE OR AFTER.
 
 VALIDATION: Be very permissive - ONLY reject obvious non-list content.
 
 ONLY reject if the content is clearly:
 - A full story, essay, or narrative paragraph
-- Questions directed at a person (like "Can you help me?")
-- Conversational text (like "I was thinking about...")
+- Questions directed at a person (like "Can you help me?" / "אתה יכול לעזור לי?")
+- Conversational text (like "I was thinking about..." / "חשבתי על...")
 - Pure creative writing or fiction
 
 ACCEPT ALL types of organized lists, including:
 - Any shopping, travel, project, event, or organizational lists
 - Collections of items, tasks, supplies, or things to get/do
 - Lists with unusual items, creative projects, or niche categories
+- Items in ANY language (English, Hebrew, Arabic, etc.)
 
 If rejecting (very rare), return:
 {"error": "INVALID_INPUT", "reason": "Content appears to be narrative text rather than a list"}
@@ -2310,10 +2333,19 @@ Rules:
 - Use ONLY exact category names from the list above
 - For non-grocery items: use "Other"
 - Return valid JSON only
+${isHebrew ? `
+HEBREW CONTEXT:
+- The user is using Hebrew interface, items may be in Hebrew
+- Understand Hebrew item names (e.g., "חלב" = milk, "לחם" = bread, "תפוחים" = apples)
+- Hebrew cultural food items (e.g., "טחינה", "חומוס", "פיתה") should be categorized appropriately
+- Hebrew measurements and quantities are normal (e.g., "2 ק״ג", "500 גרם")
+- Hebrew brand names and local products are expected` : ''}
 
 Items: ${items.join(', ')}
 
 {"item1": "Category Name", "item2": "Category Name"}`;
+        
+        return basePrompt;
     }
 
     async callOpenAI(prompt) {
@@ -2533,6 +2565,87 @@ Items: ${items.join(', ')}
         
         // Only use the match if similarity is reasonable
         return bestSimilarity > 0.3 ? bestMatch : 'Other';
+    }
+    
+    /**
+     * Hebrew language validation and processing utilities
+     */
+    validateHebrewInput(text) {
+        if (!text || !this.languageManager || this.languageManager.currentLanguage !== 'he') {
+            return { isValid: true, warnings: [] };
+        }
+        
+        const warnings = [];
+        
+        // Check for Hebrew letters used as numbers
+        const hebrewNumbers = /[א-ט]/g; // Hebrew letters often used as numbers
+        if (hebrewNumbers.test(text)) {
+            warnings.push(this.t('validation.formatErrors.hebrewLettersAsNumbers'));
+        }
+        
+        // Check for mixed Hebrew and Latin numerals in quantities
+        const mixedNumerals = /\d+[א-ת]+|\[א-ת\]+\d+/g;
+        if (mixedNumerals.test(text)) {
+            warnings.push(this.t('validation.formatErrors.mixedNumerals'));
+        }
+        
+        // Detect mixed languages (Hebrew + Latin characters)
+        const hasHebrew = /[א-ת]/.test(text);
+        const hasLatin = /[a-zA-Z]/.test(text);
+        if (hasHebrew && hasLatin) {
+            warnings.push(this.t('validation.mixedLanguageWarning'));
+        }
+        
+        return {
+            isValid: warnings.length === 0,
+            warnings,
+            hasHebrew,
+            hasLatin,
+            needsRTL: hasHebrew
+        };
+    }
+    
+    /**
+     * Process Hebrew text for better AI understanding
+     */
+    preprocessHebrewText(text) {
+        if (!this.languageManager || this.languageManager.currentLanguage !== 'he') {
+            return text;
+        }
+        
+        // Add context markers for Hebrew text to help AI
+        const validation = this.validateHebrewInput(text);
+        
+        if (validation.hasHebrew) {
+            // Add Hebrew context marker
+            return `[HE] ${text}`;
+        }
+        
+        return text;
+    }
+    
+    /**
+     * Format quantities with proper Hebrew number formatting
+     */
+    formatHebrewQuantity(amount, unit) {
+        if (!this.languageManager || this.languageManager.currentLanguage !== 'he') {
+            return `${amount} ${unit}`;
+        }
+        
+        return this.languageManager.formatQuantity(amount, unit);
+    }
+    
+    /**
+     * Get culturally appropriate error message
+     */
+    getLocalizedError(errorKey, fallback) {
+        if (this.languageManager) {
+            const localized = this.t(`validation.${errorKey}`, null);
+            if (localized && localized !== errorKey) {
+                return localized;
+            }
+        }
+        return fallback;
     }
 
     calculateStringSimilarity(str1, str2) {

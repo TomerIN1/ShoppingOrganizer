@@ -134,7 +134,28 @@ const hebrewTranslations = {
         blocked: "🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.",
         detectedWords: "מילים שזוהו:",
         enterSomeItems: "אנא הכנס כמה פריטים לארגון",
-        listNameRequired: "אנא הכנס שם לרשימה"
+        listNameRequired: "אנא הכנס שם לרשימה",
+        
+        // Hebrew-specific validation messages
+        hebrewInputError: "שגיאה בעיבוד הטקסט העברי. אנא בדוק את הכתיבה ונסה שוב.",
+        mixedLanguageWarning: "זוהה שילוב של עברית ואנגלית. זה בסדר גמור!",
+        hebrewKeyboardHint: "טיפ: אם אתה כותב בעברית, וודא שהמקלדת מוגדרת לעברית",
+        rtlTextDirection: "הטקסט יוצג מימין לשמאל כפי שמקובל בעברית",
+        hebrewSpellCheck: "בדיקת איות עברית פעילה",
+        
+        // Hebrew cultural context
+        culturalItems: {
+            accepted: "פריטים ישראליים וכשרים מתקבלים בברכה!",
+            kosherNote: "המערכת מכירה במוצרי כשרות ומזון ישראלי",
+            localBrands: "המערכת מכירה במותגים ישראליים מקומיים"
+        },
+        
+        // Hebrew formatting errors
+        formatErrors: {
+            numbersInHebrew: "זוהו מספרים בעברית. אנא השתמש במספרים (1,2,3) עבור כמויות",
+            hebrewLettersAsNumbers: "זוהו אותיות עבריות במקום מספרים. דוגמה: השתמש ב-'5' במקום 'ה'",
+            mixedNumerals: "זוהה שילוב של מספרים ואותיות עבריות לכמויות"
+        }
     },
     
     // Notifications
