@@ -148,6 +148,7 @@ class LanguageManager {
         
         try {
             console.log(`📥 Loading translations for ${language}...`);
+            console.log(`🔍 Available globals: EnglishTranslations=${!!window.EnglishTranslations}, HebrewTranslations=${!!window.HebrewTranslations}, I18nLoader=${!!window.I18nLoader}`);
             
             // Try global variables first (for file:// and non-module environments)
             if (language === 'en' && window.EnglishTranslations) {
@@ -158,6 +159,7 @@ class LanguageManager {
                 console.log(`✅ Hebrew translations loaded from global variable`);
             } else if (window.I18nLoader) {
                 // Use I18nLoader as secondary option
+                console.log(`🔄 Using I18nLoader for ${language}...`);
                 const loader = new window.I18nLoader();
                 this.translations[language] = await loader.loadTranslation(language);
                 console.log(`✅ Translations loaded via I18nLoader for ${language}`);
@@ -165,9 +167,34 @@ class LanguageManager {
                 // Fallback: try dynamic import (may fail in file:// protocol)
                 try {
                     const translationModule = await import(`./translations/${language}.js`);
-                    this.translations[language] = translationModule.default || translationModule;
+                    console.log(`🔍 Dynamic import returned:`, translationModule);
+                    
+                    // Extract the actual translation object from the module
+                    let translationData = null;
+                    
+                    if (translationModule.default) {
+                        translationData = translationModule.default;
+                    } else if (translationModule[`${language === 'en' ? 'english' : 'hebrew'}Translations`]) {
+                        // Check for named exports
+                        translationData = translationModule[`${language === 'en' ? 'english' : 'hebrew'}Translations`];
+                    } else {
+                        // Look for any object property that looks like translations
+                        for (const key in translationModule) {
+                            if (typeof translationModule[key] === 'object' && translationModule[key] !== null && translationModule[key].header) {
+                                translationData = translationModule[key];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!translationData) {
+                        throw new Error(`No translation data found in module for ${language}`);
+                    }
+                    
+                    this.translations[language] = translationData;
                     console.log(`✅ Translations loaded via dynamic import for ${language}`);
                 } catch (importError) {
+                    console.warn(`⚠️ Dynamic import failed for ${language}:`, importError);
                     throw new Error(`Failed to load translations for ${language}. Ensure translation files are properly loaded as scripts.`);
                 }
             }
@@ -190,8 +217,45 @@ class LanguageManager {
                 return await this.loadTranslations('en');
             }
             
-            throw error;
+            // Ultimate fallback: create basic translation structure to prevent crashes
+            console.warn(`⚠️ Creating minimal translation structure for ${language} as ultimate fallback`);
+            this.translations[language] = this.createMinimalTranslations(language);
+            return this.translations[language];
         }
+    }
+    
+    /**
+     * Create minimal translation structure as ultimate fallback
+     */
+    createMinimalTranslations(language) {
+        const isHebrew = language === 'he';
+        return {
+            header: {
+                title: isHebrew ? "מארגן רשימת קניות" : "Shopping List Organizer",
+                tagline: isHebrew ? "ארגון חכם עם בינה מלאכותית לקניות ועוד" : "Smart AI organization for shopping and beyond",
+                signIn: isHebrew ? "התחבר עם Google" : "Sign In with Google",
+                signOut: isHebrew ? "התנתק" : "Sign Out",
+                myLists: isHebrew ? "הרשימות שלי" : "My Lists"
+            },
+            categories: {
+                "Fruits & Vegetables": isHebrew ? "פירות וירקות" : "Fruits & Vegetables",
+                "Meat & Seafood": isHebrew ? "בשר ודגים" : "Meat & Seafood",
+                "Dairy & Eggs": isHebrew ? "חלב וביצים" : "Dairy & Eggs",
+                "Other": isHebrew ? "אחר" : "Other"
+            },
+            actions: {
+                organizeList: isHebrew ? "ארגן רשימה" : "Organize List",
+                clear: isHebrew ? "נקה" : "Clear",
+                newList: isHebrew ? "רשימה חדשה" : "New List"
+            },
+            status: {
+                loading: isHebrew ? "טוען..." : "Loading...",
+                noLists: isHebrew ? "אין פריטים להציג" : "No items to display"
+            },
+            // Add other minimal sections as needed
+            navigation: {}, input: {}, examples: {}, sharing: {}, items: {}, 
+            validation: {}, notifications: {}, confirmations: {}, language: {}, time: {}
+        };
     }
     
     /**

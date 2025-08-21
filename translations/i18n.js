@@ -86,6 +86,12 @@ class I18nLoader {
      * @param {string} language - Language code for logging
      */
     validateTranslation(translation, language) {
+        // Check if translation object exists and is valid
+        if (!translation || typeof translation !== 'object') {
+            console.error(`❌ Translation is not a valid object for ${language}:`, translation);
+            throw new Error(`Invalid translation object for ${language}`);
+        }
+        
         const requiredSections = [
             'header',
             'navigation', 
