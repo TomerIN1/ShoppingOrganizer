@@ -166,29 +166,48 @@ class LanguageManager {
             } else {
                 // Fallback: try dynamic import (may fail in file:// protocol)
                 try {
+                    console.log(`🔄 Attempting dynamic import for ${language}...`);
                     const translationModule = await import(`./translations/${language}.js`);
                     console.log(`🔍 Dynamic import returned:`, translationModule);
                     
                     // Extract the actual translation object from the module
                     let translationData = null;
                     
+                    // First check for standard exports
                     if (translationModule.default) {
                         translationData = translationModule.default;
+                        console.log(`📦 Found default export`);
                     } else if (translationModule[`${language === 'en' ? 'english' : 'hebrew'}Translations`]) {
                         // Check for named exports
                         translationData = translationModule[`${language === 'en' ? 'english' : 'hebrew'}Translations`];
+                        console.log(`📦 Found named export`);
                     } else {
                         // Look for any object property that looks like translations
                         for (const key in translationModule) {
                             if (typeof translationModule[key] === 'object' && translationModule[key] !== null && translationModule[key].header) {
                                 translationData = translationModule[key];
+                                console.log(`📦 Found translation in property: ${key}`);
                                 break;
                             }
                         }
                     }
                     
+                    // If no translation found in module, check global after import
                     if (!translationData) {
-                        throw new Error(`No translation data found in module for ${language}`);
+                        console.log(`🔍 No module export found, checking global variables after import...`);
+                        await new Promise(resolve => setTimeout(resolve, 50)); // Wait for global to be set
+                        
+                        if (language === 'en' && window.EnglishTranslations) {
+                            translationData = window.EnglishTranslations;
+                            console.log(`📦 Found English translations in global after import`);
+                        } else if (language === 'he' && window.HebrewTranslations) {
+                            translationData = window.HebrewTranslations;
+                            console.log(`📦 Found Hebrew translations in global after import`);
+                        }
+                    }
+                    
+                    if (!translationData) {
+                        throw new Error(`No translation data found in module or global for ${language}`);
                     }
                     
                     this.translations[language] = translationData;

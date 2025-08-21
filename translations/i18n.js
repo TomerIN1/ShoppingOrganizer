@@ -39,21 +39,45 @@ class I18nLoader {
             } else {
                 // Fallback to dynamic import for module environments
                 try {
+                    console.log(`🔄 Trying dynamic import for ${language}...`);
                     switch (language) {
                         case 'en':
                             const enModule = await import('./en.js');
-                            translation = enModule.default;
+                            console.log(`🔍 EN module imported:`, enModule);
+                            // Try different ways to extract the translation
+                            translation = enModule.default || 
+                                         enModule.englishTranslations || 
+                                         window.EnglishTranslations ||
+                                         (await import('./en.js')).then(() => window.EnglishTranslations);
                             break;
                             
                         case 'he':
                             const heModule = await import('./he.js');
-                            translation = heModule.default;
+                            console.log(`🔍 HE module imported:`, heModule);
+                            // Try different ways to extract the translation
+                            translation = heModule.default || 
+                                         heModule.hebrewTranslations || 
+                                         window.HebrewTranslations ||
+                                         (await import('./he.js')).then(() => window.HebrewTranslations);
                             break;
                             
                         default:
                             throw new Error(`No translation file found for language: ${language}`);
                     }
+                    
+                    // If still undefined, wait a bit for global variables to be set
+                    if (!translation) {
+                        console.log(`⏳ Translation undefined, waiting for global variables...`);
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        if (language === 'en') {
+                            translation = window.EnglishTranslations;
+                        } else if (language === 'he') {
+                            translation = window.HebrewTranslations;
+                        }
+                    }
+                    
                 } catch (importError) {
+                    console.error(`❌ Dynamic import failed for ${language}:`, importError);
                     throw new Error(`Failed to load translation for ${language}: ${importError.message}`);
                 }
             }

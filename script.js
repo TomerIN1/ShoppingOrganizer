@@ -465,13 +465,28 @@ class ShoppingListOrganizer {
             if (appTitle) {
                 const titleText = this.languageManager.t('header.title', 'Shopping List Organizer');
                 appTitle.textContent = titleText;
-                console.log(`📝 Updated title: "${titleText}"`);
+                console.log(`📝 Updated title from "${this.languageManager.currentLanguage}": "${titleText}"`);
+                
+                // Debug: Check if translation actually worked
+                if (this.languageManager.currentLanguage === 'he' && titleText === 'Shopping List Organizer') {
+                    console.warn(`⚠️ Hebrew title translation failed - still showing English`);
+                    // Check if translations are actually loaded
+                    console.log(`🔍 Available translations for he:`, this.languageManager.translations.he);
+                    console.log(`🔍 Header section:`, this.languageManager.translations.he?.header);
+                }
             }
             
             if (appTagline) {
                 const taglineText = this.languageManager.t('header.tagline', 'Smart AI organization for shopping and beyond');
                 appTagline.textContent = taglineText;
-                console.log(`📝 Updated tagline: "${taglineText}"`);
+                console.log(`📝 Updated tagline from "${this.languageManager.currentLanguage}": "${taglineText}"`);
+                
+                // Debug: Check if translation actually worked  
+                if (this.languageManager.currentLanguage === 'he' && taglineText === 'Smart AI organization for shopping and beyond') {
+                    console.warn(`⚠️ Hebrew tagline translation failed - still showing English`);
+                    // Check if translations are actually loaded
+                    console.log(`🔍 Available tagline translation:`, this.languageManager.translations.he?.header?.tagline);
+                }
             }
             
             // Update button texts
