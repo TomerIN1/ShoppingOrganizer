@@ -836,6 +836,12 @@ class ShoppingListOrganizer {
         
         if (privacyLink) {
             privacyLink.textContent = this.languageManager.t('footer.privacyPolicy', 'Privacy Policy');
+            
+            // Add click event listener for privacy policy
+            privacyLink.onclick = (e) => {
+                e.preventDefault();
+                this.showPrivacyPolicy();
+            };
         }
         
         if (termsLink) {
@@ -849,6 +855,84 @@ class ShoppingListOrganizer {
         if (copyrightText) {
             copyrightText.textContent = this.languageManager.t('footer.copyright', '© 2025 Shopping List Organizer. All rights reserved.');
         }
+    }
+
+    showPrivacyPolicy() {
+        console.log('📋 Opening privacy policy modal');
+        
+        const modal = document.getElementById('privacyModal');
+        const modalTitle = document.getElementById('privacyModalTitle');
+        const modalContent = document.getElementById('privacyPolicyContent');
+        
+        if (!modal || !modalTitle || !modalContent) {
+            console.error('❌ Privacy policy modal elements not found');
+            return;
+        }
+        
+        // Update modal title
+        modalTitle.textContent = this.languageManager.t('privacyPolicy.title', 'Privacy Policy — Shopping List Organizer');
+        
+        // Generate privacy policy content
+        modalContent.innerHTML = this.generatePrivacyPolicyHTML();
+        
+        // Show modal
+        modal.style.display = 'block';
+        
+        // Add event listeners for closing modal
+        this.setupPrivacyModalEventListeners();
+    }
+
+    generatePrivacyPolicyHTML() {
+        let html = '';
+        
+        // Generate content for all 8 sections
+        for (let i = 1; i <= 8; i++) {
+            const sectionKey = `section${i}`;
+            const sectionTitle = this.languageManager.t(`privacyPolicy.${sectionKey}.title`, `Section ${i}`);
+            const sectionContent = this.languageManager.t(`privacyPolicy.${sectionKey}.content`, []);
+            
+            html += `<div class="privacy-policy-section">`;
+            html += `<h4>${sectionTitle}</h4>`;
+            
+            if (Array.isArray(sectionContent)) {
+                html += `<ul>`;
+                sectionContent.forEach(item => {
+                    html += `<li>${item}</li>`;
+                });
+                html += `</ul>`;
+            } else {
+                html += `<p>${sectionContent}</p>`;
+            }
+            
+            html += `</div>`;
+        }
+        
+        return html;
+    }
+
+    setupPrivacyModalEventListeners() {
+        const modal = document.getElementById('privacyModal');
+        const closeBtn = document.getElementById('privacyModalClose');
+        const backdrop = document.getElementById('privacyModalBackdrop');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        if (backdrop) {
+            backdrop.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+            }
+        });
     }
 
     updateExamplesSection() {

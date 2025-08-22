@@ -180,6 +180,71 @@ const englishTranslations = {
         termsOfService: "Terms of Service",
         accessibility: "Accessibility",
         copyright: "© 2025 Shopping List Organizer. All rights reserved."
+    },
+    
+    // Privacy Policy
+    privacyPolicy: {
+        title: "Privacy Policy — Shopping List Organizer",
+        section1: {
+            title: "1. Information We Collect",
+            content: [
+                "Account and Authentication Info: If you log in with your Google account, we may receive and store your email address and username (based on permissions).",
+                "Usage Information: Actions like creating, editing, deleting, or sharing lists.",
+                "Directly Provided Information: Items you entered in lists, categories, shared content, etc."
+            ]
+        },
+        section2: {
+            title: "2. Use of Information",
+            content: [
+                "Storage & Synchronization: To allow saving, syncing, and sharing lists across devices.",
+                "User Experience Optimization: For example, smart display layouts and automatic categorization.",
+                "Technical Support and Service: To help with requests and solve issues when needed.",
+                "System Communications: Password reset links, service updates, reminders, and more."
+            ]
+        },
+        section3: {
+            title: "3. Sharing Information with Third Parties",
+            content: [
+                "Google Services Only: This is used only for sync purposes and limited to what you've permitted.",
+                "No sharing with external entities: We do not sell, rent, or expose your personal info to others."
+            ]
+        },
+        section4: {
+            title: "4. Information Security",
+            content: [
+                "Security Measures: Data is encrypted during transfer (https) and securely stored.",
+                "Authorized Access Only: Only limited authorized staff can access info (support purposes only).",
+                "Backups and Incident Handling: We maintain backups and quick response to ensure continuity."
+            ]
+        },
+        section5: {
+            title: "5. Cookies and Similar Technologies",
+            content: [
+                "We may use cookies to remember preferences and improve user navigation.",
+                "You can disable or delete cookies via your browser settings, though some functionality may be affected."
+            ]
+        },
+        section6: {
+            title: "6. Your Rights",
+            content: [
+                "Access: You may request a copy of the data associated with your account.",
+                "Correction or Deletion: You can update or delete information when needed.",
+                "Inquiry or Complaint: We welcome your input and will assist with any requests."
+            ]
+        },
+        section7: {
+            title: "7. Policy Updates",
+            content: [
+                "We may update this policy from time to time. Changes will be posted with the update date.",
+                "It is recommended to check periodically to stay informed."
+            ]
+        },
+        section8: {
+            title: "8. Contact",
+            content: [
+                "If you have any questions or requests, please contact us via the [Contact] page or at support@[domain]."
+            ]
+        }
     }
 };
 
