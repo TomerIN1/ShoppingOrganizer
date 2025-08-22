@@ -2421,6 +2421,12 @@ class ShoppingListOrganizer {
             return quickResults;
             
         } catch (error) {
+            // If this is an AI validation error, propagate it instead of falling back
+            if (error.type === 'INVALID_INPUT') {
+                console.error('🚫 AI validation rejected input:', error.message);
+                throw error; // Propagate to main validation flow
+            }
+            
             console.error('❌ AI categorization failed, falling back to rule-based:', error.message);
             return this.categorizeItems(items);
         }
@@ -3196,8 +3202,10 @@ Items: ${items.join(', ')}
             /(^|[\s,.])(ה[\u0590-\u05FF]+)\s+(הוא|היא|הם|הן|היה|הייתה|היו|יהיה|תהיה|יהיו|אמר|אמרה|בא|באה|הלך|הלכה|עשה|עשתה)/,
             // Hebrew - Personal pronouns in conversational context
             /(^|[\s,.])(אני|אתה|את|הוא|היא|אנחנו|אתם|אתן|הם|הן)\s+(הולך|הולכת|רוצה|חושב|חושבת|אוהב|אוהבת)/,
-            // Hebrew - Past tense narrative patterns (for "הלכתי", "ראיתי")
+            // Hebrew - Past tense narrative patterns (catches "הלכתי ברחוב וראיתי")
             /(היום|אתמול|אז).*(הלכתי|ראיתי|עשיתי|אמרתי|באתי|יצאתי)/,
+            // Hebrew - Standalone past tense narrative verbs (catches sentences without time markers)
+            /(הלכתי|ראיתי|עשיתי|אמרתי|באתי|יצאתי).*(ו|ואז|ושם|ואחר כך).*(הלכתי|ראיתי|עשיתי|אמרתי|באתי|יצאתי|סוס|בית|רחוב|אדם)/,
             // Hebrew - Questions and conversation starters
             /(^|[\s,.])(ספר לי|תוכל להגיד|תן לי לדעת|אני חושב|אני מאמין|לדעתי|נראה|נראה לי)/,
             // Hebrew - Narrative/story patterns
@@ -3347,8 +3355,28 @@ Items: ${items.join(', ')}
             this.currentListName = customName || this.generateDefaultListName();
             
             const items = this.parseTextInput(inputText);
-            this.currentLists = await this.categorizeWithAI(items);
-            this.updateListTitle();
+            
+            try {
+                this.currentLists = await this.categorizeWithAI(items);
+                this.updateListTitle();
+            } catch (error) {
+                // Handle AI validation errors
+                if (error.type === 'INVALID_INPUT') {
+                    console.log('🚫 AI validation error caught in organizeList:', error.message);
+                    
+                    // Check if input contains Hebrew to provide appropriate message
+                    const hasHebrew = /[\u0590-\u05FF]/.test(inputText);
+                    const message = hasHebrew ? 
+                        '⚠️ אנא הזן פריטים של רשימה בלבד (לדוגמה: "חלב, לחם, תפוחים" או "דרכון, קרם הגנה, מצלמה").\n\nהאפליקציה מיועדת לארגון רשימות פריטים, לא לטקסט כללי או שאלות.' :
+                        '⚠️ Please enter list items only (e.g., "milk, bread, apples" or "passport, sunscreen, camera").\n\nThis app is designed for organizing item lists, not general text or questions.';
+                    
+                    alert(message);
+                    return;
+                }
+                
+                // Re-throw other errors
+                throw error;
+            }
         }
         
         // Update button text based on context
