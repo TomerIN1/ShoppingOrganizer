@@ -749,6 +749,9 @@ class ShoppingListOrganizer {
             // Update examples section
             this.updateExamplesSection();
             
+            // Update footer
+            this.updateFooterTranslations();
+            
             // Update authentication messages
             this.updateAuthMessages();
             
@@ -819,6 +822,32 @@ class ShoppingListOrganizer {
         
         if (sectionSubtitle) {
             sectionSubtitle.textContent = this.languageManager.t('input.subtitle');
+        }
+    }
+
+    updateFooterTranslations() {
+        if (!this.languageManager) return;
+        
+        // Update footer links
+        const privacyLink = document.getElementById('privacyLink');
+        const termsLink = document.getElementById('termsLink');
+        const accessibilityLink = document.getElementById('accessibilityLink');
+        const copyrightText = document.getElementById('copyrightText');
+        
+        if (privacyLink) {
+            privacyLink.textContent = this.languageManager.t('footer.privacyPolicy', 'Privacy Policy');
+        }
+        
+        if (termsLink) {
+            termsLink.textContent = this.languageManager.t('footer.termsOfService', 'Terms of Service');
+        }
+        
+        if (accessibilityLink) {
+            accessibilityLink.textContent = this.languageManager.t('footer.accessibility', 'Accessibility');
+        }
+        
+        if (copyrightText) {
+            copyrightText.textContent = this.languageManager.t('footer.copyright', '© 2025 Shopping List Organizer. All rights reserved.');
         }
     }
 

@@ -172,6 +172,14 @@ const englishTranslations = {
         updated: "Updated",
         items: "items",
         categories: "categories"
+    },
+    
+    // Footer
+    footer: {
+        privacyPolicy: "Privacy Policy",
+        termsOfService: "Terms of Service",
+        accessibility: "Accessibility",
+        copyright: "© 2025 Shopping List Organizer. All rights reserved."
     }
 };
 

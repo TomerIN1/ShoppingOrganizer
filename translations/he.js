@@ -193,6 +193,14 @@ const hebrewTranslations = {
         updated: "עודכן",
         items: "פריטים",
         categories: "קטגוריות"
+    },
+    
+    // Footer
+    footer: {
+        privacyPolicy: "מדיניות פרטיות",
+        termsOfService: "תנאי שירות",
+        accessibility: "נגישות",
+        copyright: "© 2025 מארגן רשימת קניות. כל הזכויות שמורות."
     }
 };
 
