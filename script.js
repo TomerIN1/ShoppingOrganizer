@@ -425,6 +425,9 @@ class ShoppingListOrganizer {
                 setTimeout(() => {
                     this.renderCategorizedLists();
                     console.log('✅ Categories re-rendered with new translations');
+                    
+                    // Force update of any visible elements that need translation
+                    this.updateExistingItemTranslations();
                 }, 50);
             }
             
@@ -498,6 +501,12 @@ class ShoppingListOrganizer {
             // Update section headers
             this.updateSectionHeaders();
             
+            // Update examples section
+            this.updateExamplesSection();
+            
+            // Update authentication messages
+            this.updateAuthMessages();
+            
             console.log('✅ UI translations updated successfully');
             
         } catch (error) {
@@ -566,6 +575,124 @@ class ShoppingListOrganizer {
         if (sectionSubtitle) {
             sectionSubtitle.textContent = this.languageManager.t('input.subtitle');
         }
+    }
+
+    updateExamplesSection() {
+        if (!this.languageManager) return;
+        
+        // Update "Use Cases & Examples" title
+        const examplesTitle = document.querySelector('.examples-section h3');
+        if (examplesTitle) {
+            examplesTitle.textContent = this.languageManager.t('examples.title', 'Use Cases & Examples');
+        }
+        
+        // Update individual example cards
+        const exampleCards = document.querySelectorAll('.example-card');
+        const exampleData = [
+            {
+                titleKey: 'examples.shopping.title',
+                exampleKey: 'examples.shopping.example', 
+                descriptionKey: 'examples.shopping.description'
+            },
+            {
+                titleKey: 'examples.travel.title',
+                exampleKey: 'examples.travel.example',
+                descriptionKey: 'examples.travel.description'
+            },
+            {
+                titleKey: 'examples.diy.title',
+                exampleKey: 'examples.diy.example',
+                descriptionKey: 'examples.diy.description'
+            },
+            {
+                titleKey: 'examples.events.title',
+                exampleKey: 'examples.events.example',
+                descriptionKey: 'examples.events.description'
+            }
+        ];
+        
+        exampleCards.forEach((card, index) => {
+            if (index < exampleData.length) {
+                const data = exampleData[index];
+                
+                const title = card.querySelector('h4');
+                const example = card.querySelector('p');
+                const description = card.querySelector('small');
+                
+                if (title) {
+                    title.textContent = this.languageManager.t(data.titleKey, title.textContent);
+                }
+                if (example) {
+                    example.textContent = this.languageManager.t(data.exampleKey, example.textContent);
+                }
+                if (description) {
+                    description.textContent = this.languageManager.t(data.descriptionKey, description.textContent);
+                }
+            }
+        });
+    }
+    
+    updateAuthMessages() {
+        if (!this.languageManager) return;
+        
+        // Update guest mode indicator
+        const modeIndicator = document.querySelector('.mode-indicator');
+        if (modeIndicator) {
+            modeIndicator.textContent = this.languageManager.t('header.guestMode', 'Guest Mode');
+        }
+        
+        // Update auth message
+        const authMessage = document.querySelector('.auth-message');
+        if (authMessage) {
+            authMessage.textContent = this.languageManager.t('header.authMessage', 'Never lose your shopping lists again - sign in to save, sync, and share with others');
+        }
+    }
+    
+    updateExistingItemTranslations() {
+        if (!this.languageManager) return;
+        
+        // Update any existing item placeholders and unit options that are already rendered
+        const itemNameInputs = document.querySelectorAll('.item-name');
+        const itemAmountInputs = document.querySelectorAll('.item-amount');
+        const itemUnits = document.querySelectorAll('.item-unit');
+        const deleteButtons = document.querySelectorAll('.btn-delete-icon');
+        
+        // Update item name placeholders
+        itemNameInputs.forEach(input => {
+            if (!input.value) { // Only update placeholder if field is empty
+                input.placeholder = this.t('items.name', 'Item name');
+            }
+        });
+        
+        // Update amount placeholders
+        itemAmountInputs.forEach(input => {
+            if (!input.value) { // Only update placeholder if field is empty
+                input.placeholder = this.t('items.amount', 'Qty');
+            }
+        });
+        
+        // Update unit select options
+        itemUnits.forEach(select => {
+            const selectedValue = select.value;
+            const unitOptions = [
+                { value: 'pcs', label: this.t('items.units.pcs', 'pcs') },
+                { value: 'g', label: this.t('items.units.g', 'g') },
+                { value: 'kg', label: this.t('items.units.kg', 'kg') },
+                { value: 'L', label: this.t('items.units.L', 'L') },
+                { value: 'ml', label: this.t('items.units.ml', 'ml') }
+            ];
+            
+            select.innerHTML = unitOptions.map(unit => 
+                `<option value="${unit.value}" ${selectedValue === unit.value ? 'selected' : ''}>${unit.label}</option>`
+            ).join('');
+        });
+        
+        // Update delete button titles
+        deleteButtons.forEach(button => {
+            button.title = this.t('items.delete', 'Delete item');
+        });
+        
+        console.log('🔄 Updated existing item translations');
     }
 
     // Helper method to get translated category name
@@ -3314,23 +3441,37 @@ Items: ${items.join(', ')}
         const itemAmount = itemData.amount || '';
         const itemUnit = itemData.unit || 'pcs';
         
+        // Get translated placeholders and unit options
+        const itemNamePlaceholder = this.t('items.name', 'Item name');
+        const quantityPlaceholder = this.t('items.amount', 'Qty');
+        const deleteTitle = this.t('items.delete', 'Delete item');
+        
+        // Get translated unit options
+        const unitOptions = [
+            { value: 'pcs', label: this.t('items.units.pcs', 'pcs') },
+            { value: 'g', label: this.t('items.units.g', 'g') },
+            { value: 'kg', label: this.t('items.units.kg', 'kg') },
+            { value: 'L', label: this.t('items.units.L', 'L') },
+            { value: 'ml', label: this.t('items.units.ml', 'ml') }
+        ];
+        
+        const unitOptionsHTML = unitOptions.map(unit => 
+            `<option value="${unit.value}" ${itemUnit === unit.value ? 'selected' : ''}>${unit.label}</option>`
+        ).join('');
+        
         return `
             <li class="item-row" id="${itemId}">
                 <div class="item-table">
-                    <input type="text" class="item-name" value="${itemName}" placeholder="Item name"
+                    <input type="text" class="item-name" value="${itemName}" placeholder="${itemNamePlaceholder}"
                            onblur="organizer.updateItemData('${category}', '${itemId}', 'name', this.value).catch(console.error)"
                            onkeypress="if(event.key==='Enter') this.blur()">
-                    <input type="number" class="item-amount" value="${itemAmount}" placeholder="Qty" min="0" step="0.1"
+                    <input type="number" class="item-amount" value="${itemAmount}" placeholder="${quantityPlaceholder}" min="0" step="0.1"
                            onblur="organizer.updateItemData('${category}', '${itemId}', 'amount', this.value).catch(console.error)"
                            onkeypress="if(event.key==='Enter') this.blur()">
                     <select class="item-unit" onchange="organizer.updateItemData('${category}', '${itemId}', 'unit', this.value).catch(console.error)">
-                        <option value="pcs" ${itemUnit === 'pcs' ? 'selected' : ''}>pcs</option>
-                        <option value="g" ${itemUnit === 'g' ? 'selected' : ''}>g</option>
-                        <option value="kg" ${itemUnit === 'kg' ? 'selected' : ''}>kg</option>
-                        <option value="L" ${itemUnit === 'L' ? 'selected' : ''}>L</option>
-                        <option value="ml" ${itemUnit === 'ml' ? 'selected' : ''}>ml</option>
+                        ${unitOptionsHTML}
                     </select>
-                    <button class="btn-delete-icon" onclick="organizer.deleteItem('${category}', '${itemId}').catch(console.error)" title="Delete item">🗑️</button>
+                    <button class="btn-delete-icon" onclick="organizer.deleteItem('${category}', '${itemId}').catch(console.error)" title="${deleteTitle}">🗑️</button>
                 </div>
             </li>
         `;
