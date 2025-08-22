@@ -2258,6 +2258,38 @@ class ShoppingListOrganizer {
         }, 3000);
     }
 
+    /**
+     * Intelligently remove duplicate items from the list
+     * - Case-insensitive comparison (Banana = banana)
+     * - Whitespace normalization
+     * - Preserves different items (Banana ≠ banana chocolate)
+     * - Keeps first occurrence of duplicates
+     */
+    removeDuplicateItems(items) {
+        const seen = new Set();
+        const uniqueItems = [];
+        let duplicatesRemoved = 0;
+        
+        items.forEach(item => {
+            // Normalize for comparison: lowercase, trim whitespace
+            const normalizedItem = item.toLowerCase().trim();
+            
+            if (!seen.has(normalizedItem)) {
+                seen.add(normalizedItem);
+                uniqueItems.push(item); // Keep original casing/formatting
+            } else {
+                duplicatesRemoved++;
+                console.log(`🔄 Removed duplicate: "${item}" (matches existing item)`);
+            }
+        });
+        
+        if (duplicatesRemoved > 0) {
+            console.log(`✨ Removed ${duplicatesRemoved} duplicate item(s) from list`);
+        }
+        
+        return uniqueItems;
+    }
+
     parseTextInput(text) {
         console.log('📄 Raw input text:', text.substring(0, 200) + (text.length > 200 ? '...' : ''));
         
@@ -2284,8 +2316,12 @@ class ShoppingListOrganizer {
         });
 
         const filteredItems = items.filter(item => item.length > 0);
-        console.log('✅ Final parsed items:', filteredItems);
-        return filteredItems;
+        
+        // Remove duplicates intelligently (case-insensitive, whitespace-normalized)
+        const deduplicatedItems = this.removeDuplicateItems(filteredItems);
+        
+        console.log('✅ Final parsed items:', deduplicatedItems);
+        return deduplicatedItems;
     }
 
     categorizeItems(items) {
