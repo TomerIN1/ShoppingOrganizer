@@ -359,7 +359,10 @@ const hebrewTranslations = {
             categoryCreated: "קטגוריה חדשה נוצרה",
             listSaved: "הרשימה נשמרה בהצלחה",
             error: "אירעה שגיאה",
-            languageChanged: "השפה שונתה לעברית"
+            languageChanged: "השפה שונתה לעברית",
+            modalOpened: "חלון דיאלוג נפתח",
+            modalClosed: "חלון דיאלוג נסגר",
+            shortcutUsed: "קיצור מקלדת הופעל"
         },
         errors: {
             invalidInput: "קלט לא תקין סופק",

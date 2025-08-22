@@ -518,6 +518,9 @@ class ShoppingListOrganizer {
         // Initialize language manager first
         await this.initializeLanguage();
         
+        // Initialize accessibility features (Phase 2)
+        this.initializeFocusManagement();
+        
         this.initializeEventListeners();
         
         // Wait for Supabase to initialize
@@ -4685,6 +4688,347 @@ Items: ${items.join(', ')}
         this.moderator.reset();
         console.log('✅ Moderation system reset complete');
         alert('Moderation system has been reset. All warnings cleared.');
+    }
+
+    // ===== PHASE 2: FOCUS MANAGEMENT AND KEYBOARD NAVIGATION =====
+    
+    /**
+     * Initialize Phase 2 accessibility features: keyboard navigation and focus management
+     */
+    initializeFocusManagement() {
+        console.log('♿ Initializing Phase 2: Focus Management');
+        
+        // Initialize focus traps for modals
+        this.initializeFocusTraps();
+        
+        // Initialize keyboard shortcuts
+        this.initializeKeyboardShortcuts();
+        
+        // Initialize enhanced dropdown navigation
+        this.initializeDropdownNavigation();
+        
+        console.log('♿ Phase 2 focus management initialized');
+    }
+
+    /**
+     * Focus Trap Implementation for WCAG 2.0 AA Compliance
+     * Ensures keyboard users can't navigate outside of open modals
+     */
+    initializeFocusTraps() {
+        const modals = [
+            { id: 'privacyModal', closeId: 'privacyModalClose' },
+            { id: 'termsModal', closeId: 'termsModalClose' },
+            { id: 'shareModal', closeId: 'shareModalClose' }
+        ];
+
+        modals.forEach(modal => {
+            const modalElement = document.getElementById(modal.id);
+            const closeButton = document.getElementById(modal.closeId);
+            
+            if (modalElement && closeButton) {
+                this.setupFocusTrap(modalElement, closeButton);
+            }
+        });
+    }
+
+    /**
+     * Setup focus trap for a specific modal
+     */
+    setupFocusTrap(modalElement, primaryCloseButton) {
+        let lastActiveElement = null;
+        
+        // Store the element that was focused before modal opened
+        const storeLastActiveElement = () => {
+            lastActiveElement = document.activeElement;
+        };
+        
+        // Focus trap handler
+        const trapFocus = (e) => {
+            if (e.key !== 'Tab') return;
+            
+            const focusableElements = modalElement.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            
+            if (e.shiftKey) {
+                // Shift + Tab (backward)
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                // Tab (forward)
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        };
+        
+        // Escape key handler
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                this.closeFocusTrap(modalElement, lastActiveElement);
+            }
+        };
+        
+        // Setup focus trap when modal opens
+        const setupTrap = () => {
+            storeLastActiveElement();
+            modalElement.addEventListener('keydown', trapFocus);
+            document.addEventListener('keydown', handleEscape);
+            
+            // Focus the close button initially
+            setTimeout(() => {
+                primaryCloseButton.focus();
+                this.announceToScreenReader(
+                    this.t('accessibility.announcements.modalOpened', 'Modal opened'), 
+                    'polite'
+                );
+            }, 100);
+        };
+        
+        // Cleanup focus trap when modal closes
+        const cleanupTrap = () => {
+            modalElement.removeEventListener('keydown', trapFocus);
+            document.removeEventListener('keydown', handleEscape);
+            
+            // Restore focus to the element that opened the modal
+            if (lastActiveElement) {
+                lastActiveElement.focus();
+                lastActiveElement = null;
+            }
+            
+            this.announceToScreenReader(
+                this.t('accessibility.announcements.modalClosed', 'Modal closed'), 
+                'polite'
+            );
+        };
+        
+        // Observe modal visibility changes
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const isVisible = modalElement.style.display !== 'none';
+                    if (isVisible && !modalElement.dataset.focusTrapActive) {
+                        modalElement.dataset.focusTrapActive = 'true';
+                        setupTrap();
+                    } else if (!isVisible && modalElement.dataset.focusTrapActive) {
+                        modalElement.dataset.focusTrapActive = 'false';
+                        cleanupTrap();
+                    }
+                }
+            });
+        });
+        
+        observer.observe(modalElement, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+        
+        // Store cleanup function for later use
+        modalElement._focusTrapCleanup = () => {
+            observer.disconnect();
+            cleanupTrap();
+        };
+    }
+
+    /**
+     * Close focus trap and restore focus
+     */
+    closeFocusTrap(modalElement, lastActiveElement) {
+        modalElement.style.display = 'none';
+        if (lastActiveElement) {
+            lastActiveElement.focus();
+        }
+    }
+
+    /**
+     * Initialize keyboard shortcuts for common actions
+     */
+    initializeKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Only activate shortcuts when not typing in inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Ctrl/Cmd + Enter: Organize list
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                const organizeBtn = document.getElementById('organizeBtn');
+                if (organizeBtn && organizeBtn.style.display !== 'none') {
+                    organizeBtn.click();
+                    this.announceToScreenReader(
+                        this.t('accessibility.announcements.shortcutUsed', 'Keyboard shortcut activated: Organize list'), 
+                        'polite'
+                    );
+                }
+            }
+
+            // Ctrl/Cmd + K: Clear list
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const clearBtn = document.getElementById('clearBtn');
+                if (clearBtn && clearBtn.style.display !== 'none') {
+                    clearBtn.click();
+                    this.announceToScreenReader(
+                        this.t('accessibility.announcements.shortcutUsed', 'Keyboard shortcut activated: Clear list'), 
+                        'polite'
+                    );
+                }
+            }
+
+            // Ctrl/Cmd + N: New list
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                const newBtn = document.getElementById('newListBtn');
+                if (newBtn && newBtn.style.display !== 'none') {
+                    newBtn.click();
+                    this.announceToScreenReader(
+                        this.t('accessibility.announcements.shortcutUsed', 'Keyboard shortcut activated: New list'), 
+                        'polite'
+                    );
+                }
+            }
+
+            // Escape: Close any open modals or dropdowns
+            if (e.key === 'Escape') {
+                this.closeAllDropdowns();
+                this.closeAllModals();
+            }
+        });
+    }
+
+    /**
+     * Enhanced dropdown navigation with arrow keys
+     */
+    initializeDropdownNavigation() {
+        // Language dropdown
+        const languageDropdown = document.getElementById('languageDropdown');
+        if (languageDropdown) {
+            this.enhanceDropdownKeyboardNavigation(languageDropdown, 'language-option');
+        }
+
+        // User dropdown
+        const userDropdown = document.getElementById('userDropdown');
+        if (userDropdown) {
+            this.enhanceDropdownKeyboardNavigation(userDropdown, 'dropdown-item');
+        }
+    }
+
+    /**
+     * Add keyboard navigation to dropdown menus
+     */
+    enhanceDropdownKeyboardNavigation(dropdown, itemClass) {
+        const options = dropdown.querySelectorAll(`.${itemClass}`);
+        let currentIndex = -1;
+
+        const handleKeyDown = (e) => {
+            if (dropdown.style.display === 'none') return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentIndex = Math.min(currentIndex + 1, options.length - 1);
+                    options[currentIndex].focus();
+                    break;
+
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentIndex = Math.max(currentIndex - 1, 0);
+                    options[currentIndex].focus();
+                    break;
+
+                case 'Home':
+                    e.preventDefault();
+                    currentIndex = 0;
+                    options[currentIndex].focus();
+                    break;
+
+                case 'End':
+                    e.preventDefault();
+                    currentIndex = options.length - 1;
+                    options[currentIndex].focus();
+                    break;
+
+                case 'Escape':
+                    e.preventDefault();
+                    dropdown.style.display = 'none';
+                    // Focus the trigger button
+                    const trigger = dropdown.previousElementSibling;
+                    if (trigger) trigger.focus();
+                    break;
+            }
+        };
+
+        dropdown.addEventListener('keydown', handleKeyDown);
+        
+        // Reset index when dropdown opens
+        const observer = new MutationObserver(() => {
+            if (dropdown.style.display !== 'none') {
+                currentIndex = -1;
+            }
+        });
+        
+        observer.observe(dropdown, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    }
+
+    /**
+     * Close all open dropdowns
+     */
+    closeAllDropdowns() {
+        const dropdowns = document.querySelectorAll('.language-dropdown, .user-dropdown');
+        dropdowns.forEach(dropdown => {
+            dropdown.style.display = 'none';
+        });
+    }
+
+    /**
+     * Close all open modals
+     */
+    closeAllModals() {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (modal.style.display !== 'none') {
+                modal.style.display = 'none';
+                // Trigger cleanup if focus trap is active
+                if (modal._focusTrapCleanup) {
+                    modal._focusTrapCleanup();
+                }
+            }
+        });
+    }
+
+    /**
+     * Comprehensive tab order management
+     */
+    updateTabOrder() {
+        // Ensure logical tab order
+        const mainElements = [
+            document.getElementById('listNameInput'),
+            document.getElementById('freeTextInput'),
+            document.getElementById('organizeBtn'),
+            document.getElementById('clearBtn'),
+            document.getElementById('newListBtn')
+        ];
+
+        mainElements.forEach((element, index) => {
+            if (element) {
+                element.tabIndex = index + 1;
+            }
+        });
+
+        // Dynamic elements get higher tab indices
+        const dynamicElements = document.querySelectorAll('.category-section button, .item-delete-btn');
+        dynamicElements.forEach((element, index) => {
+            element.tabIndex = mainElements.length + index + 1;
+        });
     }
 }
 

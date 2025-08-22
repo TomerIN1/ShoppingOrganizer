@@ -338,7 +338,10 @@ const englishTranslations = {
             categoryCreated: "New category created",
             listSaved: "List saved successfully",
             error: "An error occurred",
-            languageChanged: "Language changed to English"
+            languageChanged: "Language changed to English",
+            modalOpened: "Modal dialog opened",
+            modalClosed: "Modal dialog closed",
+            shortcutUsed: "Keyboard shortcut activated"
         },
         errors: {
             invalidInput: "Invalid input provided",
