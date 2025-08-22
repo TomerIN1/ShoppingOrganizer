@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hebrew Moderation System Test</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 20px; 
+            direction: rtl;
+            text-align: right;
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .test-input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        .test-button { 
+            padding: 10px 20px; 
+            background: #007cba; 
+            color: white; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover { 
+            background: #005a87; 
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb;
+        }
+        .warning { 
+            background-color: #fff3cd; 
+            color: #856404; 
+            border: 1px solid #ffeaa7;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb;
+        }
+        .blocked { 
+            background-color: #f5c6cb; 
+            color: #721c24; 
+            border: 2px solid #dc3545;
+            font-weight: bold;
+        }
+        .test-category {
+            font-weight: bold;
+            color: #333;
+            margin-top: 15px;
+            padding: 5px 0;
+            border-bottom: 2px solid #007cba;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ בדיקת מערכת המודרציה העברית</h1>
+    <p>מערכת מקיפה לבדיקת מודרציה דו-לשונית עם תמיכה בעברית</p>
+
+    <div class="test-section">
+        <h2>בדיקה ידנית</h2>
+        <input type="text" id="manualInput" class="test-input" placeholder="הכנס טקסט לבדיקה...">
+        <button onclick="testManualInput()" class="test-button">בדוק טקסט</button>
+        <button onclick="resetModeration()" class="test-button" style="background: #dc3545;">איפוס מערכת מודרציה</button>
+        <div id="manualResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>בדיקות אוטומטיות</h2>
+        <button onclick="runAllTests()" class="test-button">הרץ את כל הבדיקות</button>
+        <button onclick="testHebrewProfanity()" class="test-button">ניבולי פה עבריים</button>
+        <button onclick="testEnglishProfanity()" class="test-button">ניבולי פה אנגליים</button>
+        <button onclick="testMixedLanguage()" class="test-button">שפה מעורבת</button>
+        <button onclick="testCleanContent()" class="test-button">תוכן נקי</button>
+        <div id="autoResults" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>בדיקות מערכת האזהרות</h2>
+        <button onclick="testWarningSystem()" class="test-button">בדוק מערכת 3 האזהרות</button>
+        <div id="warningResults" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>בדיקות דפוסים תרבותיים עבריים</h2>
+        <button onclick="testHebrewCulturalPatterns()" class="test-button">בדוק דפוסים תרבותיים</button>
+        <div id="culturalResults" class="result"></div>
+    </div>
+
+    <script>
+        // Import the moderation system
+        let moderator;
+
+        // Initialize moderation system
+        function initModerationSystem() {
+            // Create a mock of the ToxicContentModerator class for testing
+            class UserModerationTracker {
+                constructor() {
+                    this.warningCount = parseInt(localStorage.getItem('moderation_warnings') || '0');
+                    this.isBlocked = localStorage.getItem('moderation_blocked') === 'true';
+                }
+                
+                addWarning() {
+                    this.warningCount++;
+                    localStorage.setItem('moderation_warnings', this.warningCount.toString());
+                    
+                    if (this.warningCount >= 3) {
+                        this.blockUser();
+                    }
+                }
+                
+                blockUser() {
+                    this.isBlocked = true;
+                    localStorage.setItem('moderation_blocked', 'true');
+                }
+                
+                reset() {
+                    this.warningCount = 0;
+                    this.isBlocked = false;
+                    localStorage.removeItem('moderation_warnings');
+                    localStorage.removeItem('moderation_blocked');
+                }
+            }
+
+            class ToxicContentModerator {
+                constructor() {
+                    this.toxicWords = {
+                        profanity: [
+                            'fuck', 'fucking', 'shit', 'damn', 'bitch', 'ass', 'bastard'
+                        ],
+                        hate_speech: [
+                            'nazi', 'terrorist', 'racist', 'fascist'
+                        ]
+                    };
+                    
+                    this.hebrewToxicWords = {
+                        profanity: [
+                            'זין', 'זיון', 'יזדיין', 'זיני', 'זייכתי', 'זונה', 'זונות', 'כוס', 'כוסית',
+                            'חרא', 'חארא', 'חרה', 'שרמוטה', 'שרמוטות', 'בן זונה', 'בת זונה'
+                        ],
+                        hate_speech: [
+                            'נאצי', 'נאצים', 'היטלר', 'פאשיסט', 'גזען', 'גזעני', 'גזענות'
+                        ]
+                    };
+                    
+                    this.tracker = new UserModerationTracker();
+                    this.shoppingWhitelist = [];
+                }
+                
+                containsHebrew(text) {
+                    return /[\u0590-\u05FF]/.test(text);
+                }
+                
+                validateHebrewContent(text) {
+                    const hasHebrew = this.containsHebrew(text);
+                    
+                    if (hasHebrew) {
+                        const hebrewCulturalPatterns = [
+                            /כוס.*אמא/i,
+                            /זיין.*אותך/i,
+                            /מזדיין.*לך/i
+                        ];
+                        
+                        for (const pattern of hebrewCulturalPatterns) {
+                            if (pattern.test(text)) {
+                                return {
+                                    isValid: false,
+                                    reason: 'hebrew_cultural_profanity',
+                                    pattern: pattern.source
+                                };
+                            }
+                        }
+                    }
+                    
+                    return { isValid: true };
+                }
+                
+                detectToxicContent(text) {
+                    const normalizedText = text.toLowerCase().trim();
+                    const detectedWords = [];
+                    let detectedCategory = null;
+                    
+                    // Check English words
+                    for (const [category, words] of Object.entries(this.toxicWords)) {
+                        for (const word of words) {
+                            const wordRegex = new RegExp(`\\\\b${word.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')}\\\\b`, 'i');
+                            if (wordRegex.test(normalizedText)) {
+                                detectedWords.push(word);
+                                if (!detectedCategory) detectedCategory = category;
+                            }
+                        }
+                    }
+                    
+                    // Check Hebrew words
+                    for (const [category, words] of Object.entries(this.hebrewToxicWords)) {
+                        for (const word of words) {
+                            if (text.includes(word)) {
+                                detectedWords.push(word);
+                                if (!detectedCategory) detectedCategory = category;
+                            }
+                        }
+                    }
+                    
+                    if (detectedCategory) {
+                        return {
+                            category: detectedCategory,
+                            detectedWords: detectedWords,
+                            isHebrew: this.containsHebrew(text)
+                        };
+                    }
+                    
+                    return null;
+                }
+                
+                getWarningMessage(warningCount, detectedWords = []) {
+                    const wordList = detectedWords.length > 0 ? 
+                        `\\n\\nDetected words: "${detectedWords.join('", "')}"` : '';
+                    
+                    const hasHebrewWords = detectedWords.some(word => this.containsHebrew(word));
+                    
+                    let messages;
+                    
+                    if (hasHebrewWords) {
+                        messages = {
+                            1: `🚨 אזהרה 1/3: זוהתה שפה לא הולמת. אנא שמור על רשימות ידידותיות למשפחה ותקן את הטקסט.${wordList}`,
+                            2: `🚨 אזהרה 2/3: הפרה שנייה זוהתה. אנא השתמש בשפה הולמת בלבד. הפרה נוספת תחסום זמנית את הגישה שלך.${wordList}`,
+                            3: `🚨 אזהרה אחרונה 3/3: זה הסיכוי האחרון שלך. אנא השתמש בשפה הולמת בלבד. הפרה הבאה תחסום את הגישה שלך לאפליקציה.${wordList}`
+                        };
+                    } else {
+                        messages = {
+                            1: `🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.${wordList}`,
+                            2: `🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.${wordList}`,
+                            3: `🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.${wordList}`
+                        };
+                    }
+                    
+                    if (this.tracker.isBlocked) {
+                        if (hasHebrewWords) {
+                            return `🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.`;
+                        } else {
+                            return `🔒 Access temporarily blocked. Please refresh the page to reset and use appropriate language only.`;
+                        }
+                    }
+                    
+                    return messages[warningCount] || messages[3];
+                }
+                
+                validateContent(inputText) {
+                    if (this.tracker.isBlocked) {
+                        const hasHebrew = this.containsHebrew(inputText);
+                        const blockMessage = hasHebrew ? 
+                            '🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.' :
+                            '🔒 Access temporarily blocked. Please refresh the page to reset and use appropriate language only.';
+                            
+                        return {
+                            isValid: false,
+                            isBlocked: true,
+                            message: blockMessage,
+                            warningCount: this.tracker.warningCount
+                        };
+                    }
+                    
+                    const hebrewValidation = this.validateHebrewContent(inputText);
+                    if (!hebrewValidation.isValid) {
+                        this.tracker.addWarning();
+                        
+                        return {
+                            isValid: false,
+                            isBlocked: this.tracker.isBlocked,
+                            warningCount: this.tracker.warningCount,
+                            category: 'hebrew_cultural',
+                            detectedWords: [],
+                            message: this.getWarningMessage(this.tracker.warningCount, [])
+                        };
+                    }
+                    
+                    const detectionResult = this.detectToxicContent(inputText);
+                    
+                    if (detectionResult) {
+                        this.tracker.addWarning();
+                        
+                        return {
+                            isValid: false,
+                            isBlocked: this.tracker.isBlocked,
+                            warningCount: this.tracker.warningCount,
+                            category: detectionResult.category,
+                            detectedWords: detectionResult.detectedWords,
+                            isHebrew: detectionResult.isHebrew || false,
+                            message: this.getWarningMessage(this.tracker.warningCount, detectionResult.detectedWords)
+                        };
+                    }
+                    
+                    return { isValid: true };
+                }
+                
+                reset() {
+                    this.tracker.reset();
+                }
+            }
+
+            moderator = new ToxicContentModerator();
+            console.log('🛡️ Hebrew Moderation System initialized');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initModerationSystem);
+
+        function testManualInput() {
+            const input = document.getElementById('manualInput').value;
+            const result = moderator.validateContent(input);
+            displayResult('manualResult', input, result);
+        }
+
+        function resetModeration() {
+            moderator.reset();
+            displayMessage('manualResult', '✅ מערכת המודרציה אופסה בהצלחה', 'success');
+        }
+
+        function displayResult(elementId, input, result) {
+            const element = document.getElementById(elementId);
+            let className = result.isValid ? 'success' : (result.isBlocked ? 'blocked' : 'warning');
+            let status = result.isValid ? '✅ תוכן מאושר' : 
+                        result.isBlocked ? '🔒 חסום' : 
+                        `⚠️ אזהרה ${result.warningCount}/3`;
+            
+            element.innerHTML = `
+                <strong>קלט:</strong> ${input}
+                <strong>תוצאה:</strong> ${status}
+                <strong>הודעה:</strong> ${result.message || 'אין הודעה'}
+                ${result.category ? `<strong>קטגוריה:</strong> ${result.category}` : ''}
+                ${result.detectedWords ? `<strong>מילים שזוהו:</strong> ${result.detectedWords.join(', ')}` : ''}
+            `;
+            element.className = `result ${className}`;
+        }
+
+        function displayMessage(elementId, message, className) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `result ${className}`;
+        }
+
+        function runAllTests() {
+            const results = [];
+            
+            // Test clean Hebrew content
+            results.push(testText('חלב, לחם, תפוחים', '✅ תוכן עברי נקי'));
+            
+            // Test clean English content
+            results.push(testText('milk, bread, apples', '✅ תוכן אנגלי נקי'));
+            
+            // Test Hebrew profanity
+            results.push(testText('זין', '❌ ניבול פה עברי'));
+            
+            // Test English profanity
+            results.push(testText('fuck', '❌ ניבול פה אנגלי'));
+            
+            // Test mixed content
+            results.push(testText('milk חלב bread לחם', '✅ תוכן מעורב נקי'));
+            
+            // Test Hebrew cultural patterns
+            results.push(testText('כוס אמא שלך', '❌ דפוס תרבותי עברי'));
+            
+            displayResults('autoResults', results);
+        }
+
+        function testHebrewProfanity() {
+            const hebrewTests = [
+                'זין', 'זונה', 'כוס', 'חרא', 'שרמוטה', 'בן זונה'
+            ];
+            
+            const results = hebrewTests.map(word => testText(word, `❌ עברית: ${word}`));
+            displayResults('autoResults', results);
+        }
+
+        function testEnglishProfanity() {
+            const englishTests = [
+                'fuck', 'shit', 'damn', 'bitch', 'bastard'
+            ];
+            
+            const results = englishTests.map(word => testText(word, `❌ אנגלית: ${word}`));
+            displayResults('autoResults', results);
+        }
+
+        function testMixedLanguage() {
+            const mixedTests = [
+                'חלב milk לחם bread',
+                'shopping list רשימת קניות',
+                'תפוחים apples בננות bananas'
+            ];
+            
+            const results = mixedTests.map(text => testText(text, `✅ מעורב: ${text}`));
+            displayResults('autoResults', results);
+        }
+
+        function testCleanContent() {
+            const cleanTests = [
+                'חלב, לחם, תפוחים',
+                'milk, bread, apples',
+                'דגים, בשר, ירקות',
+                'fish, meat, vegetables'
+            ];
+            
+            const results = cleanTests.map(text => testText(text, `✅ נקי: ${text}`));
+            displayResults('autoResults', results);
+        }
+
+        function testWarningSystem() {
+            // Reset first
+            moderator.reset();
+            
+            const results = [];
+            
+            // Warning 1
+            results.push(testText('זין', 'אזהרה ראשונה'));
+            
+            // Warning 2
+            results.push(testText('חרא', 'אזהרה שנייה'));
+            
+            // Warning 3 (should block)
+            results.push(testText('כוס', 'אזהרה שלישית - צריך לחסום'));
+            
+            // Should be blocked now
+            results.push(testText('תפוח', 'צריך להיות חסום'));
+            
+            displayResults('warningResults', results);
+        }
+
+        function testHebrewCulturalPatterns() {
+            const culturalTests = [
+                'כוס אמא שלך',
+                'זיין אותך',
+                'מזדיין לך',
+                'תזדיין לך'
+            ];
+            
+            const results = culturalTests.map(text => testText(text, `❌ תרבותי: ${text}`));
+            displayResults('culturalResults', results);
+        }
+
+        function testText(input, description) {
+            const result = moderator.validateContent(input);
+            return {
+                input,
+                description,
+                result,
+                status: result.isValid ? '✅' : (result.isBlocked ? '🔒' : '⚠️')
+            };
+        }
+
+        function displayResults(elementId, results) {
+            const element = document.getElementById(elementId);
+            const html = results.map(test => `
+                <div style="margin: 10px 0; padding: 10px; border-left: 4px solid ${test.result.isValid ? '#28a745' : (test.result.isBlocked ? '#dc3545' : '#ffc107')}; background: ${test.result.isValid ? '#d4edda' : (test.result.isBlocked ? '#f8d7da' : '#fff3cd')};">
+                    <strong>${test.status} ${test.description}</strong><br>
+                    <em>קלט:</em> ${test.input}<br>
+                    ${test.result.message ? `<em>הודעה:</em> ${test.result.message}<br>` : ''}
+                    ${test.result.detectedWords && test.result.detectedWords.length ? `<em>מילים:</em> ${test.result.detectedWords.join(', ')}<br>` : ''}
+                    ${test.result.warningCount ? `<em>אזהרות:</em> ${test.result.warningCount}/3<br>` : ''}
+                </div>
+            `).join('');
+            
+            element.innerHTML = html;
+            element.className = 'result';
+        }
+    </script>
+</body>
+</html>

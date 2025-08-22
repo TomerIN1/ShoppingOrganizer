@@ -28,9 +28,10 @@ class UserModerationTracker {
     }
 }
 
-// Toxic content moderation system
+// Toxic content moderation system with bilingual Hebrew/English support
 class ToxicContentModerator {
     constructor() {
+        // English toxic words database
         this.toxicWords = {
             profanity: [
                 'fuck', 'fucking', 'fucker', 'fucked', 'fck', 'f*ck', 'f**k', 'fuk',
@@ -93,6 +94,105 @@ class ToxicContentModerator {
             ]
         };
         
+        // Hebrew toxic words database - comprehensive coverage
+        this.hebrewToxicWords = {
+            profanity: [
+                // Direct Hebrew profanity and vulgar terms
+                'זין', 'זיון', 'יזדיין', 'זיני', 'זיינתי', 'זונה', 'זונות', 'כוס', 'כוסית',
+                'חרא', 'חארא', 'חרה', 'שרמוטה', 'שרמוטות', 'בן זונה', 'בת זונה', 'קוקסינל',
+                'לך תזדיין', 'תזדיין', 'מזדיין', 'מזדיינים', 'פדר', 'פדרסט', 'חתיכת חרא',
+                'לעזאזל', 'מזיין', 'מזויין', 'מחרבן', 'חתך', 'קקי', 'בולבול', 'אידיוט חרא'
+            ],
+            hate_speech: [
+                // Hebrew hate speech and discriminatory language
+                'נאצי', 'נאצים', 'היטלר', 'פאשיסט', 'גזען', 'גזעני', 'גזענות', 'שנאה',
+                'אנטישמי', 'אנטישמיות', 'הומופוב', 'טרנספוב', 'קיצוני', 'קיצונים',
+                'טרור', 'טרוריסט', 'טרוריסטים', 'רצח עם', 'השמדה', 'אפליה',
+                'דיכוי', 'עליונות', 'גזעית', 'מפלה', 'שנאת חינם', 'קנאות דתית',
+                'ערבי מסריח', 'יהודי מסריח', 'כושי', 'צהוב', 'שחור מסריח'
+            ],
+            sexual_content: [
+                // Hebrew sexual and explicit content
+                'סקס', 'סקסי', 'זיון', 'זיונים', 'פורנו', 'פורנוגרפיה', 'עירום', 'עירומים',
+                'חזה', 'ציצי', 'ציצים', 'התחת', 'תחת', 'איבר מין', 'איבר המין', 'פין',
+                'נרתיק', 'אורגזמה', 'אוננות', 'מתאונן', 'מתאננת', 'מעורר', 'מעוררת',
+                'אירוטי', 'אירוטיקה', 'מפורש', 'תוכן למבוגרים', 'חם', 'סקסית',
+                'מגרה', 'מגרה', 'חושני', 'חושנית', 'תשוקה', 'תאווה', 'זנות'
+            ],
+            violence: [
+                // Hebrew violence and threatening language
+                'להרוג', 'רוצח', 'רצח', 'רציחה', 'להכות', 'מכות', 'אלימות', 'אלים',
+                'לירות', 'יריות', 'רובה', 'אקדח', 'נשק', 'נשקים', 'סכין', 'סכינים',
+                'לדקור', 'דקירה', 'פצצה', 'פיצוץ', 'לפוצץ', 'טרור', 'פיגוע', 'תקיפה',
+                'מוות', 'למות', 'מת', 'מתה', 'מתים', 'לפגוע', 'פגיעה', 'לפצוע',
+                'קרב', 'מלחמה', 'להרביץ', 'להחרים', 'להשמיד', 'השמדה', 'חיסול',
+                'ללחם', 'אני אהרוג אותך', 'אני אהרוג', 'תמות', 'שתמות'
+            ],
+            drugs: [
+                // Hebrew drug and substance references
+                'קוקאין', 'הרואין', 'מתאמפטמין', 'קריסטל', 'עשב', 'גראס', 'חשיש',
+                'מריחואנה', 'קנאביס', 'סמים', 'סם', 'אקסטזי', 'אלסדי', 'חומר',
+                'סוחר', 'סוחר סמים', 'דילר', 'נרקומן', 'מכור', 'מכורה', 'התמכרות',
+                'מנת יתר', 'לחטוף', 'חוטף', 'מסומם', 'מסוממת', 'כדורים', 'גלולות',
+                'לשמוט', 'שמוט', 'טריפ', 'היי', 'מאמי', 'מסטול', 'פאקט'
+            ],
+            harassment: [
+                // Hebrew harassment and personal attacks
+                'אידיוט', 'אידיוטים', 'טיפש', 'טיפשה', 'טיפשים', 'טיפשות', 'טיפשות',
+                'מפגר', 'מפגרים', 'מפגרת', 'פיגור', 'לוזר', 'לוזרים', 'כושלים',
+                'מכוער', 'מכוערת', 'מכוערים', 'שמן', 'שמנה', 'שמנים', 'חתיכת שמן',
+                'חסר ערך', 'חסרת ערך', 'חסרי ערך', 'מיותר', 'מיותרת', 'פתטי',
+                'פתטית', 'פתטיים', 'מוזר', 'מוזרה', 'מוזרים', 'משוגע', 'משוגעת',
+                'משוגעים', 'משוגעות', 'בורות', 'בור', 'בורה', 'בורים', 'חתיכת בור'
+            ],
+            self_harm: [
+                // Hebrew self-harm and suicidal language
+                'התאבדות', 'להתאבד', 'אני רוצה למות', 'אני רוצה להתאבד', 'לחתוך את עצמי',
+                'חיתוך', 'חותך את עצמי', 'פגיעה עצמית', 'לפגוע בעצמי', 'מנת יתר',
+                'להתלות', 'להתלות את עצמי', 'לקפוץ', 'רעל', 'להרעיל את עצמי',
+                'להזיק לעצמי', 'לפגוע בעצמי', 'לסיים הכל', 'לקחת את החיים שלי',
+                'לא שווה לחיות', 'החיים לא שווים', 'בלי תקווה', 'אין טעם בחיים',
+                'אני רוצה לעזוב את העולם', 'להיפטר מהכל', 'סוף לסבל'
+            ],
+            fraud: [
+                // Hebrew fraud and criminal activity
+                'הונאה', 'רמאי', 'רמאים', 'רמאית', 'מרמה', 'לגנוב', 'גנבה',
+                'גנב', 'גנבים', 'גנבת', 'שוד', 'שודד', 'שודדים', 'לרמות',
+                'מרמים', 'זיוף', 'מזויף', 'מזויפת', 'מזויפים', 'לא חוקי',
+                'פשע', 'פושע', 'פושעים', 'העלמת מס', 'הלבנת הון', 'נוכל',
+                'נוכלים', 'להדליף', 'לעקוף', 'לעקוף את החוק', 'שחיתות'
+            ],
+            trolling: [
+                // Hebrew trolling and disruptive behavior
+                'טרול', 'טרולים', 'טרוליםג', 'ספאם', 'ספאמר', 'ספאמים',
+                'רעיל', 'רעילה', 'רעילים', 'זבל', 'אשפה', 'שריפה', 'שורף',
+                'פרובוקטיבי', 'מעצבן', 'מעצבנת', 'מעצבנים', 'מזיק', 'מפריע',
+                'מעורר סערה', 'מעורר מחלוקת', 'מעורר מהומות', 'בעייתי',
+                'מציק', 'מציקה', 'מציקים', 'מטריד', 'מטרידה', 'מטרידים'
+            ],
+            personal_attacks: [
+                // Hebrew personal attacks and insults
+                'חתיכת אידיוט', 'אידיוט מושלם', 'חמור', 'חמורים', 'תוכי', 'טיפש גמור',
+                'זוחל', 'זוחלים', 'זוחלת', 'מטורף', 'מטורפת', 'מטורפים', 'חולה נפש',
+                'מגעיל', 'מגעילה', 'מגעילים', 'זוועתי', 'זוועתית', 'נוראי',
+                'נוראית', 'נוראים', 'איום', 'איומה', 'איומים', 'מדכא',
+                'מדכאת', 'מדכאים', 'דוחה', 'דוחים', 'מרגיז', 'מרגיזה', 'מרגיזים'
+            ]
+        };
+        
+        // Hebrew character substitution patterns for detection evasion
+        this.hebrewSubstitutions = {
+            'א': ['4', '@'],
+            'ה': ['5'],
+            'ו': ['6'],
+            'ח': ['8'],
+            'ט': ['9'],
+            'י': ['1', '!'],
+            'ל': ['7'],
+            'ע': ['3'],
+            'צ': ['$']
+        };
+        
         this.tracker = new UserModerationTracker();
         
         // Shopping context whitelist - legitimate shopping terms that might contain flagged words
@@ -123,15 +223,35 @@ class ToxicContentModerator {
     validateContent(inputText) {
         // Check if user is already blocked
         if (this.tracker.isBlocked) {
+            const hasHebrew = this.containsHebrew(inputText);
+            const blockMessage = hasHebrew ? 
+                '🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.' :
+                '🔒 Access temporarily restricted. Please refresh the page to reset and use appropriate language only.';
+                
             return {
                 isValid: false,
                 isBlocked: true,
-                message: '🔒 Access temporarily restricted. Please refresh the page to reset and use appropriate language only.',
+                message: blockMessage,
                 warningCount: this.tracker.warningCount
             };
         }
         
-        // Check for toxic content
+        // First run Hebrew cultural validation
+        const hebrewValidation = this.validateHebrewContent(inputText);
+        if (!hebrewValidation.isValid) {
+            this.tracker.addWarning();
+            
+            return {
+                isValid: false,
+                isBlocked: this.tracker.isBlocked,
+                warningCount: this.tracker.warningCount,
+                category: 'hebrew_cultural',
+                detectedWords: [],
+                message: this.getWarningMessage(this.tracker.warningCount, [])
+            };
+        }
+        
+        // Run standard toxic content detection
         const detectionResult = this.detectToxicContent(inputText);
         
         if (detectionResult) {
@@ -143,6 +263,7 @@ class ToxicContentModerator {
                 warningCount: this.tracker.warningCount,
                 category: detectionResult.category,
                 detectedWords: detectionResult.detectedWords,
+                isHebrew: detectionResult.isHebrew || false,
                 message: this.getWarningMessage(this.tracker.warningCount, detectionResult.detectedWords)
             };
         }
@@ -203,15 +324,76 @@ class ToxicContentModerator {
         return null;
     }
     
+    // Helper method to detect if text contains Hebrew characters
+    containsHebrew(text) {
+        return /[\u0590-\u05FF]/.test(text);
+    }
+    
+    // Hebrew-aware validation with cultural context
+    validateHebrewContent(text) {
+        const hasHebrew = this.containsHebrew(text);
+        const hasLatin = /[a-zA-Z]/.test(text);
+        
+        // Check for mixed Hebrew/English content (acceptable)
+        if (hasHebrew && hasLatin) {
+            console.log('🌍 Mixed Hebrew/English content detected - acceptable');
+        }
+        
+        // Check for Hebrew profanity patterns
+        if (hasHebrew) {
+            // Check for Hebrew slang and cultural references that might be inappropriate
+            const hebrewCulturalPatterns = [
+                /כוס.*אמא/i,  // Specific vulgar Hebrew patterns
+                /זיין.*אותך/i, // Specific vulgar Hebrew patterns
+                /מזדיין.*לך/i  // Specific vulgar Hebrew patterns
+            ];
+            
+            for (const pattern of hebrewCulturalPatterns) {
+                if (pattern.test(text)) {
+                    console.log(`🚨 Hebrew cultural profanity pattern detected`);
+                    return {
+                        isValid: false,
+                        reason: 'hebrew_cultural_profanity',
+                        pattern: pattern.source
+                    };
+                }
+            }
+        }
+        
+        return { isValid: true };
+    }
+    
     getWarningMessage(warningCount, detectedWords = []) {
         const wordList = detectedWords.length > 0 ? 
             `\n\nDetected words: "${detectedWords.join('", "')}"` : '';
         
-        const messages = {
-            1: `🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.${wordList}`,
-            2: `🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.${wordList}`,
-            3: `🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.${wordList}`
-        };
+        // Check if detected words contain Hebrew
+        const hasHebrewWords = detectedWords.some(word => this.containsHebrew(word));
+        
+        let messages;
+        
+        // Use Hebrew messages if detected words are in Hebrew, otherwise English
+        if (hasHebrewWords) {
+            messages = {
+                1: `🚨 אזהרה 1/3: זוהתה שפה לא הולמת. אנא שמור על רשימות ידידותיות למשפחה ותקן את הטקסט.${wordList}`,
+                2: `🚨 אזהרה 2/3: הפרה שנייה זוהתה. אנא השתמש בשפה הולמת בלבד. הפרה נוספת תחסום זמנית את הגישה שלך.${wordList}`,
+                3: `🚨 אזהרה אחרונה 3/3: זה הסיכוי האחרון שלך. אנא השתמש בשפה הולמת בלבד. הפרה הבאה תחסום את הגישה שלך לאפליקציה.${wordList}`
+            };
+        } else {
+            messages = {
+                1: `🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.${wordList}`,
+                2: `🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.${wordList}`,
+                3: `🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.${wordList}`
+            };
+        }
+        
+        if (this.tracker.isBlocked) {
+            if (hasHebrewWords) {
+                return `🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.`;
+            } else {
+                return `🔒 Access temporarily blocked. Please refresh the page to reset and use appropriate language only.`;
+            }
+        }
         
         return messages[warningCount] || messages[3];
     }

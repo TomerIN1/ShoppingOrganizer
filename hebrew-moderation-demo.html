@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הדגמת מערכת מודרציה עברית</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', 'Arial Hebrew', Arial, sans-serif; 
+            margin: 20px; 
+            direction: rtl;
+            text-align: right;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .demo-section { 
+            margin: 30px 0; 
+            padding: 20px; 
+            border: 2px solid #007cba; 
+            border-radius: 8px;
+            background-color: #f0f8ff;
+        }
+        .demo-input { 
+            width: 100%; 
+            padding: 15px; 
+            margin: 15px 0;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            font-size: 18px;
+            box-sizing: border-box;
+        }
+        .demo-button { 
+            padding: 12px 25px; 
+            background: #007cba; 
+            color: white; 
+            border: none; 
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .demo-button:hover { 
+            background: #005a87; 
+            transform: translateY(-1px);
+        }
+        .reset-button {
+            background: #dc3545;
+        }
+        .reset-button:hover {
+            background: #c82333;
+        }
+        .result { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 2px solid #c3e6cb;
+        }
+        .warning { 
+            background-color: #fff3cd; 
+            color: #856404; 
+            border: 2px solid #ffeaa7;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 2px solid #f5c6cb;
+        }
+        .blocked { 
+            background-color: #f5c6cb; 
+            color: #721c24; 
+            border: 3px solid #dc3545;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .feature-list {
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .feature-list li {
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+        h1 {
+            color: #007cba;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007cba;
+        }
+        .quick-tests {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .quick-test-btn {
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .quick-test-btn:hover {
+            background: #545b62;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ מערכת מודרציה עברית מתקדמת</h1>
+        
+        <div class="feature-list">
+            <h2>✨ תכונות המערכת</h2>
+            <ul>
+                <li>🌍 <strong>תמיכה דו-לשונית מלאה</strong> - עברית ואנגלית</li>
+                <li>🔍 <strong>זיהוי אוטומטי של שפה</strong> - הודעות בשפה המתאימה</li>
+                <li>📚 <strong>מאגר מילים מקיף</strong> - 350+ מילים בלתי הולמות</li>
+                <li>🎯 <strong>דפוסים תרבותיים עבריים</strong> - זיהוי ביטויים לא הולמים</li>
+                <li>⚠️ <strong>מערכת 3 אזהרות</strong> - הזדמנויות לתיקון</li>
+                <li>🔒 <strong>חסימה זמנית</strong> - הגנה על המשתמשים</li>
+                <li>🔄 <strong>איפוס אוטומטי</strong> - חזרה לשימוש תקין</li>
+            </ul>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="warningCount">0</div>
+                <div>אזהרות נוכחיות</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="testCount">0</div>
+                <div>בדיקות שבוצעו</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="blockedStatus">לא</div>
+                <div>סטטוס חסימה</div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🧪 בדיקה אינטראקטיבית</h2>
+            <p>הכנס טקסט לבדיקה והמערכת תבדוק אותו עבור תוכן לא הולם:</p>
+            
+            <input type="text" id="testInput" class="demo-input" placeholder="הכנס טקסט לבדיקה (לדוגמה: חלב, לחם, תפוחים)">
+            
+            <div>
+                <button onclick="testInput()" class="demo-button">🔍 בדוק טקסט</button>
+                <button onclick="resetSystem()" class="demo-button reset-button">🔄 איפוס מערכת</button>
+            </div>
+
+            <div class="quick-tests">
+                <button onclick="quickTest('חלב, לחם, תפוחים')" class="quick-test-btn">✅ טקסט נקי</button>
+                <button onclick="quickTest('milk bread apples')" class="quick-test-btn">✅ אנגלית נקיה</button>
+                <button onclick="quickTest('חלב milk לחם bread')" class="quick-test-btn">🌍 מעורב נקי</button>
+                <button onclick="quickTest('זין')" class="quick-test-btn">❌ עברי לא הולם</button>
+                <button onclick="quickTest('fuck')" class="quick-test-btn">❌ אנגלי לא הולם</button>
+                <button onclick="quickTest('כוס אמא שלך')" class="quick-test-btn">🎭 דפוס תרבותי</button>
+            </div>
+            
+            <div id="testResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📊 הדגמת מערכת האזהרות</h2>
+            <p>המערכת מספקת 3 הזדמנויות לפני חסימה זמנית:</p>
+            
+            <button onclick="demonstrateWarningSystem()" class="demo-button">🚨 הדגמת מערכת אזהרות</button>
+            
+            <div id="warningDemo" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔬 מבחני יסוד</h2>
+            <p>בדיקות אוטומטיות למערכת:</p>
+            
+            <button onclick="runComprehensiveTests()" class="demo-button">🧪 הרצת כל הבדיקות</button>
+            
+            <div id="comprehensiveResults" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Import moderation system (simplified version for demo)
+        let moderator;
+        let testCounter = 0;
+
+        class UserModerationTracker {
+            constructor() {
+                this.warningCount = parseInt(localStorage.getItem('demo_moderation_warnings') || '0');
+                this.isBlocked = localStorage.getItem('demo_moderation_blocked') === 'true';
+            }
+            
+            addWarning() {
+                this.warningCount++;
+                localStorage.setItem('demo_moderation_warnings', this.warningCount.toString());
+                if (this.warningCount >= 3) {
+                    this.blockUser();
+                }
+                updateStats();
+            }
+            
+            blockUser() {
+                this.isBlocked = true;
+                localStorage.setItem('demo_moderation_blocked', 'true');
+                updateStats();
+            }
+            
+            reset() {
+                this.warningCount = 0;
+                this.isBlocked = false;
+                localStorage.removeItem('demo_moderation_warnings');
+                localStorage.removeItem('demo_moderation_blocked');
+                updateStats();
+            }
+        }
+
+        class HebrewModerationDemo {
+            constructor() {
+                this.hebrewWords = ['זין', 'זונה', 'כוס', 'חרא', 'שרמוטה', 'בן זונה', 'בת זונה'];
+                this.englishWords = ['fuck', 'shit', 'damn', 'bitch', 'bastard'];
+                this.culturalPatterns = [/כוס.*אמא/i, /זיין.*אותך/i, /מזדיין.*לך/i];
+                this.tracker = new UserModerationTracker();
+            }
+            
+            containsHebrew(text) {
+                return /[\u0590-\u05FF]/.test(text);
+            }
+            
+            detectToxic(text) {
+                const detectedWords = [];
+                const lower = text.toLowerCase();
+                
+                // Check Hebrew
+                for (const word of this.hebrewWords) {
+                    if (text.includes(word)) {
+                        detectedWords.push(word);
+                    }
+                }
+                
+                // Check English
+                for (const word of this.englishWords) {
+                    if (lower.includes(word)) {
+                        detectedWords.push(word);
+                    }
+                }
+                
+                // Check cultural patterns
+                for (const pattern of this.culturalPatterns) {
+                    if (pattern.test(text)) {
+                        detectedWords.push('דפוס תרבותי');
+                        break;
+                    }
+                }
+                
+                return detectedWords;
+            }
+            
+            validate(text) {
+                if (this.tracker.isBlocked) {
+                    const hasHebrew = this.containsHebrew(text);
+                    return {
+                        isValid: false,
+                        isBlocked: true,
+                        message: hasHebrew ? 
+                            '🔒 הגישה חסומה זמנית. אנא רענן את הדף כדי לאפס והשתמש בשפה הולמת בלבד.' :
+                            '🔒 Access temporarily blocked. Please refresh the page to reset and use appropriate language only.',
+                        warningCount: this.tracker.warningCount
+                    };
+                }
+                
+                const detectedWords = this.detectToxic(text);
+                
+                if (detectedWords.length > 0) {
+                    this.tracker.addWarning();
+                    const hasHebrewWords = detectedWords.some(word => this.containsHebrew(word)) || detectedWords.includes('דפוס תרבותי');
+                    
+                    let message;
+                    if (hasHebrewWords) {
+                        const messages = [
+                            '🚨 אזהרה 1/3: זוהתה שפה לא הולמת. אנא שמור על רשימות ידידותיות למשפחה ותקן את הטקסט.',
+                            '🚨 אזהרה 2/3: הפרה שנייה זוהתה. אנא השתמש בשפה הולמת בלבד. הפרה נוספת תחסום זמנית את הגישה שלך.',
+                            '🚨 אזהרה אחרונה 3/3: זה הסיכוי האחרון שלך. אנא השתמש בשפה הולמת בלבד. הפרה הבאה תחסום את הגישה שלך לאפליקציה.'
+                        ];
+                        message = messages[this.tracker.warningCount - 1] || messages[2];
+                    } else {
+                        const messages = [
+                            '🚨 Warning 1/3: Inappropriate language detected. Please keep your lists family-friendly and revise your text.',
+                            '🚨 Warning 2/3: Second violation detected. Please use appropriate language only. One more violation will temporarily block your access.',
+                            '🚨 Final Warning 3/3: This is your last chance. Please use appropriate language only. Next violation will block your access to the app.'
+                        ];
+                        message = messages[this.tracker.warningCount - 1] || messages[2];
+                    }
+                    
+                    return {
+                        isValid: false,
+                        isBlocked: this.tracker.isBlocked,
+                        warningCount: this.tracker.warningCount,
+                        detectedWords,
+                        message: message + `\\n\\nמילים שזוהו: "${detectedWords.join('", "')}"`
+                    };
+                }
+                
+                return { isValid: true };
+            }
+            
+            reset() {
+                this.tracker.reset();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            moderator = new HebrewModerationDemo();
+            updateStats();
+        });
+
+        function updateStats() {
+            document.getElementById('warningCount').textContent = moderator.tracker.warningCount;
+            document.getElementById('testCount').textContent = testCounter;
+            document.getElementById('blockedStatus').textContent = moderator.tracker.isBlocked ? 'כן' : 'לא';
+        }
+
+        function testInput() {
+            const input = document.getElementById('testInput').value.trim();
+            if (!input) {
+                alert('אנא הכנס טקסט לבדיקה');
+                return;
+            }
+            
+            quickTest(input);
+        }
+
+        function quickTest(text) {
+            testCounter++;
+            document.getElementById('testInput').value = text;
+            
+            const result = moderator.validate(text);
+            displayResult(result, text);
+            updateStats();
+        }
+
+        function displayResult(result, text) {
+            const resultDiv = document.getElementById('testResult');
+            
+            let className = result.isValid ? 'success' : (result.isBlocked ? 'blocked' : 'warning');
+            let icon = result.isValid ? '✅' : (result.isBlocked ? '🔒' : '⚠️');
+            let status = result.isValid ? 'תוכן מאושר' : 
+                        result.isBlocked ? 'חסום - גישה מוגבלת' : 
+                        `אזהרה ${result.warningCount}/3`;
+            
+            resultDiv.innerHTML = `
+                <div style="font-size: 20px; font-weight: bold; margin-bottom: 15px;">
+                    ${icon} ${status}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>הטקסט שנבדק:</strong> "${text}"
+                </div>
+                ${result.message ? `
+                <div style="margin-bottom: 10px;">
+                    <strong>הודעת המערכת:</strong><br>
+                    ${result.message.replace(/\\n/g, '<br>')}
+                </div>
+                ` : ''}
+                ${result.detectedWords && result.detectedWords.length ? `
+                <div style="margin-bottom: 10px;">
+                    <strong>מילים/דפוסים שזוהו:</strong> ${result.detectedWords.join(', ')}
+                </div>
+                ` : ''}
+                <div style="font-size: 14px; color: #666; margin-top: 15px;">
+                    מספר בדיקה: ${testCounter} | 
+                    אזהרות נוכחיות: ${result.warningCount || 0}/3 |
+                    סטטוס: ${result.isBlocked ? 'חסום' : 'פעיל'}
+                </div>
+            `;
+            
+            resultDiv.className = `result ${className}`;
+            resultDiv.style.display = 'block';
+        }
+
+        function resetSystem() {
+            moderator.reset();
+            document.getElementById('testInput').value = '';
+            document.getElementById('testResult').style.display = 'none';
+            updateStats();
+            
+            alert('🔄 המערכת אופסה בהצלחה! כל האזהרות והחסימות נוקו.');
+        }
+
+        function demonstrateWarningSystem() {
+            moderator.reset();
+            
+            let results = [];
+            
+            // Warning 1
+            results.push({ text: 'זין', step: 'אזהרה ראשונה', result: moderator.validate('זין') });
+            
+            // Warning 2  
+            results.push({ text: 'חרא', step: 'אזהרה שנייה', result: moderator.validate('חרא') });
+            
+            // Warning 3 + Block
+            results.push({ text: 'כוס', step: 'אזהרה שלישית + חסימה', result: moderator.validate('כוס') });
+            
+            // Blocked attempt
+            results.push({ text: 'תפוח', step: 'ניסיון כשחסום', result: moderator.validate('תפוח') });
+            
+            const html = results.map((test, index) => `
+                <div style="margin: 15px 0; padding: 15px; border-left: 4px solid ${
+                    test.result.isValid ? '#28a745' : (test.result.isBlocked ? '#dc3545' : '#ffc107')
+                }; background: ${
+                    test.result.isValid ? '#d4edda' : (test.result.isBlocked ? '#f8d7da' : '#fff3cd')
+                };">
+                    <strong>שלב ${index + 1}: ${test.step}</strong><br>
+                    <em>טקסט נבדק:</em> "${test.text}"<br>
+                    <em>תוצאה:</em> ${test.result.isBlocked ? '🔒 חסום' : (test.result.isValid ? '✅ מאושר' : `⚠️ אזהרה ${test.result.warningCount}/3`)}<br>
+                    ${test.result.message ? `<em>הודעה:</em> ${test.result.message.split('\\n')[0]}<br>` : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('warningDemo').innerHTML = html;
+            document.getElementById('warningDemo').style.display = 'block';
+            
+            updateStats();
+        }
+
+        function runComprehensiveTests() {
+            moderator.reset();
+            
+            const tests = [
+                { text: 'חלב, לחם, תפוחים', expected: 'success', description: 'רשימת קניות עברית נקיה' },
+                { text: 'milk, bread, apples', expected: 'success', description: 'רשימת קניות אנגלית נקיה' },
+                { text: 'חלב milk לחם bread', expected: 'success', description: 'תוכן מעורב עברית-אנגלית' },
+                { text: 'זין', expected: 'warning', description: 'ניבול פה עברי' },
+                { text: 'fuck', expected: 'warning', description: 'ניבול פה אנגלי' },
+                { text: 'כוס אמא שלך', expected: 'warning', description: 'דפוס תרבותי עברי' },
+                { text: 'שרמוטה', expected: 'warning', description: 'מילה לא הולמת עברית' },
+                { text: 'shit damn', expected: 'warning', description: 'מילים לא הולמות אנגליות' }
+            ];
+            
+            const results = tests.map(test => {
+                const result = moderator.validate(test.text);
+                return {
+                    ...test,
+                    result,
+                    success: (test.expected === 'success' && result.isValid) || 
+                            (test.expected === 'warning' && !result.isValid)
+                };
+            });
+            
+            const successCount = results.filter(r => r.success).length;
+            const totalCount = results.length;
+            
+            const html = `
+                <div style="text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; color: ${successCount === totalCount ? '#28a745' : '#dc3545'};">
+                    🧪 תוצאות הבדיקה: ${successCount}/${totalCount} עברו בהצלחה
+                </div>
+                ${results.map(test => `
+                    <div style="margin: 10px 0; padding: 12px; border-left: 4px solid ${test.success ? '#28a745' : '#dc3545'}; background: ${test.success ? '#d4edda' : '#f8d7da'};">
+                        <strong>${test.success ? '✅' : '❌'} ${test.description}</strong><br>
+                        <em>טקסט:</em> "${test.text}"<br>
+                        <em>מצופה:</em> ${test.expected === 'success' ? 'מאושר' : 'אזהרה'} | 
+                        <em>תוצאה:</em> ${test.result.isValid ? 'מאושר' : 'אזהרה'}<br>
+                        ${test.result.detectedWords && test.result.detectedWords.length ? `<em>זוהו:</em> ${test.result.detectedWords.join(', ')}<br>` : ''}
+                    </div>
+                `).join('')}
+            `;
+            
+            document.getElementById('comprehensiveResults').innerHTML = html;
+            document.getElementById('comprehensiveResults').style.display = 'block';
+            
+            testCounter += tests.length;
+            updateStats();
+        }
+    </script>
+</body>
+</html>
