@@ -275,6 +275,7 @@ class ToxicContentModerator {
         const normalizedText = text.toLowerCase().trim();
         const detectedWords = [];
         let detectedCategory = null;
+        let isHebrew = false;
         
         // First check if the text contains whitelisted shopping terms
         for (const whitelistTerm of this.shoppingWhitelist) {
@@ -284,13 +285,13 @@ class ToxicContentModerator {
             }
         }
         
-        // Check each category for toxic words
+        // Check English toxic words
         for (const [category, words] of Object.entries(this.toxicWords)) {
             for (const word of words) {
                 // Check for exact word matches with word boundaries
                 const wordRegex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
                 if (wordRegex.test(normalizedText)) {
-                    console.log(`🚨 Toxic content detected: "${word}" in category "${category}"`);
+                    console.log(`🚨 English toxic content detected: "${word}" in category "${category}"`);
                     detectedWords.push(word);
                     if (!detectedCategory) detectedCategory = category;
                 }
@@ -305,7 +306,7 @@ class ToxicContentModerator {
                     .replace(/[5$]/g, 's');
                 
                 if (wordRegex.test(substitutedText)) {
-                    console.log(`🚨 Toxic content detected (substituted): "${word}" in category "${category}"`);
+                    console.log(`🚨 English toxic content detected (substituted): "${word}" in category "${category}"`);
                     if (!detectedWords.includes(word)) {
                         detectedWords.push(word);
                     }
@@ -314,10 +315,42 @@ class ToxicContentModerator {
             }
         }
         
+        // Check Hebrew toxic words
+        for (const [category, words] of Object.entries(this.hebrewToxicWords)) {
+            for (const word of words) {
+                // Check for exact word matches with word boundaries (Hebrew-compatible)
+                const wordRegex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+                if (wordRegex.test(normalizedText)) {
+                    console.log(`🚨 Hebrew toxic content detected: "${word}" in category "${category}"`);
+                    detectedWords.push(word);
+                    if (!detectedCategory) detectedCategory = category;
+                    isHebrew = true;
+                }
+                
+                // Also check for Hebrew character substitutions
+                let substitutedText = normalizedText;
+                for (const [hebrewChar, substitutions] of Object.entries(this.hebrewSubstitutions)) {
+                    for (const sub of substitutions) {
+                        substitutedText = substitutedText.replace(new RegExp(sub, 'g'), hebrewChar);
+                    }
+                }
+                
+                if (wordRegex.test(substitutedText)) {
+                    console.log(`🚨 Hebrew toxic content detected (substituted): "${word}" in category "${category}"`);
+                    if (!detectedWords.includes(word)) {
+                        detectedWords.push(word);
+                    }
+                    if (!detectedCategory) detectedCategory = category;
+                    isHebrew = true;
+                }
+            }
+        }
+        
         if (detectedCategory) {
             return {
                 category: detectedCategory,
-                detectedWords: detectedWords
+                detectedWords: detectedWords,
+                isHebrew: isHebrew
             };
         }
         
@@ -3136,26 +3169,46 @@ Items: ${items.join(', ')}
         
         // Check for obvious signs this is not a shopping list
         const freeTextIndicators = [
-            // Questions or conversational text
+            // English - Questions or conversational text
             /\b(how|what|when|where|why|who|can you|could you|please|help|assist|question|answer)\b/,
-            // Common sentence patterns with "this/that is"
+            // English - Common sentence patterns with "this/that is"
             /\b(this|that)\s+(is|was|will be|would be|could be)\s+(a|an|the)?\s*\w+/,
-            // Complete sentences with articles and verbs
+            // English - Complete sentences with articles and verbs
             /\b(the|this|that|these|those)\s+\w+\s+(is|are|was|were|will|would|should|could|fought|guide|guided|whispered|lost|found|made|took|gave|came|went|said|told)\b/,
-            // Narrative/story patterns
+            // English - Narrative/story patterns
             /\b(inside|outside|meanwhile|suddenly|once upon|lighthouse|storm|sailor|journal|whispered)\b/,
-            // Past tense verbs indicating stories
+            // English - Past tense verbs indicating stories
             /\b\w+(ed|fought|bought|brought|thought|caught|taught|sought)\s+the\b/,
-            // Personal pronouns in conversational context
+            // English - Personal pronouns in conversational context
             /\b(i am|i'm|you are|you're|he is|she is|we are|they are)\b/,
-            // Long sentences (> 12 words instead of 15)
-            /\b\w+(\s+\w+){12,}\b/,
-            // Common non-shopping phrases
+            // English - Common non-shopping phrases
             /\b(write me|tell me|explain|describe|create|make|generate|build|develop)\b/,
-            // Story/narrative words
+            // English - Story/narrative words
             /\b(chapter|story|tale|novel|book|poem|verse|narrative|fiction)\b/,
-            // Inappropriate content patterns
+            // English - Inappropriate content patterns
             /\b(fuck|shit|damn|hell|stupid|idiot|hate|kill|die)\b/i,
+            
+            // Hebrew - Questions or conversational text  
+            /\b(איך|מה|מתי|איפה|למה|מי|אתה יכול|את יכולה|בבקשה|עזרה|עזור|שאלה|תשובה|תוכל|תוכלי)\b/,
+            // Hebrew - Common sentence patterns with "זה/זאת"
+            /\b(זה|זאת|זו)\s+(זה|זאת|היה|הייתה|יהיה|תהיה|יכול|יכולה)\s+\w+/,
+            // Hebrew - Complete sentences with definite article and verbs
+            /\b(ה\w+)\s+(הוא|היא|הם|הן|היה|הייתה|היו|יהיה|תהיה|יהיו|אמר|אמרה|בא|באה|הלך|הלכה|עשה|עשתה)\b/,
+            // Hebrew - Personal pronouns in conversational context
+            /\b(אני|אתה|את|הוא|היא|אנחנו|אתם|אתן|הם|הן)\s+(הולך|הולכת|רוצה|חושב|חושבת|אוהב|אוהבת)\b/,
+            // Hebrew - Questions and conversation starters
+            /\b(ספר לי|תוכל להגיד|תן לי לדעת|אני חושב|אני מאמין|לדעתי|נראה|נראה לי)\b/,
+            // Hebrew - Narrative/story patterns
+            /\b(בפנים|בחוץ|פתאום|לפתע|היה פעם|סיפור|מגדלור|סערה|ספן|יומן|לחש|לחשה)\b/,
+            // Hebrew - Long descriptive sentences
+            /\b(כאשר|אשר|למרות|בגלל|בעקבות|לאחר|לפני|במהלך)\s+\w+\s+\w+\s+\w+/,
+            // Hebrew - Common non-shopping phrases
+            /\b(כתב לי|ספר לי|הסבר|תאר|צור|בנה|פתח|כתוב)\b/,
+            // Hebrew - Story/narrative words
+            /\b(פרק|סיפור|מעשה|רומן|ספר|שיר|קטע|נרטיב|בדיה)\b/,
+            
+            // Universal - Long sentences (> 12 words in any language)
+            /\b\w+(\s+\w+){12,}\b/,
         ];
 
         // Check if input contains obvious free-text patterns
@@ -3164,9 +3217,16 @@ Items: ${items.join(', ')}
             const pattern = freeTextIndicators[i];
             if (pattern.test(text)) {
                 console.log(`❌ Pattern ${i} matched:`, pattern);
+                
+                // Check if text contains Hebrew to provide appropriate message
+                const hasHebrew = /[\u0590-\u05FF]/.test(inputText);
+                const message = hasHebrew ? 
+                    '⚠️ אנא הזן פריטים של רשימה בלבד (לדוגמה: "חלב, לחם, תפוחים" או "דרכון, קרם הגנה, מצלמה").\n\nהאפליקציה מיועדת לארגון רשימות פריטים, לא לטקסט כללי או שאלות.' :
+                    '⚠️ Please enter list items only (e.g., "milk, bread, apples" or "passport, sunscreen, camera").\n\nThis app is designed for organizing item lists, not general text or questions.';
+                    
                 return {
                     isValid: false,
-                    message: '⚠️ Please enter list items only (e.g., "milk, bread, apples" or "passport, sunscreen, camera").\n\nThis app is designed for organizing item lists, not general text or questions.'
+                    message: message
                 };
             }
         }
