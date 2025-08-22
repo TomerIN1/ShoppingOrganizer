@@ -318,9 +318,9 @@ class ToxicContentModerator {
         // Check Hebrew toxic words
         for (const [category, words] of Object.entries(this.hebrewToxicWords)) {
             for (const word of words) {
-                // Check for exact word matches with word boundaries (Hebrew-compatible)
-                const wordRegex = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-                if (wordRegex.test(normalizedText)) {
+                // Hebrew-compatible word boundary: start/end of string or surrounded by non-Hebrew chars
+                const hebrewWordRegex = new RegExp(`(^|[^\\u0590-\\u05FF])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^\\u0590-\\u05FF]|$)`, 'i');
+                if (hebrewWordRegex.test(normalizedText)) {
                     console.log(`🚨 Hebrew toxic content detected: "${word}" in category "${category}"`);
                     detectedWords.push(word);
                     if (!detectedCategory) detectedCategory = category;
@@ -335,7 +335,7 @@ class ToxicContentModerator {
                     }
                 }
                 
-                if (wordRegex.test(substitutedText)) {
+                if (hebrewWordRegex.test(substitutedText)) {
                     console.log(`🚨 Hebrew toxic content detected (substituted): "${word}" in category "${category}"`);
                     if (!detectedWords.includes(word)) {
                         detectedWords.push(word);
@@ -3188,24 +3188,26 @@ Items: ${items.join(', ')}
             // English - Inappropriate content patterns
             /\b(fuck|shit|damn|hell|stupid|idiot|hate|kill|die)\b/i,
             
-            // Hebrew - Questions or conversational text  
-            /\b(איך|מה|מתי|איפה|למה|מי|אתה יכול|את יכולה|בבקשה|עזרה|עזור|שאלה|תשובה|תוכל|תוכלי)\b/,
-            // Hebrew - Common sentence patterns with "זה/זאת"
-            /\b(זה|זאת|זו)\s+(זה|זאת|היה|הייתה|יהיה|תהיה|יכול|יכולה)\s+\w+/,
+            // Hebrew - Questions or conversational text (Unicode-compatible)
+            /(^|[\s,.])(איך|מה|מתי|איפה|למה|מי|אתה יכול|את יכולה|בבקשה|עזרה|עזור|שאלה|תשובה|תוכל|תוכלי)([\s,.]|$)/,
+            // Hebrew - Common sentence patterns with "זה/זאת" 
+            /(^|[\s,.])(זה|זאת|זו)\s+(זה|זאת|היה|הייתה|יהיה|תהיה|יכול|יכולה)/,
             // Hebrew - Complete sentences with definite article and verbs
-            /\b(ה\w+)\s+(הוא|היא|הם|הן|היה|הייתה|היו|יהיה|תהיה|יהיו|אמר|אמרה|בא|באה|הלך|הלכה|עשה|עשתה)\b/,
+            /(^|[\s,.])(ה[\u0590-\u05FF]+)\s+(הוא|היא|הם|הן|היה|הייתה|היו|יהיה|תהיה|יהיו|אמר|אמרה|בא|באה|הלך|הלכה|עשה|עשתה)/,
             // Hebrew - Personal pronouns in conversational context
-            /\b(אני|אתה|את|הוא|היא|אנחנו|אתם|אתן|הם|הן)\s+(הולך|הולכת|רוצה|חושב|חושבת|אוהב|אוהבת)\b/,
+            /(^|[\s,.])(אני|אתה|את|הוא|היא|אנחנו|אתם|אתן|הם|הן)\s+(הולך|הולכת|רוצה|חושב|חושבת|אוהב|אוהבת)/,
+            // Hebrew - Past tense narrative patterns (for "הלכתי", "ראיתי")
+            /(היום|אתמול|אז).*(הלכתי|ראיתי|עשיתי|אמרתי|באתי|יצאתי)/,
             // Hebrew - Questions and conversation starters
-            /\b(ספר לי|תוכל להגיד|תן לי לדעת|אני חושב|אני מאמין|לדעתי|נראה|נראה לי)\b/,
+            /(^|[\s,.])(ספר לי|תוכל להגיד|תן לי לדעת|אני חושב|אני מאמין|לדעתי|נראה|נראה לי)/,
             // Hebrew - Narrative/story patterns
-            /\b(בפנים|בחוץ|פתאום|לפתע|היה פעם|סיפור|מגדלור|סערה|ספן|יומן|לחש|לחשה)\b/,
-            // Hebrew - Long descriptive sentences
-            /\b(כאשר|אשר|למרות|בגלל|בעקבות|לאחר|לפני|במהלך)\s+\w+\s+\w+\s+\w+/,
+            /(^|[\s,.])(בפנים|בחוץ|פתאום|לפתע|היה פעם|סיפור|מגדלור|סערה|ספן|יומן|לחש|לחשה)/,
+            // Hebrew - Long descriptive sentences with conjunctions
+            /(^|[\s,.])(כאשר|אשר|למרות|בגלל|בעקבות|לאחר|לפני|במהלך)\s+[\u0590-\u05FF]+\s+[\u0590-\u05FF]+\s+[\u0590-\u05FF]+/,
             // Hebrew - Common non-shopping phrases
-            /\b(כתב לי|ספר לי|הסבר|תאר|צור|בנה|פתח|כתוב)\b/,
+            /(^|[\s,.])(כתב לי|ספר לי|הסבר|תאר|צור|בנה|פתח|כתוב)/,
             // Hebrew - Story/narrative words
-            /\b(פרק|סיפור|מעשה|רומן|ספר|שיר|קטע|נרטיב|בדיה)\b/,
+            /(^|[\s,.])(פרק|סיפור|מעשה|רומן|ספר|שיר|קטע|נרטיב|בדיה)/,
             
             // Universal - Long sentences (> 12 words in any language)
             /\b\w+(\s+\w+){12,}\b/,
