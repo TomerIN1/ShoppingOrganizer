@@ -1384,6 +1384,9 @@ class ShoppingListOrganizer {
             this.updateShareButtonVisibility();
             this.updateOrganizeButtonText(); // Update button text for loaded list
             
+            // Update examples position after loading list
+            this.updateExamplesPosition();
+            
             // Load collaborators for assignment feature
             await this.loadListCollaborators();
             
@@ -1690,6 +1693,9 @@ class ShoppingListOrganizer {
             document.getElementById('organizedSection').style.display = 'block';
             this.updateShareButtonVisibility();
             this.updateOrganizeButtonText(); // Update button text for loaded list
+            
+            // Update examples position after loading list
+            this.updateExamplesPosition();
             
             // Load collaborators for assignment feature
             await this.loadListCollaborators();
@@ -3422,6 +3428,9 @@ Items: ${items.join(', ')}
         this.updateShareButtonVisibility();
         document.getElementById('organizedSection').style.display = 'block';
         document.getElementById('freeTextInput').value = '';
+        
+        // Update examples position after showing organized section
+        this.updateExamplesPosition();
 
             // Auto-save to cloud if authenticated
             if (this.mode === 'authenticated' && this.currentUser) {
@@ -3495,6 +3504,37 @@ Items: ${items.join(', ')}
             titleElement.style.cursor = 'pointer';
             titleElement.title = 'Click to rename list';
             titleElement.onclick = () => this.renameCurrentList();
+        }
+    }
+
+    /**
+     * Dynamically position the examples section based on whether a list is loaded
+     * - When NO list: Examples appear under input section (default position)
+     * - When list IS loaded: Examples move below categories (organized section)
+     */
+    updateExamplesPosition() {
+        const examplesSection = document.querySelector('.examples-section');
+        const organizedSection = document.getElementById('organizedSection');
+        const inputSection = document.querySelector('.input-section');
+        
+        if (!examplesSection) {
+            console.warn('⚠️ Examples section not found');
+            return;
+        }
+        
+        const hasLoadedList = organizedSection && organizedSection.style.display === 'block' && 
+                             this.currentLists && Object.keys(this.currentLists).length > 0;
+        
+        if (hasLoadedList) {
+            // Move examples below the organized categories
+            console.log('📍 Moving examples below organized categories');
+            organizedSection.appendChild(examplesSection);
+        } else {
+            // Move examples back to default position (after input section)
+            console.log('📍 Moving examples back to default position (under input)');
+            if (inputSection && inputSection.nextSibling !== examplesSection) {
+                inputSection.parentNode.insertBefore(examplesSection, inputSection.nextSibling);
+            }
         }
     }
 
@@ -3999,6 +4039,9 @@ Items: ${items.join(', ')}
                     this.currentLists = data.lists;
                     this.renderCategorizedLists();
                     document.getElementById('organizedSection').style.display = 'block';
+                    
+                    // Update examples position after loading file
+                    this.updateExamplesPosition();
                 } else {
                     alert('Invalid file format. Please select a valid shopping list file.');
                 }
@@ -4026,6 +4069,9 @@ Items: ${items.join(', ')}
                 document.getElementById('listNameInput').value = '';
                 this.updateShareButtonVisibility();
                 this.updateOrganizeButtonText(); // Reset button text
+                
+                // Update examples position after hiding organized section
+                this.updateExamplesPosition();
             }
         }
     }
