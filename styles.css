@@ -1939,6 +1939,33 @@ body {
 [dir="rtl"] .user-dropdown {
     left: auto;
     right: 0;
+    /* Prevent horizontal overflow in RTL mode */
+    max-width: 180px;
+    /* Ensure dropdown opens downward, not affecting horizontal layout */
+    transform: translateX(0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Prevent horizontal scrolling in RTL mode */
+[dir="rtl"] body {
+    overflow-x: hidden;
+}
+
+[dir="rtl"] .container {
+    overflow-x: hidden;
+    max-width: 100%;
+}
+
+[dir="rtl"] .app-header {
+    overflow: visible;
+    position: relative;
+}
+
+[dir="rtl"] .header-right {
+    position: relative;
+    overflow: visible;
 }
 
 /* Modal dialogs RTL */
