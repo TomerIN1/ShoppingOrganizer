@@ -245,6 +245,65 @@ const englishTranslations = {
                 "If you have any questions or requests, please contact us via the [Contact] page or at support@[domain]."
             ]
         }
+    },
+    
+    // Terms of Use
+    termsOfUse: {
+        title: "Terms of Use — Shopping List Organizer",
+        section1: {
+            title: "1. General",
+            content: [
+                "Welcome to Shopping List Organizer. Use of this website is subject to the following terms. By accessing or using the site, you fully agree to these terms."
+            ]
+        },
+        section2: {
+            title: "2. Use of the Service",
+            content: [
+                "The service is intended to help users manage shopping lists, personal projects, and trip packing.",
+                "Misuse of the service, including hacking, fraud, or unauthorized commercial use, is strictly prohibited."
+            ]
+        },
+        section3: {
+            title: "3. Registration and Authentication",
+            content: [
+                "Users may log in using a Google account. Accurate and up-to-date information must be provided.",
+                "Users are responsible for keeping their login credentials confidential."
+            ]
+        },
+        section4: {
+            title: "4. User Content",
+            content: [
+                "Users are solely responsible for any content uploaded to the platform (lists, nicknames, shares, etc.).",
+                "The site reserves the right to remove illegal or harmful content."
+            ]
+        },
+        section5: {
+            title: "5. Intellectual Property",
+            content: [
+                "All intellectual property rights in the site, including design, logo, source code, and content, are reserved by the site owner.",
+                "No part of the site may be copied, reproduced, or distributed without prior written permission."
+            ]
+        },
+        section6: {
+            title: "6. Liability and Service",
+            content: [
+                "The site is provided \"as-is\" with no guarantee of full availability or error-free operation.",
+                "The site owner is not liable for any damage resulting from the use or inability to use the service."
+            ]
+        },
+        section7: {
+            title: "7. Changes to Terms",
+            content: [
+                "These terms may be updated at any time. Updates will be posted on the site.",
+                "Continued use of the site constitutes acceptance of the updated terms."
+            ]
+        },
+        section8: {
+            title: "8. Contact",
+            content: [
+                "For any questions or requests, please contact us via the Contact page or at support@[domain]."
+            ]
+        }
     }
 };
 

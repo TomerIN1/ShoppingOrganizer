@@ -846,6 +846,12 @@ class ShoppingListOrganizer {
         
         if (termsLink) {
             termsLink.textContent = this.languageManager.t('footer.termsOfService', 'Terms of Service');
+            
+            // Add click event listener for terms of use
+            termsLink.onclick = (e) => {
+                e.preventDefault();
+                this.showTermsOfUse();
+            };
         }
         
         if (accessibilityLink) {
@@ -914,6 +920,82 @@ class ShoppingListOrganizer {
         const modal = document.getElementById('privacyModal');
         const closeBtn = document.getElementById('privacyModalClose');
         const backdrop = document.getElementById('privacyModalBackdrop');
+        
+        if (closeBtn) {
+            closeBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        if (backdrop) {
+            backdrop.onclick = () => {
+                modal.style.display = 'none';
+            };
+        }
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    showTermsOfUse() {
+        console.log('📋 Opening terms of use modal');
+        
+        const modal = document.getElementById('termsModal');
+        const modalTitle = document.getElementById('termsModalTitle');
+        const modalContent = document.getElementById('termsOfUseContent');
+        
+        if (!modal || !modalTitle || !modalContent) {
+            console.error('❌ Terms of use modal elements not found');
+            return;
+        }
+        
+        // Update modal title
+        modalTitle.textContent = this.languageManager.t('termsOfUse.title', 'Terms of Use — Shopping List Organizer');
+        
+        // Generate terms of use content
+        modalContent.innerHTML = this.generateTermsOfUseHTML();
+        
+        // Show modal
+        modal.style.display = 'block';
+        
+        // Add event listeners for closing modal
+        this.setupTermsModalEventListeners();
+    }
+
+    generateTermsOfUseHTML() {
+        let html = '';
+        
+        // Generate content for all 8 sections
+        for (let i = 1; i <= 8; i++) {
+            const sectionKey = `section${i}`;
+            const sectionTitle = this.languageManager.t(`termsOfUse.${sectionKey}.title`, `Section ${i}`);
+            const sectionContent = this.languageManager.t(`termsOfUse.${sectionKey}.content`, []);
+            
+            html += `<div class="terms-section">`;
+            html += `<h4>${sectionTitle}</h4>`;
+            
+            if (Array.isArray(sectionContent)) {
+                sectionContent.forEach(item => {
+                    html += `<p>${item}</p>`;
+                });
+            } else {
+                html += `<p>${sectionContent}</p>`;
+            }
+            
+            html += `</div>`;
+        }
+        
+        return html;
+    }
+
+    setupTermsModalEventListeners() {
+        const modal = document.getElementById('termsModal');
+        const closeBtn = document.getElementById('termsModalClose');
+        const backdrop = document.getElementById('termsModalBackdrop');
         
         if (closeBtn) {
             closeBtn.onclick = () => {
