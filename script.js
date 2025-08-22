@@ -1186,6 +1186,9 @@ class ShoppingListOrganizer {
         document.querySelector('.input-section').style.display = 'none';
         document.getElementById('myListsSection').style.display = 'block';
 
+        // Hide examples on My Lists page
+        this.updateExamplesPosition();
+
         // Load both personal and shared lists
         await this.loadMyLists();
         await this.loadSharedLists();
@@ -1205,6 +1208,9 @@ class ShoppingListOrganizer {
         if (Object.keys(this.currentLists).length > 0) {
             document.getElementById('organizedSection').style.display = 'block';
         }
+        
+        // Restore examples positioning after leaving My Lists page
+        this.updateExamplesPosition();
         
         this.updateOrganizeButtonText(); // Update button text based on current state
     }
@@ -3508,19 +3514,34 @@ Items: ${items.join(', ')}
     }
 
     /**
-     * Dynamically position the examples section based on whether a list is loaded
-     * - When NO list: Examples appear under input section (default position)
+     * Dynamically position the examples section based on app state
+     * - When on My Lists page: Hide examples completely
+     * - When NO list loaded: Examples appear under input section (default position)
      * - When list IS loaded: Examples move below categories (organized section)
      */
     updateExamplesPosition() {
         const examplesSection = document.querySelector('.examples-section');
         const organizedSection = document.getElementById('organizedSection');
         const inputSection = document.querySelector('.input-section');
+        const myListsSection = document.getElementById('myListsSection');
         
         if (!examplesSection) {
             console.warn('⚠️ Examples section not found');
             return;
         }
+        
+        // Check if we're on the My Lists page
+        const isOnMyListsPage = myListsSection && myListsSection.style.display === 'block';
+        
+        if (isOnMyListsPage) {
+            // Hide examples completely on My Lists page
+            console.log('📍 Hiding examples on My Lists page');
+            examplesSection.style.display = 'none';
+            return;
+        }
+        
+        // Show examples section (in case it was hidden)
+        examplesSection.style.display = 'block';
         
         const hasLoadedList = organizedSection && organizedSection.style.display === 'block' && 
                              this.currentLists && Object.keys(this.currentLists).length > 0;
