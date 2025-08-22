@@ -511,12 +511,46 @@ class ShoppingListOrganizer {
             // Initialize language switcher UI
             this.initializeLanguageSwitcher();
             
+            // CRITICAL: Update UI with initial language after everything is loaded
+            console.log('🔄 Updating UI with initial language...');
+            await this.updateUIWithInitialLanguage();
+            
             console.log('✅ Language manager initialized successfully');
             
         } catch (error) {
             console.error('❌ Failed to initialize language manager:', error);
             // Continue without language management if it fails
             this.languageManager = null;
+        }
+    }
+
+    async updateUIWithInitialLanguage() {
+        if (!this.languageManager) return;
+        
+        try {
+            const currentLang = this.languageManager.currentLanguage;
+            console.log(`🌍 Initial UI update for language: ${currentLang}`);
+            
+            // Ensure translations are loaded
+            if (!this.languageManager.translations[currentLang]) {
+                console.log(`📥 Loading translations for ${currentLang}...`);
+                await this.languageManager.loadTranslations(currentLang);
+            }
+            
+            // Wait a moment to ensure translations are fully loaded
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            // Update all UI elements
+            this.updateUITranslations();
+            this.updateLanguageSwitcherUI();
+            
+            // Update examples section
+            this.updateExamplesSection();
+            
+            console.log(`✅ Initial UI updated for ${currentLang}`);
+            
+        } catch (error) {
+            console.error('❌ Failed to update UI with initial language:', error);
         }
     }
 
@@ -627,21 +661,17 @@ class ShoppingListOrganizer {
         }
         
         try {
-            // Ensure translations are loaded for current language
             const currentLang = this.languageManager.currentLanguage;
-            if (!this.languageManager.translations[currentLang]) {
-                console.warn(`⚠️ Translations not loaded for ${currentLang}, deferring UI update`);
-                // Try to reload translations and update UI after delay
-                setTimeout(async () => {
-                    try {
-                        await this.languageManager.loadTranslations(currentLang);
-                        this.updateUITranslations();
-                    } catch (error) {
-                        console.error('❌ Failed to reload translations:', error);
-                    }
-                }, 100);
+            console.log(`🔄 Updating UI translations for: ${currentLang}`);
+            
+            // Check if translations are available
+            const translations = this.languageManager.translations[currentLang];
+            if (!translations) {
+                console.warn(`⚠️ No translations available for ${currentLang}`);
                 return;
             }
+            
+            console.log(`✅ Found translations for ${currentLang}:`, Object.keys(translations));
             
             // Update header elements with validation
             const appTitle = document.querySelector('.app-title');

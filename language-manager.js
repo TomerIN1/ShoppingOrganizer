@@ -150,6 +150,12 @@ class LanguageManager {
             console.log(`📥 Loading translations for ${language}...`);
             console.log(`🔍 Available globals: EnglishTranslations=${!!window.EnglishTranslations}, HebrewTranslations=${!!window.HebrewTranslations}, I18nLoader=${!!window.I18nLoader}`);
             
+            // Debug: Log actual global objects
+            if (language === 'he' && window.HebrewTranslations) {
+                console.log(`🔍 HebrewTranslations keys:`, Object.keys(window.HebrewTranslations));
+                console.log(`🔍 HebrewTranslations.header:`, window.HebrewTranslations.header);
+            }
+            
             // Try global variables first (for file:// and non-module environments)
             if (language === 'en' && window.EnglishTranslations) {
                 this.translations[language] = window.EnglishTranslations;
