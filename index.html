@@ -29,19 +29,44 @@
             </div>
             <nav role="navigation" aria-label="Main navigation" id="main-navigation" class="header-right">
                 <!-- Language Switcher -->
-                <div class="language-switcher">
-                    <button id="languageToggle" class="language-btn" title="Switch Language">
-                        <span id="currentLanguageFlag">🇺🇸</span>
+                <div class="language-switcher" role="group" aria-label="Language selection">
+                    <button 
+                        id="languageToggle" 
+                        class="language-btn" 
+                        title="Switch Language"
+                        aria-label="Switch language"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="languageDropdown"
+                    >
+                        <span id="currentLanguageFlag" aria-hidden="true">🇺🇸</span>
                         <span id="currentLanguageName">English</span>
-                        <span class="dropdown-arrow">▼</span>
+                        <span class="dropdown-arrow" aria-hidden="true">▼</span>
                     </button>
-                    <div class="language-dropdown" id="languageDropdown" style="display: none;">
-                        <button class="language-option" data-lang="en">
-                            <span class="flag">🇺🇸</span>
+                    <div 
+                        class="language-dropdown" 
+                        id="languageDropdown" 
+                        style="display: none;"
+                        role="menu"
+                        aria-labelledby="languageToggle"
+                        aria-hidden="true"
+                    >
+                        <button 
+                            class="language-option" 
+                            data-lang="en"
+                            role="menuitem"
+                            aria-label="Switch to English"
+                        >
+                            <span class="flag" aria-hidden="true">🇺🇸</span>
                             <span class="name">English</span>
                         </button>
-                        <button class="language-option" data-lang="he">
-                            <span class="flag">🇮🇱</span>
+                        <button 
+                            class="language-option" 
+                            data-lang="he"
+                            role="menuitem"
+                            aria-label="Switch to Hebrew"
+                        >
+                            <span class="flag" aria-hidden="true">🇮🇱</span>
                             <span class="name">עברית</span>
                         </button>
                     </div>
@@ -56,14 +81,42 @@
                 
                 <!-- Authenticated Mode -->
                 <div id="authenticatedMode" class="auth-compact" style="display: none;">
-                    <div class="user-profile" id="userProfile">
-                        <img id="userAvatar" src="" alt="User" class="user-avatar-compact">
+                    <button 
+                        class="user-profile" 
+                        id="userProfile"
+                        aria-label="User menu"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        aria-controls="userDropdown"
+                    >
+                        <img id="userAvatar" src="" alt="" class="user-avatar-compact" aria-hidden="true">
                         <span id="userName" class="user-name-compact"></span>
-                        <span class="dropdown-arrow">▼</span>
-                    </div>
-                    <div class="user-dropdown" id="userDropdown" style="display: none;">
-                        <button id="myListsBtn" class="dropdown-item">📋 My Lists</button>
-                        <button id="signOutBtn" class="dropdown-item">🚪 Sign Out</button>
+                        <span class="dropdown-arrow" aria-hidden="true">▼</span>
+                    </button>
+                    <div 
+                        class="user-dropdown" 
+                        id="userDropdown" 
+                        style="display: none;"
+                        role="menu"
+                        aria-labelledby="userProfile"
+                        aria-hidden="true"
+                    >
+                        <button 
+                            id="myListsBtn" 
+                            class="dropdown-item"
+                            role="menuitem"
+                            aria-label="View my lists"
+                        >
+                            <span aria-hidden="true">📋</span> My Lists
+                        </button>
+                        <button 
+                            id="signOutBtn" 
+                            class="dropdown-item"
+                            role="menuitem"
+                            aria-label="Sign out of account"
+                        >
+                            <span aria-hidden="true">🚪</span> Sign Out
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -81,9 +134,14 @@
                         placeholder="List name (e.g., Weekly Shopping, Travel Packing, DIY Project...)"
                         class="list-name-input"
                         aria-label="List name"
-                        aria-describedby="list-name-help"
+                        aria-describedby="list-name-help list-name-error"
+                        aria-required="false"
+                        aria-invalid="false"
+                        autocomplete="off"
+                        spellcheck="true"
                     />
                     <div id="list-name-help" class="sr-only">Enter a descriptive name for your list</div>
+                    <div id="list-name-error" class="sr-only" aria-live="polite"></div>
                 </div>
                 <label for="freeTextInput" class="sr-only">List items</label>
                 <textarea 
@@ -91,9 +149,14 @@
                     placeholder="Enter your items here (e.g., milk, bread, apples, chicken breast, toothpaste, camera, etc.)"
                     rows="8"
                     aria-label="List items"
-                    aria-describedby="items-help"
+                    aria-describedby="items-help items-error"
+                    aria-required="true"
+                    aria-invalid="false"
+                    autocomplete="off"
+                    spellcheck="true"
                 ></textarea>
                 <div id="items-help" class="sr-only">Enter your items separated by commas or new lines</div>
+                <div id="items-error" class="sr-only" aria-live="polite"></div>
                 <div class="input-actions" role="group" aria-label="List actions">
                     <button id="organizeBtn" class="btn-primary" aria-describedby="organize-help">Organize List</button>
                     <button id="clearBtn" class="btn-secondary" aria-describedby="clear-help">Clear</button>
@@ -187,7 +250,9 @@
                 <span class="footer-divider">|</span>
                 <a href="#" id="termsLink" class="footer-link">Terms of Service</a>
                 <span class="footer-divider">|</span>
-                <a href="#" id="accessibilityLink" class="footer-link">Accessibility</a>
+                <a href="accessibility-statement.html" id="accessibilityLink" class="footer-link" title="View accessibility statement and compliance information">Accessibility</a>
+                <span class="footer-divider">|</span>
+                <a href="#" id="accessibilityHelpLink" class="footer-link" title="Get accessibility support and report issues">Accessibility Help</a>
             </div>
             <div class="footer-copyright">
                 <span id="copyrightText">© 2025 Shopping List Organizer. All rights reserved.</span>
@@ -195,10 +260,47 @@
         </div>
     </footer>
 
-    <!-- ARIA Live Regions for Dynamic Content Announcements -->
-    <div aria-live="polite" aria-label="List updates" id="list-updates-announcer" class="sr-only"></div>
-    <div aria-live="assertive" aria-label="Error announcements" id="error-announcer" class="sr-only"></div>
-    <div aria-live="polite" aria-label="Status updates" id="status-announcer" class="sr-only"></div>
+    <!-- Enhanced ARIA Live Regions for Dynamic Content Announcements -->
+    <div 
+        aria-live="polite" 
+        aria-atomic="true"
+        aria-relevant="additions text"
+        aria-label="List updates" 
+        id="list-updates-announcer" 
+        class="sr-only">
+    </div>
+    <div 
+        aria-live="assertive" 
+        aria-atomic="true"
+        aria-relevant="additions text"
+        aria-label="Error announcements" 
+        id="error-announcer" 
+        class="sr-only">
+    </div>
+    <div 
+        aria-live="polite" 
+        aria-atomic="false"
+        aria-relevant="additions text"
+        aria-label="Status updates" 
+        id="status-announcer" 
+        class="sr-only">
+    </div>
+    <div 
+        aria-live="polite" 
+        aria-atomic="true"
+        aria-relevant="additions removals text"
+        aria-label="Category changes" 
+        id="category-announcer" 
+        class="sr-only">
+    </div>
+    <div 
+        aria-live="polite" 
+        aria-atomic="false"
+        aria-relevant="additions"
+        aria-label="Progress updates" 
+        id="progress-announcer" 
+        class="sr-only">
+    </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
     
@@ -234,31 +336,198 @@
         </div>
     </div>
 
+    <!-- Accessibility Help Modal -->
+    <div 
+        id="accessibilityHelpModal" 
+        class="modal" 
+        style="display: none;"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accessibilityHelpModalTitle"
+        aria-describedby="accessibilityHelpModalDescription"
+    >
+        <div class="modal-backdrop" id="accessibilityHelpModalBackdrop" aria-hidden="true"></div>
+        <div class="modal-content accessibility-help-modal-content">
+            <div class="modal-header">
+                <h3 id="accessibilityHelpModalTitle">♿ Accessibility Help & Support</h3>
+                <button 
+                    class="modal-close" 
+                    id="accessibilityHelpModalClose"
+                    aria-label="Close accessibility help dialog"
+                    title="Close accessibility help dialog"
+                >&times;</button>
+            </div>
+            <div class="modal-body accessibility-help-modal-body">
+                <div id="accessibilityHelpContent">
+                    <div class="help-section">
+                        <h4>🔘 Keyboard Shortcuts</h4>
+                        <ul>
+                            <li><kbd>Ctrl + Enter</kbd> - Organize your list</li>
+                            <li><kbd>Ctrl + K</kbd> - Clear all inputs</li>
+                            <li><kbd>Ctrl + N</kbd> - Start new list</li>
+                            <li><kbd>Escape</kbd> - Close modals and dropdowns</li>
+                            <li><kbd>Tab</kbd> - Navigate between elements</li>
+                            <li><kbd>Space/Enter</kbd> - Activate buttons</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>🔊 Screen Reader Support</h4>
+                        <ul>
+                            <li>Compatible with NVDA, JAWS, VoiceOver, and TalkBack</li>
+                            <li>Live regions announce dynamic content changes</li>
+                            <li>Comprehensive ARIA labeling throughout</li>
+                            <li>Proper heading structure for navigation</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>🌍 Language Support</h4>
+                        <ul>
+                            <li>Full Hebrew and English support</li>
+                            <li>Right-to-left (RTL) layout for Hebrew</li>
+                            <li>Culturally appropriate accessibility features</li>
+                            <li>Language switcher in header</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>📱 Mobile Accessibility</h4>
+                        <ul>
+                            <li>Touch-friendly interface with proper target sizes</li>
+                            <li>Responsive design for all screen sizes</li>
+                            <li>Mobile screen reader compatibility</li>
+                            <li>Gesture navigation support</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="help-section feedback-section">
+                        <h4>📞 Report Accessibility Issues</h4>
+                        <p>If you encounter accessibility barriers, please contact us:</p>
+                        <div class="contact-info">
+                            <p><strong>Email:</strong> accessibility@shopping-organizer.com</p>
+                            <p><strong>Response Time:</strong> Within 2 business days</p>
+                            <p><strong>Phone:</strong> +972-XX-XXXXXXX (Hebrew/English)</p>
+                        </div>
+                        
+                        <div class="feedback-form">
+                            <h5>Quick Feedback Form</h5>
+                            <label for="accessibilityFeedbackType" class="sr-only">Issue type</label>
+                            <select 
+                                id="accessibilityFeedbackType" 
+                                class="feedback-select"
+                                aria-label="Select issue type"
+                            >
+                                <option value="">Select issue type...</option>
+                                <option value="keyboard">Keyboard navigation problem</option>
+                                <option value="screen-reader">Screen reader compatibility</option>
+                                <option value="contrast">Color contrast issue</option>
+                                <option value="mobile">Mobile accessibility problem</option>
+                                <option value="language">Language/translation issue</option>
+                                <option value="other">Other accessibility barrier</option>
+                            </select>
+                            
+                            <label for="accessibilityFeedbackMessage" class="sr-only">Description of issue</label>
+                            <textarea 
+                                id="accessibilityFeedbackMessage" 
+                                class="feedback-textarea"
+                                placeholder="Please describe the accessibility issue you encountered..."
+                                aria-label="Description of accessibility issue"
+                                rows="4"
+                            ></textarea>
+                            
+                            <label for="accessibilityFeedbackContact" class="sr-only">Contact email (optional)</label>
+                            <input 
+                                type="email" 
+                                id="accessibilityFeedbackContact" 
+                                class="feedback-input"
+                                placeholder="Your email (optional, for follow-up)"
+                                aria-label="Your contact email for follow-up"
+                                autocomplete="email"
+                            >
+                            
+                            <button 
+                                id="submitAccessibilityFeedback" 
+                                class="btn-primary feedback-submit"
+                                aria-describedby="feedback-submit-help"
+                            >
+                                Submit Accessibility Feedback
+                            </button>
+                            <div id="feedback-submit-help" class="sr-only">Submit your accessibility feedback to our team</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Share List Modal -->
-    <div id="shareModal" class="modal" style="display: none;">
-        <div class="modal-backdrop" id="shareModalBackdrop"></div>
+    <div 
+        id="shareModal" 
+        class="modal" 
+        style="display: none;"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="shareModalTitle"
+        aria-describedby="shareModalDescription"
+    >
+        <div class="modal-backdrop" id="shareModalBackdrop" aria-hidden="true"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Share Shopping List</h3>
-                <button class="modal-close" id="shareModalClose">&times;</button>
+                <h3 id="shareModalTitle">Share Shopping List</h3>
+                <button 
+                    class="modal-close" 
+                    id="shareModalClose"
+                    aria-label="Close share dialog"
+                    title="Close share dialog"
+                >&times;</button>
             </div>
             <div class="modal-body">
                 <div class="share-section">
-                    <h4>Share with Someone</h4>
+                    <h4 id="shareModalDescription">Share with Someone</h4>
                     <p>Enter the email address of the person you want to share this list with:</p>
-                    <div class="share-form">
-                        <input type="email" id="shareEmailInput" placeholder="Enter email address..." class="share-email-input">
-                        <select id="sharePermissionSelect" class="share-permission-select">
+                    <div class="share-form" role="group" aria-labelledby="shareModalDescription">
+                        <label for="shareEmailInput" class="sr-only">Email address</label>
+                        <input 
+                            type="email" 
+                            id="shareEmailInput" 
+                            placeholder="Enter email address..." 
+                            class="share-email-input"
+                            aria-label="Email address to share with"
+                            aria-describedby="share-email-help"
+                            aria-required="true"
+                            aria-invalid="false"
+                            autocomplete="email"
+                        >
+                        <div id="share-email-help" class="sr-only">Enter the email address of the person you want to share this list with</div>
+                        <label for="sharePermissionSelect" class="sr-only">Permission level</label>
+                        <select 
+                            id="sharePermissionSelect" 
+                            class="share-permission-select"
+                            aria-label="Permission level"
+                            aria-describedby="share-permission-help"
+                        >
                             <option value="view">View Only</option>
                             <option value="edit">Can Edit</option>
                         </select>
-                        <button id="sendInviteBtn" class="btn-primary">Send Invite</button>
+                        <div id="share-permission-help" class="sr-only">Choose whether the person can view only or also edit the list</div>
+                        <button 
+                            id="sendInviteBtn" 
+                            class="btn-primary"
+                            aria-describedby="send-invite-help"
+                        >Send Invite</button>
+                        <div id="send-invite-help" class="sr-only">Send sharing invitation to the specified email address</div>
                     </div>
                 </div>
                 
                 <div class="shared-with-section" id="sharedWithSection" style="display: none;">
                     <h4>Shared With</h4>
-                    <div id="sharedWithList" class="shared-users-list">
+                    <div 
+                        id="sharedWithList" 
+                        class="shared-users-list"
+                        role="list"
+                        aria-label="Users this list is shared with"
+                    >
                         <!-- Shared users will be populated here -->
                     </div>
                 </div>

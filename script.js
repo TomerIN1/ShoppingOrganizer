@@ -521,6 +521,12 @@ class ShoppingListOrganizer {
         // Initialize accessibility features (Phase 2)
         this.initializeFocusManagement();
         
+        // Initialize accessibility features (Phase 3)
+        this.initializeAriaEnhancements();
+        
+        // Initialize accessibility help modal (Phase 4)
+        this.initializeAccessibilityHelp();
+        
         this.initializeEventListeners();
         
         // Wait for Supabase to initialize
@@ -4710,6 +4716,472 @@ Items: ${items.join(', ')}
         console.log('♿ Phase 2 focus management initialized');
     }
 
+    // ===== PHASE 3: SCREEN READER & ARIA ENHANCEMENT =====
+    
+    /**
+     * Initialize Phase 3 accessibility features: advanced ARIA and screen reader optimization
+     */
+    initializeAriaEnhancements() {
+        console.log('♿ Initializing Phase 3: ARIA Enhancements');
+        
+        // Initialize advanced ARIA state management
+        this.initializeAriaStateManagement();
+        
+        // Initialize form validation with ARIA
+        this.initializeAriaFormValidation();
+        
+        // Initialize dynamic content announcements
+        this.initializeDynamicAnnouncements();
+        
+        // Initialize dropdown ARIA states
+        this.initializeDropdownAriaStates();
+        
+        console.log('♿ Phase 3 ARIA enhancements initialized');
+    }
+
+    /**
+     * Advanced ARIA state management for dynamic content
+     */
+    initializeAriaStateManagement() {
+        console.log('♿ Setting up ARIA state management...');
+        
+        // Track dropdown states
+        this.dropdownStates = new Map();
+        
+        // Initialize dropdown states
+        const dropdowns = [
+            { trigger: 'languageToggle', dropdown: 'languageDropdown' },
+            { trigger: 'userProfile', dropdown: 'userDropdown' }
+        ];
+        
+        dropdowns.forEach(({ trigger, dropdown }) => {
+            const triggerElement = document.getElementById(trigger);
+            const dropdownElement = document.getElementById(dropdown);
+            
+            if (triggerElement && dropdownElement) {
+                this.setupDropdownAriaStates(triggerElement, dropdownElement);
+            }
+        });
+        
+        // Initialize modal states
+        this.initializeModalAriaStates();
+    }
+
+    /**
+     * Setup ARIA states for dropdown menus
+     */
+    setupDropdownAriaStates(trigger, dropdown) {
+        const dropdownId = dropdown.id;
+        
+        // Initialize state
+        this.dropdownStates.set(dropdownId, {
+            isOpen: false,
+            trigger: trigger,
+            dropdown: dropdown
+        });
+        
+        // Set initial ARIA attributes
+        trigger.setAttribute('aria-expanded', 'false');
+        dropdown.setAttribute('aria-hidden', 'true');
+        
+        // Add event listeners for state changes
+        const openDropdown = () => {
+            this.setDropdownState(dropdownId, true);
+        };
+        
+        const closeDropdown = () => {
+            this.setDropdownState(dropdownId, false);
+        };
+        
+        // Listen for dropdown open/close events
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentState = this.dropdownStates.get(dropdownId);
+            this.setDropdownState(dropdownId, !currentState.isOpen);
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+    }
+
+    /**
+     * Set dropdown ARIA state and visual state
+     */
+    setDropdownState(dropdownId, isOpen) {
+        const state = this.dropdownStates.get(dropdownId);
+        if (!state) return;
+        
+        state.isOpen = isOpen;
+        
+        // Update ARIA attributes
+        state.trigger.setAttribute('aria-expanded', isOpen.toString());
+        state.dropdown.setAttribute('aria-hidden', (!isOpen).toString());
+        
+        // Update visual state
+        state.dropdown.style.display = isOpen ? 'block' : 'none';
+        
+        // Announce state change
+        const actionText = isOpen ? 'opened' : 'closed';
+        const dropdownLabel = state.trigger.getAttribute('aria-label') || 'dropdown';
+        this.announceToScreenReader(
+            this.t(`accessibility.announcements.dropdownStateChanged`, `${dropdownLabel} ${actionText}`),
+            'polite'
+        );
+        
+        console.log(`♿ Dropdown ${dropdownId} ${actionText}`);
+    }
+
+    /**
+     * Initialize modal ARIA states
+     */
+    initializeModalAriaStates() {
+        const modals = ['privacyModal', 'termsModal', 'shareModal'];
+        
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // Ensure modal is properly hidden initially
+                modal.setAttribute('aria-hidden', 'true');
+                
+                // Set up modal state observer
+                this.observeModalState(modal);
+            }
+        });
+    }
+
+    /**
+     * Observe modal state changes and update ARIA accordingly
+     */
+    observeModalState(modal) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const isVisible = modal.style.display !== 'none';
+                    modal.setAttribute('aria-hidden', (!isVisible).toString());
+                    
+                    if (isVisible) {
+                        // Modal opened
+                        document.body.setAttribute('aria-hidden', 'true');
+                        this.announceToScreenReader(
+                            this.t('accessibility.announcements.modalOpened', 'Modal dialog opened'),
+                            'polite'
+                        );
+                    } else {
+                        // Modal closed
+                        document.body.removeAttribute('aria-hidden');
+                        this.announceToScreenReader(
+                            this.t('accessibility.announcements.modalClosed', 'Modal dialog closed'),
+                            'polite'
+                        );
+                    }
+                }
+            });
+        });
+        
+        observer.observe(modal, {
+            attributes: true,
+            attributeFilter: ['style']
+        });
+    }
+
+    /**
+     * Initialize ARIA form validation
+     */
+    initializeAriaFormValidation() {
+        console.log('♿ Setting up ARIA form validation...');
+        
+        // Set up validation for list name input
+        const listNameInput = document.getElementById('listNameInput');
+        const listNameError = document.getElementById('list-name-error');
+        
+        if (listNameInput && listNameError) {
+            this.setupFormFieldValidation(listNameInput, listNameError, this.validateListName.bind(this));
+        }
+        
+        // Set up validation for items textarea
+        const itemsInput = document.getElementById('freeTextInput');
+        const itemsError = document.getElementById('items-error');
+        
+        if (itemsInput && itemsError) {
+            this.setupFormFieldValidation(itemsInput, itemsError, this.validateListItems.bind(this));
+        }
+        
+        // Set up validation for share email input
+        const shareEmailInput = document.getElementById('shareEmailInput');
+        if (shareEmailInput) {
+            this.setupEmailValidation(shareEmailInput);
+        }
+    }
+
+    /**
+     * Setup form field validation with ARIA support
+     */
+    setupFormFieldValidation(input, errorElement, validationFunction) {
+        let validationTimeout;
+        
+        const validateField = () => {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                const validation = validationFunction(input.value);
+                this.updateFieldValidationState(input, errorElement, validation);
+            }, 500); // Debounce validation
+        };
+        
+        input.addEventListener('input', validateField);
+        input.addEventListener('blur', () => {
+            clearTimeout(validationTimeout);
+            const validation = validationFunction(input.value);
+            this.updateFieldValidationState(input, errorElement, validation);
+        });
+    }
+
+    /**
+     * Update field validation state with ARIA attributes
+     */
+    updateFieldValidationState(input, errorElement, validation) {
+        const isValid = validation.isValid;
+        const errorMessage = validation.errorMessage || '';
+        
+        // Update ARIA attributes
+        input.setAttribute('aria-invalid', (!isValid).toString());
+        
+        // Update error message
+        if (errorMessage) {
+            errorElement.textContent = errorMessage;
+            errorElement.style.display = 'block';
+            
+            // Announce error to screen readers
+            this.announceToScreenReader(
+                this.t('accessibility.announcements.validationError', `Validation error: ${errorMessage}`),
+                'assertive'
+            );
+        } else {
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+        }
+        
+        console.log(`♿ Field validation: ${input.id} - ${isValid ? 'valid' : 'invalid'}`);
+    }
+
+    /**
+     * Validate list name input
+     */
+    validateListName(value) {
+        if (!value || value.trim().length === 0) {
+            return { isValid: true }; // Optional field
+        }
+        
+        if (value.length > 100) {
+            return {
+                isValid: false,
+                errorMessage: this.t('validation.listNameTooLong', 'List name is too long (maximum 100 characters)')
+            };
+        }
+        
+        return { isValid: true };
+    }
+
+    /**
+     * Validate list items input
+     */
+    validateListItems(value) {
+        if (!value || value.trim().length === 0) {
+            return {
+                isValid: false,
+                errorMessage: this.t('validation.enterSomeItems', 'Please enter some items to organize')
+            };
+        }
+        
+        if (value.length > 5000) {
+            return {
+                isValid: false,
+                errorMessage: this.t('validation.itemsTooLong', 'Items list is too long (maximum 5000 characters)')
+            };
+        }
+        
+        return { isValid: true };
+    }
+
+    /**
+     * Setup email validation
+     */
+    setupEmailValidation(emailInput) {
+        const validateEmail = () => {
+            const email = emailInput.value.trim();
+            const isValid = email === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            
+            emailInput.setAttribute('aria-invalid', (!isValid).toString());
+            
+            if (!isValid && email !== '') {
+                this.announceToScreenReader(
+                    this.t('accessibility.announcements.invalidEmail', 'Invalid email address format'),
+                    'assertive'
+                );
+            }
+        };
+        
+        emailInput.addEventListener('input', validateEmail);
+        emailInput.addEventListener('blur', validateEmail);
+    }
+
+    /**
+     * Initialize dynamic content announcements for screen readers
+     */
+    initializeDynamicAnnouncements() {
+        console.log('♿ Setting up dynamic content announcements...');
+        
+        // Enhanced announcement system for list operations
+        this.announcementQueue = [];
+        this.isAnnouncing = false;
+        
+        // Set up progressive announcement processing
+        this.setupProgressiveAnnouncements();
+    }
+
+    /**
+     * Setup progressive announcement system to avoid overwhelming screen readers
+     */
+    setupProgressiveAnnouncements() {
+        this.processAnnouncementQueue = () => {
+            if (this.announcementQueue.length === 0 || this.isAnnouncing) {
+                return;
+            }
+            
+            this.isAnnouncing = true;
+            const announcement = this.announcementQueue.shift();
+            
+            this.announceToScreenReader(announcement.message, announcement.priority);
+            
+            // Process next announcement after delay
+            setTimeout(() => {
+                this.isAnnouncing = false;
+                this.processAnnouncementQueue();
+            }, 1000);
+        };
+        
+        // Start processing queue
+        setInterval(this.processAnnouncementQueue, 500);
+    }
+
+    /**
+     * Queue announcement for screen readers
+     */
+    queueAnnouncement(message, priority = 'polite') {
+        this.announcementQueue.push({ message, priority });
+    }
+
+    /**
+     * Announce list operation with context
+     */
+    announceListOperation(operation, details = {}) {
+        let message = '';
+        
+        switch (operation) {
+            case 'listOrganized':
+                const categoryCount = details.categoryCount || 0;
+                const itemCount = details.itemCount || 0;
+                message = this.t('accessibility.announcements.listOrganized', 
+                    `List organized into ${categoryCount} categories with ${itemCount} items`);
+                break;
+                
+            case 'itemAdded':
+                message = this.t('accessibility.announcements.itemAdded', 
+                    `Item "${details.itemName}" added to category "${details.categoryName}"`);
+                break;
+                
+            case 'itemRemoved':
+                message = this.t('accessibility.announcements.itemRemoved', 
+                    `Item "${details.itemName}" removed from category "${details.categoryName}"`);
+                break;
+                
+            case 'categoryAdded':
+                message = this.t('accessibility.announcements.categoryAdded', 
+                    `New category "${details.categoryName}" created with ${details.itemCount} items`);
+                break;
+                
+            case 'listCleared':
+                message = this.t('accessibility.announcements.listCleared', 'List cleared');
+                break;
+                
+            case 'listSaved':
+                message = this.t('accessibility.announcements.listSaved', 
+                    `List "${details.listName}" saved successfully`);
+                break;
+                
+            default:
+                message = details.message || operation;
+        }
+        
+        this.queueAnnouncement(message, details.priority || 'polite');
+        
+        // Also announce to specific live region
+        const announcer = document.getElementById('category-announcer');
+        if (announcer && operation.includes('category')) {
+            announcer.textContent = message;
+            setTimeout(() => {
+                announcer.textContent = '';
+            }, 1000);
+        }
+    }
+
+    /**
+     * Initialize dropdown ARIA states (legacy method for compatibility)
+     */
+    initializeDropdownAriaStates() {
+        // This method is called but functionality is now in initializeAriaStateManagement
+        console.log('♿ Dropdown ARIA states handled by initializeAriaStateManagement');
+    }
+
+    /**
+     * Enhanced screen reader announcements with contextual information
+     */
+    announceWithContext(baseMessage, context = {}) {
+        let enhancedMessage = baseMessage;
+        
+        // Add contextual information for better screen reader experience
+        if (context.currentStep && context.totalSteps) {
+            enhancedMessage += ` (Step ${context.currentStep} of ${context.totalSteps})`;
+        }
+        
+        if (context.progress) {
+            enhancedMessage += ` Progress: ${context.progress}%`;
+        }
+        
+        if (context.itemCount) {
+            enhancedMessage += ` ${context.itemCount} items`;
+        }
+        
+        this.announceToScreenReader(enhancedMessage, context.priority || 'polite');
+    }
+
+    /**
+     * Announce form errors with specific field context
+     */
+    announceFormError(fieldName, errorMessage) {
+        const fieldLabel = this.getFieldLabel(fieldName);
+        const announcement = this.t('accessibility.announcements.fieldError', 
+            `Error in ${fieldLabel}: ${errorMessage}`);
+        
+        this.announceToScreenReader(announcement, 'assertive');
+    }
+
+    /**
+     * Get user-friendly field label for announcements
+     */
+    getFieldLabel(fieldName) {
+        const labels = {
+            'listNameInput': this.t('accessibility.labels.listName', 'list name'),
+            'freeTextInput': this.t('accessibility.labels.listItems', 'list items'),
+            'shareEmailInput': this.t('accessibility.labels.emailAddress', 'email address')
+        };
+        
+        return labels[fieldName] || fieldName;
+    }
+
     /**
      * Focus Trap Implementation for WCAG 2.0 AA Compliance
      * Ensures keyboard users can't navigate outside of open modals
@@ -5029,6 +5501,222 @@ Items: ${items.join(', ')}
         dynamicElements.forEach((element, index) => {
             element.tabIndex = mainElements.length + index + 1;
         });
+    }
+
+    /**
+     * Initialize accessibility help modal functionality
+     */
+    initializeAccessibilityHelp() {
+        console.log('♿ Phase 4: Initializing Accessibility Help Modal');
+        
+        const accessibilityHelpLink = document.getElementById('accessibilityHelpLink');
+        const accessibilityHelpModal = document.getElementById('accessibilityHelpModal');
+        const accessibilityHelpModalClose = document.getElementById('accessibilityHelpModalClose');
+        const accessibilityHelpModalBackdrop = document.getElementById('accessibilityHelpModalBackdrop');
+        const submitFeedbackBtn = document.getElementById('submitAccessibilityFeedback');
+
+        if (!accessibilityHelpLink || !accessibilityHelpModal) {
+            console.warn('♿ Accessibility help modal elements not found');
+            return;
+        }
+
+        // Open accessibility help modal
+        accessibilityHelpLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showAccessibilityHelpModal();
+        });
+
+        // Close modal functionality
+        const closeAccessibilityModal = (e) => {
+            e?.preventDefault();
+            this.hideAccessibilityHelpModal();
+        };
+
+        if (accessibilityHelpModalClose) {
+            accessibilityHelpModalClose.addEventListener('click', closeAccessibilityModal);
+        }
+
+        if (accessibilityHelpModalBackdrop) {
+            accessibilityHelpModalBackdrop.addEventListener('click', closeAccessibilityModal);
+        }
+
+        // Submit accessibility feedback
+        if (submitFeedbackBtn) {
+            submitFeedbackBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.submitAccessibilityFeedback();
+            });
+        }
+
+        // Keyboard shortcuts for help modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'F1' || (e.altKey && e.key === 'h')) {
+                e.preventDefault();
+                this.showAccessibilityHelpModal();
+            }
+        });
+    }
+
+    /**
+     * Show accessibility help modal with focus management
+     */
+    showAccessibilityHelpModal() {
+        const modal = document.getElementById('accessibilityHelpModal');
+        if (!modal) return;
+
+        console.log('♿ Opening accessibility help modal');
+        
+        // Store current focus for restoration
+        this.previousFocus = document.activeElement;
+        
+        // Show modal
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        
+        // Focus management
+        const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (firstFocusable) {
+            firstFocusable.focus();
+        }
+
+        // Set up focus trap
+        this.setupAccessibilityModalFocusTrap(modal);
+
+        // Announce to screen readers
+        this.announceToScreenReader('Accessibility help dialog opened. Use Tab to navigate, Escape to close.', 'polite');
+    }
+
+    /**
+     * Hide accessibility help modal with focus restoration
+     */
+    hideAccessibilityHelpModal() {
+        const modal = document.getElementById('accessibilityHelpModal');
+        if (!modal) return;
+
+        console.log('♿ Closing accessibility help modal');
+        
+        // Hide modal
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        
+        // Restore focus
+        if (this.previousFocus) {
+            this.previousFocus.focus();
+            this.previousFocus = null;
+        }
+
+        // Clean up focus trap
+        if (modal._focusTrapCleanup) {
+            modal._focusTrapCleanup();
+            modal._focusTrapCleanup = null;
+        }
+
+        // Clear feedback form
+        this.clearAccessibilityFeedbackForm();
+
+        // Announce to screen readers
+        this.announceToScreenReader('Accessibility help dialog closed.', 'polite');
+    }
+
+    /**
+     * Set up focus trap for accessibility modal
+     */
+    setupAccessibilityModalFocusTrap(modal) {
+        const focusableElements = modal.querySelectorAll(
+            'button, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        const trapFocus = (e) => {
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    // Shift + Tab
+                    if (document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    }
+                } else {
+                    // Tab
+                    if (document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                this.hideAccessibilityHelpModal();
+            }
+        };
+
+        modal.addEventListener('keydown', trapFocus);
+        
+        // Store cleanup function
+        modal._focusTrapCleanup = () => {
+            modal.removeEventListener('keydown', trapFocus);
+        };
+    }
+
+    /**
+     * Submit accessibility feedback
+     */
+    submitAccessibilityFeedback() {
+        const issueType = document.getElementById('accessibilityFeedbackType')?.value;
+        const message = document.getElementById('accessibilityFeedbackMessage')?.value;
+        const contact = document.getElementById('accessibilityFeedbackContact')?.value;
+
+        if (!issueType || !message.trim()) {
+            this.announceToScreenReader('Please select an issue type and provide a description.', 'assertive');
+            return;
+        }
+
+        console.log('♿ Submitting accessibility feedback:', { issueType, message, contact });
+
+        // Simulate feedback submission
+        const feedbackData = {
+            type: issueType,
+            message: message.trim(),
+            contact: contact.trim(),
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            language: this.languageManager?.currentLanguage || 'en'
+        };
+
+        // In a real implementation, this would be sent to a server
+        console.log('📧 Accessibility feedback data:', feedbackData);
+
+        // Show success message
+        const submitBtn = document.getElementById('submitAccessibilityFeedback');
+        if (submitBtn) {
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = '✅ Feedback Sent!';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                this.clearAccessibilityFeedbackForm();
+            }, 3000);
+        }
+
+        this.announceToScreenReader('Accessibility feedback submitted successfully. Thank you for helping us improve.', 'polite');
+    }
+
+    /**
+     * Clear accessibility feedback form
+     */
+    clearAccessibilityFeedbackForm() {
+        const typeSelect = document.getElementById('accessibilityFeedbackType');
+        const messageTextarea = document.getElementById('accessibilityFeedbackMessage');
+        const contactInput = document.getElementById('accessibilityFeedbackContact');
+
+        if (typeSelect) typeSelect.value = '';
+        if (messageTextarea) messageTextarea.value = '';
+        if (contactInput) contactInput.value = '';
     }
 }
 

@@ -135,6 +135,8 @@ const hebrewTranslations = {
         detectedWords: "מילים שזוהו:",
         enterSomeItems: "אנא הכנס כמה פריטים לארגון",
         listNameRequired: "אנא הכנס שם לרשימה",
+        listNameTooLong: "שם הרשימה ארוך מדי (מקסימום 100 תווים)",
+        itemsTooLong: "רשימת הפריטים ארוכה מדי (מקסימום 5000 תווים)",
         
         // Hebrew-specific validation messages
         hebrewInputError: "שגיאה בעיבוד הטקסט העברי. אנא בדוק את הכתיבה ונסה שוב.",
@@ -343,7 +345,8 @@ const hebrewTranslations = {
             listItems: "פריטי הרשימה",
             listActions: "פעולות רשימה",
             languageSwitcher: "החלפת שפה",
-            userMenu: "תפריט משתמש"
+            userMenu: "תפריט משתמש",
+            emailAddress: "כתובת מייל"
         },
         descriptions: {
             listNameHelp: "הכנס שם תיאורי לרשימה שלך",
@@ -362,7 +365,17 @@ const hebrewTranslations = {
             languageChanged: "השפה שונתה לעברית",
             modalOpened: "חלון דיאלוג נפתח",
             modalClosed: "חלון דיאלוג נסגר",
-            shortcutUsed: "קיצור מקלדת הופעל"
+            shortcutUsed: "קיצור מקלדת הופעל",
+            dropdownStateChanged: "מצב התפריט השתנה",
+            validationError: "שגיאת תקינות",
+            accessibilityHelpOpened: "דיאלוג עזרת נגישות נפתח. השתמש ב-Tab לניווט, Escape לסגירה.",
+            accessibilityHelpClosed: "דיאלוג עזרת נגישות נסגר.",
+            feedbackSubmitted: "משוב נגישות נשלח בהצלחה. תודה שעוזר לנו להשתפר.",
+            invalidEmail: "פורמט כתובת מייל לא תקין",
+            fieldError: "שגיאה בשדה",
+            listOrganized: "הרשימה אורגנה",
+            categoryAdded: "קטגוריה נוספה",
+            listCleared: "הרשימה נוקתה"
         },
         errors: {
             invalidInput: "קלט לא תקין סופק",

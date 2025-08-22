@@ -134,7 +134,9 @@ const englishTranslations = {
         blocked: "🔒 Access temporarily restricted. Please refresh the page to reset and use appropriate language only.",
         detectedWords: "Detected words:",
         enterSomeItems: "Please enter some items to organize",
-        listNameRequired: "Please enter a list name"
+        listNameRequired: "Please enter a list name",
+        listNameTooLong: "List name is too long (maximum 100 characters)",
+        itemsTooLong: "Items list is too long (maximum 5000 characters)"
     },
     
     // Notifications
@@ -322,7 +324,8 @@ const englishTranslations = {
             listItems: "List items",
             listActions: "List actions",
             languageSwitcher: "Language switcher",
-            userMenu: "User menu"
+            userMenu: "User menu",
+            emailAddress: "Email address"
         },
         descriptions: {
             listNameHelp: "Enter a descriptive name for your list",
@@ -341,7 +344,17 @@ const englishTranslations = {
             languageChanged: "Language changed to English",
             modalOpened: "Modal dialog opened",
             modalClosed: "Modal dialog closed",
-            shortcutUsed: "Keyboard shortcut activated"
+            shortcutUsed: "Keyboard shortcut activated",
+            dropdownStateChanged: "Dropdown state changed",
+            validationError: "Validation error",
+            accessibilityHelpOpened: "Accessibility help dialog opened. Use Tab to navigate, Escape to close.",
+            accessibilityHelpClosed: "Accessibility help dialog closed.",
+            feedbackSubmitted: "Accessibility feedback submitted successfully. Thank you for helping us improve.",
+            invalidEmail: "Invalid email address format",
+            fieldError: "Field error",
+            listOrganized: "List organized",
+            categoryAdded: "Category added",
+            listCleared: "List cleared"
         },
         errors: {
             invalidInput: "Invalid input provided",
