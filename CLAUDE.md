@@ -9,11 +9,52 @@
 **Deployment**: 
 - **Production**: Vercel auto-deploy from `master` branch
 - **Preview**: Vercel auto-deploy from `dev` branch  
-**Current Status**: Production-ready bilingual application with comprehensive Hebrew language support, enhanced branding, comprehensive toxic content moderation, delete functionality, collaboration features, AI categorization, email notifications, and two-layer security validation
+**Current Status**: Production-ready bilingual application with comprehensive Hebrew language support, enhanced branding, comprehensive toxic content moderation, delete functionality, collaboration features, AI categorization, email notifications, two-layer security validation, and **ACCESSIBILITY COMPLIANCE PROJECT** in progress for Israeli legal requirements
 
 ## Recent Major Features (Latest First)
 
-### 🌍 **Complete Hebrew Language Integration** (LATEST)
+### ♿ **ACCESSIBILITY COMPLIANCE PROJECT** (ACTIVE - Israeli Legal Requirements)
+- 🚧 **Status**: Phase 1 in Progress - Foundation & Audit
+- 🎯 **Goal**: Full compliance with Israeli Service Accessibility Regulations (2013) and IS 5568 (WCAG 2.0 AA)
+- 📊 **Target**: 95-100% WCAG 2.0 AA compliance with comprehensive documentation
+- 🔍 **Scope**: Complete accessibility overhaul including keyboard navigation, screen reader support, color contrast, ARIA implementation, and bilingual accessibility statement
+
+#### **Phase 1: Foundation & Audit (Week 1) - IN PROGRESS**
+- 🔄 **Skip-to-Content Links**: Direct navigation bypass for keyboard users
+- 🔄 **Semantic HTML Landmarks**: Proper header/nav/main/aside/footer structure
+- 🔄 **Heading Hierarchy**: Logical H1-H6 structure for screen readers
+- 🔄 **ARIA Labels**: Comprehensive labeling for interactive elements
+- 🔄 **Automated Testing**: axe-core integration for continuous compliance checking
+
+#### **Phase 2: Keyboard & Focus Management (Week 2) - PLANNED**
+- ⏳ **Full Keyboard Navigation**: Tab order, arrow keys, Enter/Space activation
+- ⏳ **Focus Management**: Visible focus indicators, focus traps in modals
+- ⏳ **Focus Restoration**: Return focus to trigger elements after modal close
+- ⏳ **Keyboard Shortcuts**: Skip links and efficient navigation patterns
+- ⏳ **Focus Testing**: Comprehensive keyboard-only navigation validation
+
+#### **Phase 3: Screen Reader & ARIA (Week 3) - PLANNED**
+- ⏳ **ARIA Live Regions**: Dynamic content announcements for list updates
+- ⏳ **Comprehensive ARIA**: Roles, properties, and states for all components
+- ⏳ **Screen Reader Testing**: NVDA (Windows) and VoiceOver (macOS/iOS) validation
+- ⏳ **Form Accessibility**: Explicit labels, error descriptions, required field indication
+- ⏳ **Modal Accessibility**: Focus traps, aria-modal, proper labeling
+
+#### **Phase 4: Legal Compliance & Documentation (Week 4) - PLANNED**
+- ⏳ **Color Contrast Audit**: 4.5:1 normal text, 3:1 large text compliance
+- ⏳ **Accessibility Statement**: Bilingual Hebrew/English IS 5568 compliant page
+- ⏳ **Testing Documentation**: Manual and automated test results
+- ⏳ **Compliance Verification**: Final WCAG 2.0 AA assessment
+- ⏳ **Legal Documentation**: Contact details, response times, coordinator information
+
+### 🔒 **Complete Legal Foundation System** 
+- ✅ **Privacy Policy Modal**: Professional bilingual modal with 8 comprehensive sections covering data collection, usage, security, and user rights
+- ✅ **Terms of Use Modal**: Complete terms with 8 sections covering service use, intellectual property, liability, and legal framework
+- ✅ **Bilingual Content**: Real-time Hebrew/English translation with proper RTL support
+- ✅ **Professional Design**: Responsive modals with accessibility features and mobile optimization
+- ✅ **Legal Compliance**: IS 5568 preparation and Israeli regulation adherence
+
+### 🌍 **Complete Hebrew Language Integration**
 - ✅ **Full Bilingual Support**: Seamless English ↔ Hebrew language switching with real-time UI updates
 - ✅ **RTL Layout System**: Comprehensive right-to-left CSS support for proper Hebrew reading experience
 - ✅ **Translation Infrastructure**: Complete i18n system with 200+ translated strings covering all UI elements
@@ -123,6 +164,312 @@
 - ✅ **Cross-Device Consistency**: Uniform experience across desktop, tablet, mobile
 
 ## Code Architecture
+
+### Accessibility Compliance System (Israeli Legal Requirements)
+
+**WCAG 2.0 AA Compliance Architecture:**
+```javascript
+// Accessibility Manager Integration
+class AccessibilityManager {
+    constructor() {
+        this.skipLinks = new Map();
+        this.focusManagement = new FocusManager();
+        this.ariaManager = new ARIAManager();
+        this.contrastChecker = new ContrastChecker();
+        this.screenReaderSupport = new ScreenReaderSupport();
+    }
+
+    // Phase 1: Foundation & Audit
+    initializeFoundation() {
+        this.addSkipLinks();
+        this.setupSemanticLandmarks();
+        this.auditHeadingHierarchy();
+        this.addARIALabels();
+        this.runAutomatedTests();
+    }
+
+    // Phase 2: Keyboard & Focus Management
+    initializeKeyboardSupport() {
+        this.setupKeyboardNavigation();
+        this.implementFocusManagement();
+        this.addFocusIndicators();
+        this.createFocusTraps();
+        this.testKeyboardOnly();
+    }
+
+    // Phase 3: Screen Reader Support
+    initializeScreenReaderSupport() {
+        this.addLiveRegions();
+        this.implementARIARoles();
+        this.setupFormAccessibility();
+        this.addModalAccessibility();
+        this.testWithScreenReaders();
+    }
+
+    // Phase 4: Legal Compliance
+    generateComplianceDocumentation() {
+        return {
+            wcagLevel: 'AA',
+            compliancePercentage: this.calculateCompliance(),
+            auditResults: this.getAuditResults(),
+            testResults: this.getTestResults(),
+            accessibilityStatement: this.generateStatement()
+        };
+    }
+}
+```
+
+**Skip Links Implementation:**
+```javascript
+// Skip-to-Content Navigation
+class SkipLinksManager {
+    constructor() {
+        this.skipLinks = [
+            { id: 'skip-to-main', target: '#main-content', text: 'Skip to main content' },
+            { id: 'skip-to-nav', target: '#main-navigation', text: 'Skip to navigation' },
+            { id: 'skip-to-footer', target: '#footer-content', text: 'Skip to footer' }
+        ];
+    }
+
+    addSkipLinks() {
+        const skipContainer = document.createElement('div');
+        skipContainer.className = 'skip-links';
+        skipContainer.setAttribute('aria-label', 'Skip navigation links');
+        
+        this.skipLinks.forEach(link => {
+            const skipLink = document.createElement('a');
+            skipLink.href = link.target;
+            skipLink.textContent = this.languageManager.t(`accessibility.skipLinks.${link.id}`, link.text);
+            skipLink.className = 'skip-link';
+            skipLink.addEventListener('click', this.handleSkipLinkClick.bind(this));
+            skipContainer.appendChild(skipLink);
+        });
+        
+        document.body.insertBefore(skipContainer, document.body.firstChild);
+    }
+}
+```
+
+**Focus Management System:**
+```javascript
+// Focus Trap for Modals
+class FocusManager {
+    constructor() {
+        this.focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        this.previousFocus = null;
+        this.focusTrapStack = [];
+    }
+
+    trapFocus(element) {
+        const focusableContent = element.querySelectorAll(this.focusableElements);
+        const firstFocusable = focusableContent[0];
+        const lastFocusable = focusableContent[focusableContent.length - 1];
+
+        // Store previous focus
+        this.previousFocus = document.activeElement;
+
+        // Set initial focus
+        firstFocusable?.focus();
+
+        // Add focus trap
+        element.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusable) {
+                        lastFocusable?.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusable) {
+                        firstFocusable?.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+
+        this.focusTrapStack.push(element);
+    }
+
+    releaseFocus() {
+        const element = this.focusTrapStack.pop();
+        if (element && this.previousFocus) {
+            this.previousFocus.focus();
+            this.previousFocus = null;
+        }
+    }
+}
+```
+
+**ARIA Live Regions for Dynamic Content:**
+```javascript
+// Dynamic Content Announcements
+class ARIAManager {
+    constructor() {
+        this.liveRegions = new Map();
+        this.setupLiveRegions();
+    }
+
+    setupLiveRegions() {
+        // Polite announcements for list updates
+        this.createLiveRegion('list-updates', 'polite');
+        // Assertive announcements for errors
+        this.createLiveRegion('error-announcements', 'assertive');
+        // Status announcements
+        this.createLiveRegion('status-updates', 'polite');
+    }
+
+    announceListUpdate(message) {
+        this.announce('list-updates', message);
+    }
+
+    announceError(message) {
+        this.announce('error-announcements', message);
+    }
+
+    announceStatus(message) {
+        this.announce('status-updates', message);
+    }
+
+    announce(regionId, message) {
+        const region = this.liveRegions.get(regionId);
+        if (region) {
+            region.textContent = message;
+            // Clear after announcement
+            setTimeout(() => {
+                region.textContent = '';
+            }, 1000);
+        }
+    }
+}
+```
+
+**Semantic HTML Structure:**
+```html
+<!-- Accessible HTML5 Landmark Structure -->
+<body>
+    <div class="skip-links" aria-label="Skip navigation links">
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#main-navigation" class="skip-link">Skip to navigation</a>
+    </div>
+    
+    <header role="banner" aria-label="Site header">
+        <nav role="navigation" aria-label="Main navigation" id="main-navigation">
+            <!-- Navigation content -->
+        </nav>
+    </header>
+    
+    <main role="main" id="main-content" aria-label="Main content">
+        <section aria-labelledby="input-heading">
+            <h2 id="input-heading">Enter Your List Items</h2>
+            <!-- Form content with proper labels -->
+        </section>
+        
+        <section aria-labelledby="results-heading">
+            <h2 id="results-heading">Organized Shopping List</h2>
+            <!-- Results content -->
+        </section>
+    </main>
+    
+    <footer role="contentinfo" aria-label="Site footer" id="footer-content">
+        <!-- Footer content -->
+    </footer>
+    
+    <!-- ARIA Live Regions -->
+    <div aria-live="polite" aria-label="List updates" id="list-updates-announcer" class="sr-only"></div>
+    <div aria-live="assertive" aria-label="Error announcements" id="error-announcer" class="sr-only"></div>
+</body>
+```
+
+**Color Contrast Compliance:**
+```css
+/* WCAG 2.0 AA Color Contrast Requirements */
+:root {
+    /* Normal text: 4.5:1 ratio minimum */
+    --text-primary: #212529;      /* 15.35:1 on white */
+    --text-secondary: #6c757d;    /* 4.54:1 on white */
+    
+    /* Large text: 3:1 ratio minimum */
+    --text-large: #495057;        /* 7.00:1 on white */
+    
+    /* Interactive elements */
+    --link-color: #0d6efd;        /* 5.64:1 on white */
+    --button-primary: #0d6efd;    /* 5.64:1 on white */
+    --button-danger: #dc3545;     /* 5.48:1 on white */
+    
+    /* Focus indicators */
+    --focus-outline: #0d6efd;     /* High contrast focus ring */
+    --focus-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Focus indicators */
+*:focus {
+    outline: 2px solid var(--focus-outline);
+    outline-offset: 2px;
+    box-shadow: var(--focus-shadow);
+}
+
+/* Skip links */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--text-primary);
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+}
+
+.skip-link:focus {
+    top: 6px;
+}
+```
+
+**Bilingual Accessibility Statement Structure:**
+```javascript
+// Israeli IS 5568 Compliant Accessibility Statement
+const accessibilityStatement = {
+    title: {
+        en: "Accessibility Statement - Shopping List Organizer",
+        he: "הצהרת נגישות - מארגן רשימת קניות"
+    },
+    conformanceLevel: {
+        en: "WCAG 2.0 Level AA and Israeli Standard IS 5568",
+        he: "WCAG 2.0 רמה AA ותקן ישראלי IS 5568"
+    },
+    lastUpdated: new Date().toISOString(),
+    contactInfo: {
+        coordinatorName: "[Accessibility Coordinator Name]",
+        email: "accessibility@shopping-organizer.com",
+        phone: "+972-XX-XXXXXXX",
+        responseTime: {
+            en: "We aim to respond within 30 days",
+            he: "אנו שואפים להגיב תוך 30 יום"
+        }
+    },
+    exceptions: [],
+    testingDate: new Date().toISOString(),
+    methodology: {
+        automated: "axe-core, Lighthouse",
+        manual: "Keyboard navigation, NVDA, VoiceOver"
+    }
+};
+```
 
 ### Hebrew Language Integration System
 
@@ -881,9 +1228,19 @@ ShoppingOrganizer/
 
 ---
 
-## Next Development Priorities (Post-Hebrew Integration)
+## Next Development Priorities 
 
-### 1. **Full-Scale Design Overhaul**
+### 1. **♿ ACCESSIBILITY COMPLIANCE (PRIORITY 1 - LEGAL REQUIREMENT)**
+- **🚨 Israeli Legal Compliance**: Service Accessibility Regulations (2013) and IS 5568 (WCAG 2.0 AA)
+- **⌨️ Complete Keyboard Navigation**: Full keyboard operability with focus management
+- **📢 Screen Reader Optimization**: NVDA and VoiceOver compatibility
+- **🎨 Color Contrast Audit**: 4.5:1 for normal text, 3:1 for large text
+- **📋 Accessibility Statement**: Bilingual Hebrew/English IS 5568 compliant documentation
+- **🔧 ARIA Implementation**: Live regions, roles, properties, and comprehensive labeling
+- **⚡ Automated Testing**: axe-core integration for continuous compliance monitoring
+- **📊 Timeline**: 4 weeks for full WCAG 2.0 AA compliance
+
+### 2. **Full-Scale Design Overhaul**
 - **Modern Design System**: Comprehensive visual redesign with bilingual support
 - **Enhanced Branding**: Professional visual identity for both languages
 - **Advanced Responsive Design**: Mobile-first approach with RTL considerations
@@ -949,19 +1306,20 @@ ShoppingOrganizer/
 
 ---
 
-**Last Updated**: Hebrew Language Integration Plan & GPT-4o Upgrade with Enhanced AI Validation  
-**Current Phase**: 🌍 **HEBREW INTEGRATION PROJECT** - Phase 1: i18n Infrastructure Setup (Active)  
-**Next Phase**: Phase 2: Content Translation & Hebrew UI Implementation  
-**Strategic Goal**: Bilingual Hebrew/English support before full-scale design overhaul  
+**Last Updated**: Accessibility Compliance Project Planning & Israeli Legal Requirements Implementation  
+**Current Phase**: ♿ **ACCESSIBILITY COMPLIANCE PROJECT** - Phase 1: Foundation & Audit (Active)  
+**Next Phase**: Phase 2: Keyboard & Focus Management Implementation  
+**Strategic Goal**: Full WCAG 2.0 AA compliance for Israeli legal requirements  
 **Repository**: https://github.com/TomerIN1/ShoppingOrganizer.git  
 **Live Demo**: https://shopping-organizer.vercel.app  
 **Maintained by**: Claude Code collaborative development
 
 ## 🔄 **Current Session Continuation Point**
-**Active Task**: Phase 1 - Infrastructure Setup
-**Next Step**: Create LanguageManager class with detection and storage
-**Implementation Status**: Ready to begin coding infrastructure
-**Files to Create**: translations/ directory, language-manager.js, i18n.js
+**Active Task**: ♿ Phase 1 - Accessibility Foundation & Audit
+**Next Step**: Implement skip-to-content links and semantic HTML landmarks
+**Implementation Status**: Ready to begin WCAG 2.0 AA compliance implementation
+**Legal Requirement**: Israeli Service Accessibility Regulations (2013) and IS 5568 compliance
+**Files to Modify**: index.html, styles.css, script.js, translation files for accessibility content
 
 ## Quick Reference Commands
 

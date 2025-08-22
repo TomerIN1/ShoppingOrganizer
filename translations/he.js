@@ -325,6 +325,47 @@ const hebrewTranslations = {
                 "לשאלות או בקשות ניתן לפנות דרך עמוד צור קשר באתר או בדוא\"ל support@[domain]."
             ]
         }
+    },
+    
+    // Accessibility
+    accessibility: {
+        skipLinks: {
+            "skip-to-main": "דלג לתוכן הראשי",
+            "skip-to-nav": "דלג לניווט", 
+            "skip-to-footer": "דלג לכותרת התחתונה"
+        },
+        labels: {
+            siteHeader: "כותרת האתר",
+            mainNavigation: "ניווט ראשי",
+            mainContent: "תוכן ראשי",
+            siteFooter: "כותרת תחתונה",
+            listName: "שם הרשימה",
+            listItems: "פריטי הרשימה",
+            listActions: "פעולות רשימה",
+            languageSwitcher: "החלפת שפה",
+            userMenu: "תפריט משתמש"
+        },
+        descriptions: {
+            listNameHelp: "הכנס שם תיאורי לרשימה שלך",
+            itemsHelp: "הכנס את הפריטים שלך מופרדים בפסיקים או שורות חדשות",
+            organizeHelp: "ארגן את הפריטים שלך לקטגוריות באמצעות בינה מלאכותית",
+            clearHelp: "נקה את כל שדות הקלט",
+            newHelp: "התחל רשימה חדשה"
+        },
+        announcements: {
+            listUpdated: "הרשימה עודכנה",
+            itemAdded: "פריט נוסף לרשימה",
+            itemRemoved: "פריט הוסר מהרשימה", 
+            categoryCreated: "קטגוריה חדשה נוצרה",
+            listSaved: "הרשימה נשמרה בהצלחה",
+            error: "אירעה שגיאה",
+            languageChanged: "השפה שונתה לעברית"
+        },
+        errors: {
+            invalidInput: "קלט לא תקין סופק",
+            networkError: "שגיאת חיבור רשת",
+            serverError: "אירעה שגיאת שרת"
+        }
     }
 };
 

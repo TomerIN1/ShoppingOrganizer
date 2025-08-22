@@ -304,6 +304,47 @@ const englishTranslations = {
                 "For any questions or requests, please contact us via the Contact page or at support@[domain]."
             ]
         }
+    },
+    
+    // Accessibility
+    accessibility: {
+        skipLinks: {
+            "skip-to-main": "Skip to main content",
+            "skip-to-nav": "Skip to navigation", 
+            "skip-to-footer": "Skip to footer"
+        },
+        labels: {
+            siteHeader: "Site header",
+            mainNavigation: "Main navigation",
+            mainContent: "Main content",
+            siteFooter: "Site footer",
+            listName: "List name",
+            listItems: "List items",
+            listActions: "List actions",
+            languageSwitcher: "Language switcher",
+            userMenu: "User menu"
+        },
+        descriptions: {
+            listNameHelp: "Enter a descriptive name for your list",
+            itemsHelp: "Enter your items separated by commas or new lines",
+            organizeHelp: "Organize your items into categories using AI",
+            clearHelp: "Clear all input fields",
+            newHelp: "Start a new list"
+        },
+        announcements: {
+            listUpdated: "List has been updated",
+            itemAdded: "Item added to list",
+            itemRemoved: "Item removed from list", 
+            categoryCreated: "New category created",
+            listSaved: "List saved successfully",
+            error: "An error occurred",
+            languageChanged: "Language changed to English"
+        },
+        errors: {
+            invalidInput: "Invalid input provided",
+            networkError: "Network connection error",
+            serverError: "Server error occurred"
+        }
     }
 };
 

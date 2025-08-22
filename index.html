@@ -14,13 +14,20 @@
     <!-- Deployment trigger -->
 </head>
 <body>
+    <!-- Skip-to-Content Links for Accessibility -->
+    <div class="skip-links" aria-label="Skip navigation links">
+        <a href="#main-content" class="skip-link">Skip to main content</a>
+        <a href="#main-navigation" class="skip-link">Skip to navigation</a>
+        <a href="#footer-content" class="skip-link">Skip to footer</a>
+    </div>
+
     <div class="container">
-        <header class="app-header">
+        <header class="app-header" role="banner" aria-label="Site header">
             <div class="header-left">
                 <h1 class="app-title">Shopping List Organizer</h1>
                 <p class="app-tagline">Smart AI organization for shopping and beyond</p>
             </div>
-            <div class="header-right">
+            <nav role="navigation" aria-label="Main navigation" id="main-navigation" class="header-right">
                 <!-- Language Switcher -->
                 <div class="language-switcher">
                     <button id="languageToggle" class="language-btn" title="Switch Language">
@@ -59,31 +66,42 @@
                         <button id="signOutBtn" class="dropdown-item">🚪 Sign Out</button>
                     </div>
                 </div>
-            </div>
+            </nav>
         </header>
         
-        <main>
-            <section class="input-section">
-                <h2>Enter Your List Items</h2>
+        <main role="main" id="main-content" aria-label="Main content">
+            <section class="input-section" aria-labelledby="input-heading">
+                <h2 id="input-heading">Enter Your List Items</h2>
                 <p class="section-subtitle">Perfect for shopping, travel packing, DIY projects, and more!</p>
                 <div class="list-name-section">
+                    <label for="listNameInput" class="sr-only">List name</label>
                     <input 
                         type="text" 
                         id="listNameInput" 
                         placeholder="List name (e.g., Weekly Shopping, Travel Packing, DIY Project...)"
                         class="list-name-input"
+                        aria-label="List name"
+                        aria-describedby="list-name-help"
                     />
+                    <div id="list-name-help" class="sr-only">Enter a descriptive name for your list</div>
                 </div>
+                <label for="freeTextInput" class="sr-only">List items</label>
                 <textarea 
                     id="freeTextInput" 
                     placeholder="Enter your items here (e.g., milk, bread, apples, chicken breast, toothpaste, camera, etc.)"
                     rows="8"
+                    aria-label="List items"
+                    aria-describedby="items-help"
                 ></textarea>
-                <div class="input-actions">
-                    <button id="organizeBtn" class="btn-primary">Organize List</button>
-                    <button id="clearBtn" class="btn-secondary">Clear</button>
-                    <button id="newListBtn" class="btn-secondary">New List</button>
+                <div id="items-help" class="sr-only">Enter your items separated by commas or new lines</div>
+                <div class="input-actions" role="group" aria-label="List actions">
+                    <button id="organizeBtn" class="btn-primary" aria-describedby="organize-help">Organize List</button>
+                    <button id="clearBtn" class="btn-secondary" aria-describedby="clear-help">Clear</button>
+                    <button id="newListBtn" class="btn-secondary" aria-describedby="new-help">New List</button>
                 </div>
+                <div id="organize-help" class="sr-only">Organize your items into categories using AI</div>
+                <div id="clear-help" class="sr-only">Clear all input fields</div>
+                <div id="new-help" class="sr-only">Start a new list</div>
             </section>
 
             <!-- Examples Section -->
@@ -162,7 +180,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="app-footer">
+    <footer class="app-footer" role="contentinfo" aria-label="Site footer" id="footer-content">
         <div class="footer-content">
             <div class="footer-links">
                 <a href="#" id="privacyLink" class="footer-link">Privacy Policy</a>
@@ -176,6 +194,11 @@
             </div>
         </div>
     </footer>
+
+    <!-- ARIA Live Regions for Dynamic Content Announcements -->
+    <div aria-live="polite" aria-label="List updates" id="list-updates-announcer" class="sr-only"></div>
+    <div aria-live="assertive" aria-label="Error announcements" id="error-announcer" class="sr-only"></div>
+    <div aria-live="polite" aria-label="Status updates" id="status-announcer" class="sr-only"></div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
     

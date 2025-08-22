@@ -861,6 +861,108 @@ class ShoppingListOrganizer {
         if (copyrightText) {
             copyrightText.textContent = this.languageManager.t('footer.copyright', '© 2025 Shopping List Organizer. All rights reserved.');
         }
+        
+        // Update accessibility labels
+        this.updateAccessibilityLabels();
+    }
+
+    updateAccessibilityLabels() {
+        if (!this.languageManager) return;
+        
+        console.log('♿ Updating accessibility labels');
+        
+        // Update skip links
+        const skipLinks = document.querySelectorAll('.skip-link');
+        skipLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '#main-content') {
+                link.textContent = this.languageManager.t('accessibility.skipLinks.skip-to-main', 'Skip to main content');
+            } else if (href === '#main-navigation') {
+                link.textContent = this.languageManager.t('accessibility.skipLinks.skip-to-nav', 'Skip to navigation');
+            } else if (href === '#footer-content') {
+                link.textContent = this.languageManager.t('accessibility.skipLinks.skip-to-footer', 'Skip to footer');
+            }
+        });
+        
+        // Update ARIA labels
+        const siteHeader = document.querySelector('header[role="banner"]');
+        if (siteHeader) {
+            siteHeader.setAttribute('aria-label', this.languageManager.t('accessibility.labels.siteHeader', 'Site header'));
+        }
+        
+        const mainNav = document.querySelector('nav[role="navigation"]');
+        if (mainNav) {
+            mainNav.setAttribute('aria-label', this.languageManager.t('accessibility.labels.mainNavigation', 'Main navigation'));
+        }
+        
+        const mainContent = document.querySelector('main[role="main"]');
+        if (mainContent) {
+            mainContent.setAttribute('aria-label', this.languageManager.t('accessibility.labels.mainContent', 'Main content'));
+        }
+        
+        const siteFooter = document.querySelector('footer[role="contentinfo"]');
+        if (siteFooter) {
+            siteFooter.setAttribute('aria-label', this.languageManager.t('accessibility.labels.siteFooter', 'Site footer'));
+        }
+        
+        // Update help text
+        const listNameHelp = document.getElementById('list-name-help');
+        if (listNameHelp) {
+            listNameHelp.textContent = this.languageManager.t('accessibility.descriptions.listNameHelp', 'Enter a descriptive name for your list');
+        }
+        
+        const itemsHelp = document.getElementById('items-help');
+        if (itemsHelp) {
+            itemsHelp.textContent = this.languageManager.t('accessibility.descriptions.itemsHelp', 'Enter your items separated by commas or new lines');
+        }
+        
+        // Update button help text
+        const organizeHelp = document.getElementById('organize-help');
+        if (organizeHelp) {
+            organizeHelp.textContent = this.languageManager.t('accessibility.descriptions.organizeHelp', 'Organize your items into categories using AI');
+        }
+        
+        const clearHelp = document.getElementById('clear-help');
+        if (clearHelp) {
+            clearHelp.textContent = this.languageManager.t('accessibility.descriptions.clearHelp', 'Clear all input fields');
+        }
+        
+        const newHelp = document.getElementById('new-help');
+        if (newHelp) {
+            newHelp.textContent = this.languageManager.t('accessibility.descriptions.newHelp', 'Start a new list');
+        }
+        
+        console.log('♿ Accessibility labels updated successfully');
+    }
+
+    // ARIA Live Region Announcements
+    announceToScreenReader(message, priority = 'polite') {
+        console.log(`♿ Announcing: ${message} (${priority})`);
+        
+        let announcer;
+        if (priority === 'assertive') {
+            announcer = document.getElementById('error-announcer');
+        } else {
+            announcer = document.getElementById('status-announcer');
+        }
+        
+        if (announcer) {
+            announcer.textContent = message;
+            // Clear after announcement
+            setTimeout(() => {
+                announcer.textContent = '';
+            }, 1000);
+        }
+    }
+
+    announceListUpdate(action) {
+        const message = this.languageManager.t(`accessibility.announcements.${action}`, action);
+        this.announceToScreenReader(message, 'polite');
+    }
+
+    announceError(errorType) {
+        const message = this.languageManager.t(`accessibility.errors.${errorType}`, 'An error occurred');
+        this.announceToScreenReader(message, 'assertive');
     }
 
     showPrivacyPolicy() {
