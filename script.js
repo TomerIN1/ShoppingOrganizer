@@ -5916,14 +5916,17 @@ Items: ${items.join(', ')}
         if (!accessibilityPanel) return;
         
         accessibilityPanel.style.display = 'block';
+        accessibilityPanel.classList.add('show');
         accessibilityToggle?.setAttribute('aria-expanded', 'true');
         accessibilityPanel.setAttribute('aria-hidden', 'false');
         
         // Focus first interactive element
-        const firstInput = accessibilityPanel.querySelector('input, button');
-        if (firstInput) {
-            firstInput.focus();
-        }
+        setTimeout(() => {
+            const firstInput = accessibilityPanel.querySelector('input, button');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }, 100);
         
         this.announceToScreenReader('Accessibility settings panel opened', 'polite');
     }
@@ -5937,9 +5940,14 @@ Items: ${items.join(', ')}
         
         if (!accessibilityPanel) return;
         
-        accessibilityPanel.style.display = 'none';
+        accessibilityPanel.classList.remove('show');
         accessibilityToggle?.setAttribute('aria-expanded', 'false');
         accessibilityPanel.setAttribute('aria-hidden', 'true');
+        
+        // Hide panel after animation completes
+        setTimeout(() => {
+            accessibilityPanel.style.display = 'none';
+        }, 300);
         
         this.announceToScreenReader('Accessibility settings panel closed', 'polite');
     }
@@ -5953,12 +5961,14 @@ Items: ${items.join(', ')}
         
         // Apply text size class
         document.body.className = document.body.className.replace(/text-size-\d+/g, '');
-        document.body.classList.add(`text-size-${percentage}`);
+        if (percentage !== 100) {
+            document.body.classList.add(`text-size-${percentage}`);
+        }
         
         // Save preference
         localStorage.setItem('accessibility_text_size', percentage);
         
-        console.log(`♿ Text size updated to ${percentage}%`);
+        console.log(`♿ Text size updated to ${percentage}% - Body classes:`, document.body.className);
         this.announceToScreenReader(`Text size set to ${percentage}%`, 'polite');
     }
 
@@ -5969,15 +5979,20 @@ Items: ${items.join(', ')}
         const body = document.body;
         
         // Remove existing contrast classes
-        body.classList.remove('contrast-normal', 'contrast-high', 'contrast-dark');
+        body.classList.remove('high-contrast', 'dark-mode');
         
-        // Apply new contrast class
-        body.classList.add(`contrast-${mode}`);
+        // Apply new contrast class (only for non-normal modes)
+        if (mode === 'high-contrast') {
+            body.classList.add('high-contrast');
+        } else if (mode === 'dark-mode') {
+            body.classList.add('dark-mode');
+        }
+        // Normal mode = no special classes
         
         // Save preference
         localStorage.setItem('accessibility_contrast_mode', mode);
         
-        console.log(`♿ Contrast mode updated to: ${mode}`);
+        console.log(`♿ Contrast mode updated to: ${mode} - Body classes:`, document.body.className);
         
         const modeNames = {
             'normal': 'Normal contrast',
