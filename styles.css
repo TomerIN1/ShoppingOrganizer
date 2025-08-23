@@ -1,3 +1,4 @@
+/* ACCESSIBILITY FIX v2.2 - TIMESTAMP: 2025-01-23T12:30:00Z - FORCE CACHE REFRESH */
 * {
     margin: 0;
     padding: 0;
@@ -2226,14 +2227,25 @@ body {
     font-weight: 500;
 }
 
-/* Accessibility Modes - Updated for better visibility */
-body.high-contrast {
+/* AGGRESSIVE Accessibility Modes - Fixed v2.2 - CACHE BUSTER */
+body.high-contrast, 
+body.high-contrast *,
+html.high-contrast,
+html.high-contrast * {
+    background-color: #000000 !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+    border-color: #ffffff !important;
+}
+
+.high-contrast {
     background-color: #000000 !important;
     background: #000000 !important;
     color: #ffffff !important;
 }
 
-body.high-contrast * {
+.high-contrast * {
+    background-color: #000000 !important;
     background: #000000 !important;
     color: #ffffff !important;
     border-color: #ffffff !important;
@@ -2258,7 +2270,12 @@ body.high-contrast a {
     text-decoration: underline !important;
 }
 
-body.dark-mode {
+body.dark-mode,
+body.dark-mode *,
+html.dark-mode,
+html.dark-mode *,
+.dark-mode,
+.dark-mode * {
     background-color: #121212 !important;
     background: #121212 !important;
     color: #e0e0e0 !important;
@@ -2293,19 +2310,19 @@ body.reduce-motion * {
     transform: none !important;
 }
 
-/* Accessibility Text Size Classes - Fixed v2.1 - Use root font-size scaling */
-html.text-size-80 { font-size: 80% !important; }
-html.text-size-90 { font-size: 90% !important; }
-html.text-size-110 { font-size: 110% !important; }
-html.text-size-120 { font-size: 120% !important; }
-html.text-size-130 { font-size: 130% !important; }
-html.text-size-140 { font-size: 140% !important; }
-html.text-size-150 { font-size: 150% !important; }
-html.text-size-160 { font-size: 160% !important; }
-html.text-size-170 { font-size: 170% !important; }
-html.text-size-180 { font-size: 180% !important; }
-html.text-size-190 { font-size: 190% !important; }
-html.text-size-200 { font-size: 200% !important; }
+/* AGGRESSIVE Accessibility Text Size Classes - Fixed v2.2 - CACHE BUSTER */
+html.text-size-80, html.text-size-80 * { font-size: 12.8px !important; }
+html.text-size-90, html.text-size-90 * { font-size: 14.4px !important; }
+html.text-size-110, html.text-size-110 * { font-size: 17.6px !important; }
+html.text-size-120, html.text-size-120 * { font-size: 19.2px !important; }
+html.text-size-130, html.text-size-130 * { font-size: 20.8px !important; }
+html.text-size-140, html.text-size-140 * { font-size: 22.4px !important; }
+html.text-size-150, html.text-size-150 * { font-size: 24px !important; }
+html.text-size-160, html.text-size-160 * { font-size: 25.6px !important; }
+html.text-size-170, html.text-size-170 * { font-size: 27.2px !important; }
+html.text-size-180, html.text-size-180 * { font-size: 28.8px !important; }
+html.text-size-190, html.text-size-190 * { font-size: 30.4px !important; }
+html.text-size-200, html.text-size-200 * { font-size: 32px !important; }
 
 /* Body backup rules for better browser compatibility */
 body.text-size-80 { font-size: 0.8rem !important; }
