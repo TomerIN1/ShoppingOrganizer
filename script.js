@@ -5802,8 +5802,24 @@ Items: ${items.join(', ')}
         const reduceMotionToggle = document.getElementById('reduceMotionToggle');
         const resetAccessibilityBtn = document.getElementById('resetAccessibilityBtn');
 
+        // Debug: Log element findings
+        console.log('♿ DEBUG - Element check:', {
+            accessibilityToggle: !!accessibilityToggle,
+            accessibilityPanel: !!accessibilityPanel,
+            accessibilityClose: !!accessibilityClose,
+            textSizeSlider: !!textSizeSlider,
+            textSizeValue: !!textSizeValue,
+            contrastModeRadios: contrastModeRadios.length,
+            reduceMotionToggle: !!reduceMotionToggle,
+            resetAccessibilityBtn: !!resetAccessibilityBtn
+        });
+
         if (!accessibilityToggle || !accessibilityPanel) {
-            console.warn('♿ Accessibility toolbar elements not found');
+            console.error('♿ CRITICAL: Missing accessibility toolbar elements!', {
+                accessibilityToggle: accessibilityToggle,
+                accessibilityPanel: accessibilityPanel,
+                'DOM ready': document.readyState
+            });
             return;
         }
 
@@ -5812,6 +5828,7 @@ Items: ${items.join(', ')}
 
         // Toggle accessibility panel
         accessibilityToggle.addEventListener('click', (e) => {
+            console.log('♿ DEBUG - Accessibility toggle clicked');
             e.preventDefault();
             this.toggleAccessibilityPanel();
         });
@@ -5819,46 +5836,71 @@ Items: ${items.join(', ')}
         // Close accessibility panel
         if (accessibilityClose) {
             accessibilityClose.addEventListener('click', (e) => {
+                console.log('♿ DEBUG - Accessibility close clicked');
                 e.preventDefault();
                 this.hideAccessibilityPanel();
             });
+        } else {
+            console.warn('♿ DEBUG - accessibilityClose element not found');
         }
 
         // Text size slider
         if (textSizeSlider && textSizeValue) {
+            console.log('♿ DEBUG - Setting up text size slider');
             textSizeSlider.addEventListener('input', (e) => {
                 const value = e.target.value;
-                this.updateTextSize(value);
+                console.log('♿ DEBUG - Text size slider changed to:', value);
+                this.updateTextSize(parseInt(value));
                 textSizeValue.textContent = `${value}%`;
                 
                 // Update ARIA attributes
                 textSizeSlider.setAttribute('aria-valuenow', value);
                 textSizeSlider.setAttribute('aria-valuetext', `${value}% ${value == 100 ? 'normal size' : value > 100 ? 'larger' : 'smaller'}`);
             });
+        } else {
+            console.error('♿ DEBUG - Text size elements missing:', {
+                textSizeSlider: !!textSizeSlider,
+                textSizeValue: !!textSizeValue
+            });
         }
 
         // Contrast mode radio buttons
-        contrastModeRadios.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    this.updateContrastMode(e.target.value);
-                }
+        if (contrastModeRadios.length > 0) {
+            console.log('♿ DEBUG - Setting up contrast mode radios:', contrastModeRadios.length);
+            contrastModeRadios.forEach((radio, index) => {
+                console.log(`♿ DEBUG - Contrast radio ${index}:`, radio.value);
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        console.log('♿ DEBUG - Contrast mode changed to:', e.target.value);
+                        this.updateContrastMode(e.target.value);
+                    }
+                });
             });
-        });
+        } else {
+            console.error('♿ DEBUG - No contrast mode radios found!');
+        }
 
         // Reduce motion toggle
         if (reduceMotionToggle) {
+            console.log('♿ DEBUG - Setting up reduce motion toggle');
             reduceMotionToggle.addEventListener('change', (e) => {
+                console.log('♿ DEBUG - Reduce motion toggled:', e.target.checked);
                 this.updateMotionPreference(e.target.checked);
             });
+        } else {
+            console.error('♿ DEBUG - Reduce motion toggle not found');
         }
 
         // Reset button
         if (resetAccessibilityBtn) {
+            console.log('♿ DEBUG - Setting up reset button');
             resetAccessibilityBtn.addEventListener('click', (e) => {
+                console.log('♿ DEBUG - Reset button clicked');
                 e.preventDefault();
                 this.resetAccessibilitySettings();
             });
+        } else {
+            console.error('♿ DEBUG - Reset button not found');
         }
 
         // Close panel when clicking outside
@@ -5872,11 +5914,13 @@ Items: ${items.join(', ')}
         document.addEventListener('keydown', (e) => {
             // Alt + A to open accessibility panel
             if (e.altKey && e.key === 'a') {
+                console.log('♿ DEBUG - Alt+A keyboard shortcut triggered');
                 e.preventDefault();
                 this.toggleAccessibilityPanel();
             }
             // Escape to close panel
             if (e.key === 'Escape' && accessibilityPanel.style.display === 'block') {
+                console.log('♿ DEBUG - Escape key pressed to close panel');
                 e.preventDefault();
                 this.hideAccessibilityPanel();
             }
@@ -5956,17 +6000,50 @@ Items: ${items.join(', ')}
      * Update text size across the application
      */
     updateTextSize(percentage) {
+        console.log('♿ DEBUG - updateTextSize called with:', percentage);
+        
         const root = document.documentElement;
+        console.log('♿ DEBUG - Document root element:', !!root);
+        
+        // Set CSS custom property
         root.style.setProperty('--accessibility-text-scale', `${percentage / 100}`);
+        console.log('♿ DEBUG - CSS custom property set:', `--accessibility-text-scale: ${percentage / 100}`);
+        
+        // Get current body classes before modification
+        const bodyClassesBefore = document.body.className;
+        console.log('♿ DEBUG - Body classes before:', bodyClassesBefore);
         
         // Apply text size class
         document.body.className = document.body.className.replace(/text-size-\d+/g, '');
         if (percentage !== 100) {
             document.body.classList.add(`text-size-${percentage}`);
+            console.log('♿ DEBUG - Added class:', `text-size-${percentage}`);
+        }
+        
+        // Get body classes after modification
+        const bodyClassesAfter = document.body.className;
+        console.log('♿ DEBUG - Body classes after:', bodyClassesAfter);
+        console.log('♿ DEBUG - Body classList contains target class:', document.body.classList.contains(`text-size-${percentage}`));
+        
+        // Verify CSS is actually applied
+        const computedStyle = window.getComputedStyle(document.body);
+        console.log('♿ DEBUG - Computed font-size:', computedStyle.fontSize);
+        
+        // Check if CSS rule exists in stylesheets
+        try {
+            const testEl = document.createElement('div');
+            testEl.className = `text-size-${percentage}`;
+            document.body.appendChild(testEl);
+            const testStyle = window.getComputedStyle(testEl);
+            console.log('♿ DEBUG - Test element font-size:', testStyle.fontSize);
+            document.body.removeChild(testEl);
+        } catch (e) {
+            console.error('♿ DEBUG - Error testing CSS:', e);
         }
         
         // Save preference
         localStorage.setItem('accessibility_text_size', percentage);
+        console.log('♿ DEBUG - Saved to localStorage:', localStorage.getItem('accessibility_text_size'));
         
         console.log(`♿ Text size updated to ${percentage}% - Body classes:`, document.body.className);
         this.announceToScreenReader(`Text size set to ${percentage}%`, 'polite');
@@ -5976,21 +6053,50 @@ Items: ${items.join(', ')}
      * Update contrast mode
      */
     updateContrastMode(mode) {
+        console.log('♿ DEBUG - updateContrastMode called with:', mode);
+        
         const body = document.body;
+        console.log('♿ DEBUG - Body element:', !!body);
+        
+        // Get current body classes before modification
+        const bodyClassesBefore = Array.from(body.classList);
+        console.log('♿ DEBUG - Body classes before:', bodyClassesBefore);
         
         // Remove existing contrast classes
         body.classList.remove('high-contrast', 'dark-mode');
+        console.log('♿ DEBUG - Removed existing contrast classes');
         
         // Apply new contrast class (only for non-normal modes)
         if (mode === 'high-contrast') {
             body.classList.add('high-contrast');
+            console.log('♿ DEBUG - Added high-contrast class');
         } else if (mode === 'dark-mode') {
             body.classList.add('dark-mode');
+            console.log('♿ DEBUG - Added dark-mode class');
+        } else {
+            console.log('♿ DEBUG - Normal mode selected, no classes added');
         }
         // Normal mode = no special classes
         
+        // Get body classes after modification
+        const bodyClassesAfter = Array.from(body.classList);
+        console.log('♿ DEBUG - Body classes after:', bodyClassesAfter);
+        
+        // Verify CSS is actually applied
+        const computedStyle = window.getComputedStyle(body);
+        console.log('♿ DEBUG - Computed background-color:', computedStyle.backgroundColor);
+        console.log('♿ DEBUG - Computed color:', computedStyle.color);
+        
+        // Check specific class presence
+        if (mode === 'high-contrast') {
+            console.log('♿ DEBUG - high-contrast class present:', body.classList.contains('high-contrast'));
+        } else if (mode === 'dark-mode') {
+            console.log('♿ DEBUG - dark-mode class present:', body.classList.contains('dark-mode'));
+        }
+        
         // Save preference
         localStorage.setItem('accessibility_contrast_mode', mode);
+        console.log('♿ DEBUG - Saved to localStorage:', localStorage.getItem('accessibility_contrast_mode'));
         
         console.log(`♿ Contrast mode updated to: ${mode} - Body classes:`, document.body.className);
         
@@ -6007,16 +6113,45 @@ Items: ${items.join(', ')}
      * Update motion preference
      */
     updateMotionPreference(reduceMotion) {
+        console.log('♿ DEBUG - updateMotionPreference called with:', reduceMotion);
+        
         const body = document.body;
+        console.log('♿ DEBUG - Body element:', !!body);
+        
+        // Get current body classes before modification
+        const bodyClassesBefore = Array.from(body.classList);
+        console.log('♿ DEBUG - Body classes before:', bodyClassesBefore);
+        console.log('♿ DEBUG - reduce-motion class before:', body.classList.contains('reduce-motion'));
         
         if (reduceMotion) {
             body.classList.add('reduce-motion');
+            console.log('♿ DEBUG - Added reduce-motion class');
         } else {
             body.classList.remove('reduce-motion');
+            console.log('♿ DEBUG - Removed reduce-motion class');
+        }
+        
+        // Get body classes after modification
+        const bodyClassesAfter = Array.from(body.classList);
+        console.log('♿ DEBUG - Body classes after:', bodyClassesAfter);
+        console.log('♿ DEBUG - reduce-motion class after:', body.classList.contains('reduce-motion'));
+        
+        // Check if CSS rules exist for reduce-motion
+        try {
+            const testEl = document.createElement('div');
+            testEl.className = 'reduce-motion';
+            testEl.style.transition = 'all 0.3s ease';
+            document.body.appendChild(testEl);
+            const testStyle = window.getComputedStyle(testEl);
+            console.log('♿ DEBUG - Test element transition-duration:', testStyle.transitionDuration);
+            document.body.removeChild(testEl);
+        } catch (e) {
+            console.error('♿ DEBUG - Error testing reduce-motion CSS:', e);
         }
         
         // Save preference
         localStorage.setItem('accessibility_reduce_motion', reduceMotion);
+        console.log('♿ DEBUG - Saved to localStorage:', localStorage.getItem('accessibility_reduce_motion'));
         
         console.log(`♿ Motion preference updated: ${reduceMotion ? 'reduced' : 'normal'}`);
         this.announceToScreenReader(`Motion ${reduceMotion ? 'reduced' : 'enabled'}`, 'polite');
@@ -6026,27 +6161,53 @@ Items: ${items.join(', ')}
      * Reset all accessibility settings to default
      */
     resetAccessibilitySettings() {
+        console.log('♿ DEBUG - resetAccessibilitySettings called');
+        
         // Reset text size
+        console.log('♿ DEBUG - Resetting text size to 100%');
         this.updateTextSize(100);
         const textSizeSlider = document.getElementById('textSizeSlider');
         const textSizeValue = document.getElementById('textSizeValue');
-        if (textSizeSlider) textSizeSlider.value = 100;
-        if (textSizeValue) textSizeValue.textContent = '100%';
+        console.log('♿ DEBUG - Text size elements:', { slider: !!textSizeSlider, value: !!textSizeValue });
+        if (textSizeSlider) {
+            textSizeSlider.value = 100;
+            console.log('♿ DEBUG - Text size slider reset to:', textSizeSlider.value);
+        }
+        if (textSizeValue) {
+            textSizeValue.textContent = '100%';
+            console.log('♿ DEBUG - Text size value reset to:', textSizeValue.textContent);
+        }
         
         // Reset contrast mode
+        console.log('♿ DEBUG - Resetting contrast mode to normal');
         this.updateContrastMode('normal');
         const normalRadio = document.querySelector('input[name="contrastMode"][value="normal"]');
-        if (normalRadio) normalRadio.checked = true;
+        console.log('♿ DEBUG - Normal radio element:', !!normalRadio);
+        if (normalRadio) {
+            normalRadio.checked = true;
+            console.log('♿ DEBUG - Normal radio checked:', normalRadio.checked);
+        }
         
         // Reset motion preference
+        console.log('♿ DEBUG - Resetting motion preference to false');
         this.updateMotionPreference(false);
         const motionToggle = document.getElementById('reduceMotionToggle');
-        if (motionToggle) motionToggle.checked = false;
+        console.log('♿ DEBUG - Motion toggle element:', !!motionToggle);
+        if (motionToggle) {
+            motionToggle.checked = false;
+            console.log('♿ DEBUG - Motion toggle checked:', motionToggle.checked);
+        }
         
         // Clear localStorage
+        console.log('♿ DEBUG - Clearing localStorage accessibility settings');
         localStorage.removeItem('accessibility_text_size');
         localStorage.removeItem('accessibility_contrast_mode');
         localStorage.removeItem('accessibility_reduce_motion');
+        console.log('♿ DEBUG - localStorage cleared, remaining accessibility items:', {
+            textSize: localStorage.getItem('accessibility_text_size'),
+            contrast: localStorage.getItem('accessibility_contrast_mode'),
+            motion: localStorage.getItem('accessibility_reduce_motion')
+        });
         
         console.log('♿ All accessibility settings reset to default');
         this.announceToScreenReader('All accessibility settings reset to default', 'polite');
