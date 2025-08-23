@@ -6088,25 +6088,28 @@ Items: ${items.join(', ')}
             console.error('♿ DEBUG - Error in CSS debugging:', e);
         }
         
-        // FALLBACK: If CSS isn't working, directly set styles via JavaScript
-        if (computedStyle.fontSize === '16px') {
-            console.warn('♿ DEBUG - CSS not working, applying direct styles!');
-            const targetSize = `${16 * (percentage / 100)}px`;
-            
-            // Apply to all text elements directly
-            const elements = document.querySelectorAll('*');
-            elements.forEach(el => {
-                if (el.tagName !== 'HTML' && el.tagName !== 'HEAD' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
-                    el.style.fontSize = targetSize;
-                }
-            });
-            
-            // Also set root font-size
-            document.documentElement.style.fontSize = targetSize;
-            document.body.style.fontSize = targetSize;
-            
-            console.log('♿ DEBUG - DIRECT STYLES APPLIED:', targetSize);
-        }
+        // IMPROVED FALLBACK: Always apply direct styles for immediate effect
+        const targetSize = `${16 * (percentage / 100)}px`;
+        console.warn('♿ DEBUG - Applying direct font styles for immediate effect!');
+        
+        // Apply to all text elements directly with forced refresh
+        const elements = document.querySelectorAll('*');
+        elements.forEach(el => {
+            if (el.tagName !== 'HEAD' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                // Force style recalculation
+                el.style.fontSize = targetSize;
+                el.style.lineHeight = 'inherit';
+            }
+        });
+        
+        // Also set root font-size
+        document.documentElement.style.fontSize = targetSize;
+        document.body.style.fontSize = targetSize;
+        
+        // Force layout reflow to make changes immediate
+        document.body.offsetHeight;
+        
+        console.log('♿ DEBUG - DIRECT FONT STYLES APPLIED WITH REFLOW:', targetSize);
         
         // Save preference
         localStorage.setItem('accessibility_text_size', percentage);
@@ -6161,35 +6164,40 @@ Items: ${items.join(', ')}
             console.log('♿ DEBUG - dark-mode class present:', body.classList.contains('dark-mode'));
         }
         
-        // FALLBACK: If CSS isn't working, directly set styles via JavaScript
-        if (mode === 'high-contrast' && computedStyle.backgroundColor === 'rgb(245, 245, 245)') {
-            console.warn('♿ DEBUG - High contrast CSS not working, applying direct styles!');
-            // Apply high contrast directly
+        // IMPROVED FALLBACK: Always apply direct styles for better differentiation
+        if (mode === 'high-contrast') {
+            console.warn('♿ DEBUG - Applying HIGH CONTRAST direct styles for maximum contrast!');
+            // HIGH CONTRAST: Pure black and white, thick borders
             const elements = document.querySelectorAll('*');
             elements.forEach(el => {
-                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE' && el.tagName !== 'HEAD') {
                     el.style.backgroundColor = '#000000';
                     el.style.color = '#ffffff';
                     el.style.borderColor = '#ffffff';
+                    el.style.borderWidth = '2px';
                 }
             });
             document.body.style.backgroundColor = '#000000';
             document.body.style.color = '#ffffff';
-            console.log('♿ DEBUG - DIRECT HIGH CONTRAST STYLES APPLIED');
+            document.documentElement.style.backgroundColor = '#000000';
+            console.log('♿ DEBUG - DIRECT HIGH CONTRAST STYLES APPLIED - Pure black/white');
             
-        } else if (mode === 'dark-mode' && computedStyle.backgroundColor === 'rgb(245, 245, 245)') {
-            console.warn('♿ DEBUG - Dark mode CSS not working, applying direct styles!');
-            // Apply dark mode directly
+        } else if (mode === 'dark-mode') {
+            console.warn('♿ DEBUG - Applying DARK MODE direct styles for comfortable viewing!');
+            // DARK MODE: Softer dark greys, easier on eyes
             const elements = document.querySelectorAll('*');
             elements.forEach(el => {
-                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
-                    el.style.backgroundColor = '#121212';
-                    el.style.color = '#e0e0e0';
+                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE' && el.tagName !== 'HEAD') {
+                    el.style.backgroundColor = '#1a1a1a';  // Softer than pure black
+                    el.style.color = '#e0e0e0';           // Light grey text
+                    el.style.borderColor = '#444444';     // Subtle borders
+                    el.style.borderWidth = '1px';
                 }
             });
-            document.body.style.backgroundColor = '#121212';
+            document.body.style.backgroundColor = '#1a1a1a';
             document.body.style.color = '#e0e0e0';
-            console.log('♿ DEBUG - DIRECT DARK MODE STYLES APPLIED');
+            document.documentElement.style.backgroundColor = '#1a1a1a';
+            console.log('♿ DEBUG - DIRECT DARK MODE STYLES APPLIED - Soft dark theme');
             
         } else if (mode === 'normal') {
             // Reset to normal
@@ -6246,7 +6254,37 @@ Items: ${items.join(', ')}
         console.log('♿ DEBUG - Body classes after:', bodyClassesAfter);
         console.log('♿ DEBUG - reduce-motion class after:', body.classList.contains('reduce-motion'));
         
-        // Check if CSS rules exist for reduce-motion
+        // IMPROVED: Apply direct motion changes and create test animation
+        if (reduceMotion) {
+            console.warn('♿ DEBUG - Applying REDUCE MOTION - disabling all animations and transitions');
+            // Apply direct styles to reduce motion
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                el.style.animationDuration = '0.01ms';
+                el.style.transitionDuration = '0.01ms';
+                el.style.animationIterationCount = '1';
+                el.style.transform = 'none';
+            });
+            
+            // Show test message
+            this.showMotionTestMessage('🔇 MOTION REDUCED: All animations and transitions disabled', '#ff6b6b');
+            
+        } else {
+            console.log('♿ DEBUG - Restoring NORMAL MOTION - enabling animations and transitions');
+            // Remove direct styles to restore motion
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                el.style.removeProperty('animation-duration');
+                el.style.removeProperty('transition-duration');
+                el.style.removeProperty('animation-iteration-count');
+                el.style.removeProperty('transform');
+            });
+            
+            // Show test message with animation
+            this.showMotionTestMessage('🎬 MOTION ENABLED: Animations and transitions active', '#51cf66');
+        }
+        
+        // Test current motion settings
         try {
             const testEl = document.createElement('div');
             testEl.className = 'reduce-motion';
@@ -6265,6 +6303,56 @@ Items: ${items.join(', ')}
         
         console.log(`♿ Motion preference updated: ${reduceMotion ? 'reduced' : 'normal'}`);
         this.announceToScreenReader(`Motion ${reduceMotion ? 'reduced' : 'enabled'}`, 'polite');
+    }
+
+    /**
+     * Show motion test message with visual feedback
+     */
+    showMotionTestMessage(message, color) {
+        // Remove existing test message if any
+        const existingMsg = document.getElementById('motionTestMessage');
+        if (existingMsg) existingMsg.remove();
+        
+        // Create test message element
+        const testMsg = document.createElement('div');
+        testMsg.id = 'motionTestMessage';
+        testMsg.innerHTML = message;
+        testMsg.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: ${color};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateX(100px);
+            transition: all 0.5s ease;
+        `;
+        
+        document.body.appendChild(testMsg);
+        
+        // Animate in (if motion is enabled)
+        setTimeout(() => {
+            testMsg.style.opacity = '1';
+            testMsg.style.transform = 'translateX(0)';
+        }, 10);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (testMsg) {
+                testMsg.style.opacity = '0';
+                testMsg.style.transform = 'translateX(100px)';
+                setTimeout(() => testMsg.remove(), 500);
+            }
+        }, 3000);
+        
+        console.log('♿ DEBUG - Motion test message shown:', message);
     }
 
     /**
