@@ -6031,16 +6031,81 @@ Items: ${items.join(', ')}
         const computedStyle = window.getComputedStyle(document.body);
         console.log('♿ DEBUG - Computed font-size:', computedStyle.fontSize);
         
-        // Check if CSS rule exists in stylesheets
+        // COMPREHENSIVE CSS DEBUGGING - Check if stylesheets are loaded
         try {
+            console.log('♿ DEBUG - Total stylesheets:', document.styleSheets.length);
+            
+            // Check if our main stylesheet exists
+            let stylesFound = false;
+            for (let i = 0; i < document.styleSheets.length; i++) {
+                const sheet = document.styleSheets[i];
+                if (sheet.href && sheet.href.includes('styles.css')) {
+                    stylesFound = true;
+                    console.log('♿ DEBUG - Found styles.css:', sheet.href);
+                    
+                    // Try to access rules
+                    try {
+                        const rules = sheet.cssRules || sheet.rules;
+                        console.log('♿ DEBUG - CSS rules count:', rules.length);
+                        
+                        // Look for our specific rule
+                        for (let j = 0; j < Math.min(rules.length, 100); j++) {
+                            const rule = rules[j];
+                            if (rule.selectorText && rule.selectorText.includes(`text-size-${percentage}`)) {
+                                console.log('♿ DEBUG - Found text-size rule:', rule.cssText);
+                                break;
+                            }
+                        }
+                    } catch (ruleError) {
+                        console.error('♿ DEBUG - Cannot access CSS rules (CORS issue?):', ruleError);
+                    }
+                }
+            }
+            
+            if (!stylesFound) {
+                console.error('♿ DEBUG - styles.css NOT FOUND in stylesheets!');
+            }
+            
+            // Test element approach
             const testEl = document.createElement('div');
             testEl.className = `text-size-${percentage}`;
+            testEl.style.position = 'absolute';
+            testEl.style.visibility = 'hidden';
             document.body.appendChild(testEl);
+            
             const testStyle = window.getComputedStyle(testEl);
             console.log('♿ DEBUG - Test element font-size:', testStyle.fontSize);
+            console.log('♿ DEBUG - Test element classes:', testEl.className);
+            
             document.body.removeChild(testEl);
+            
+            // Also test HTML element
+            const htmlStyle = window.getComputedStyle(document.documentElement);
+            console.log('♿ DEBUG - HTML element font-size:', htmlStyle.fontSize);
+            console.log('♿ DEBUG - HTML element classes:', document.documentElement.className);
+            
         } catch (e) {
-            console.error('♿ DEBUG - Error testing CSS:', e);
+            console.error('♿ DEBUG - Error in CSS debugging:', e);
+        }
+        
+        // FALLBACK: If CSS isn't working, directly set styles via JavaScript
+        if (computedStyle.fontSize === '16px') {
+            console.warn('♿ DEBUG - CSS not working, applying direct styles!');
+            const targetSize = `${16 * (percentage / 100)}px`;
+            
+            // Apply to all text elements directly
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                if (el.tagName !== 'HTML' && el.tagName !== 'HEAD' && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                    el.style.fontSize = targetSize;
+                }
+            });
+            
+            // Also set root font-size
+            document.documentElement.style.fontSize = targetSize;
+            document.body.style.fontSize = targetSize;
+            
+            console.log('♿ DEBUG - DIRECT STYLES APPLIED:', targetSize);
         }
         
         // Save preference
@@ -6094,6 +6159,49 @@ Items: ${items.join(', ')}
             console.log('♿ DEBUG - high-contrast class present:', body.classList.contains('high-contrast'));
         } else if (mode === 'dark-mode') {
             console.log('♿ DEBUG - dark-mode class present:', body.classList.contains('dark-mode'));
+        }
+        
+        // FALLBACK: If CSS isn't working, directly set styles via JavaScript
+        if (mode === 'high-contrast' && computedStyle.backgroundColor === 'rgb(245, 245, 245)') {
+            console.warn('♿ DEBUG - High contrast CSS not working, applying direct styles!');
+            // Apply high contrast directly
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                    el.style.backgroundColor = '#000000';
+                    el.style.color = '#ffffff';
+                    el.style.borderColor = '#ffffff';
+                }
+            });
+            document.body.style.backgroundColor = '#000000';
+            document.body.style.color = '#ffffff';
+            console.log('♿ DEBUG - DIRECT HIGH CONTRAST STYLES APPLIED');
+            
+        } else if (mode === 'dark-mode' && computedStyle.backgroundColor === 'rgb(245, 245, 245)') {
+            console.warn('♿ DEBUG - Dark mode CSS not working, applying direct styles!');
+            // Apply dark mode directly
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                if (el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE') {
+                    el.style.backgroundColor = '#121212';
+                    el.style.color = '#e0e0e0';
+                }
+            });
+            document.body.style.backgroundColor = '#121212';
+            document.body.style.color = '#e0e0e0';
+            console.log('♿ DEBUG - DIRECT DARK MODE STYLES APPLIED');
+            
+        } else if (mode === 'normal') {
+            // Reset to normal
+            console.log('♿ DEBUG - Resetting to normal styles');
+            const elements = document.querySelectorAll('*');
+            elements.forEach(el => {
+                el.style.removeProperty('background-color');
+                el.style.removeProperty('color');
+                el.style.removeProperty('border-color');
+            });
+            document.body.style.removeProperty('background-color');
+            document.body.style.removeProperty('color');
         }
         
         // Save preference
