@@ -1,3 +1,41 @@
+/**
+ * ACCESSIBILITY AUDIT REMINDERS:
+ * 
+ * MONTHLY TASKS:
+ * - Review automated accessibility testing reports (axe-core, WAVE)
+ * - Check for new accessibility issues in production
+ * - Verify recent deployments maintain WCAG 2.0 AA compliance
+ * 
+ * QUARTERLY TASKS:
+ * - Comprehensive manual accessibility audit
+ * - Screen reader testing (NVDA, JAWS, VoiceOver, TalkBack)
+ * - Keyboard navigation testing across all features
+ * - Color contrast verification for new UI elements
+ * - Hebrew RTL layout testing
+ * 
+ * ANNUAL TASKS:
+ * - Third-party accessibility assessment
+ * - Update accessibility statement with latest compliance status
+ * - Review and update this TODO list with new requirements
+ * - Staff accessibility training and knowledge updates
+ * 
+ * TESTING TOOLS TO USE:
+ * - axe-core browser extension
+ * - WAVE Web Accessibility Evaluator
+ * - Screen readers: NVDA (free), JAWS, VoiceOver
+ * - Keyboard-only navigation testing
+ * - High contrast mode testing
+ * - Color contrast analyzers
+ * 
+ * REMINDER: When adding new components, ALWAYS:
+ * 1. Add proper ARIA labels and roles
+ * 2. Ensure keyboard accessibility
+ * 3. Test with screen readers
+ * 4. Verify color contrast ratios
+ * 5. Add Hebrew RTL support if applicable
+ * 6. Update translations for new UI elements
+ */
+
 // User moderation tracking for toxic content filtering
 class UserModerationTracker {
     constructor() {
@@ -526,6 +564,9 @@ class ShoppingListOrganizer {
         
         // Initialize accessibility help modal (Phase 4)
         this.initializeAccessibilityHelp();
+        
+        // Initialize accessibility toolbar (Final Improvements)
+        this.initializeAccessibilityToolbar();
         
         this.initializeEventListeners();
         
@@ -5366,6 +5407,33 @@ Items: ${items.join(', ')}
                 }
             }
 
+            // Ctrl/Cmd + S: Save list (if authenticated)
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                if (this.mode === 'authenticated' && this.currentListId) {
+                    this.autoSaveCurrentList();
+                    this.announceToScreenReader(
+                        this.t('accessibility.announcements.shortcutUsed', 'Keyboard shortcut activated: Save list'), 
+                        'polite'
+                    );
+                }
+            }
+
+            // Ctrl/Cmd + M: Toggle My Lists view (if authenticated)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                if (this.mode === 'authenticated') {
+                    const myListsBtn = document.getElementById('myListsBtn');
+                    if (myListsBtn) {
+                        myListsBtn.click();
+                        this.announceToScreenReader(
+                            this.t('accessibility.announcements.shortcutUsed', 'My Lists view toggled'), 
+                            'polite'
+                        );
+                    }
+                }
+            }
+
             // Escape: Close any open modals or dropdowns
             if (e.key === 'Escape') {
                 this.closeAllDropdowns();
@@ -5717,6 +5785,318 @@ Items: ${items.join(', ')}
         if (typeSelect) typeSelect.value = '';
         if (messageTextarea) messageTextarea.value = '';
         if (contactInput) contactInput.value = '';
+    }
+
+    /**
+     * Initialize accessibility toolbar functionality (Final Improvements)
+     */
+    initializeAccessibilityToolbar() {
+        console.log('♿ Final Improvements: Initializing Accessibility Toolbar');
+        
+        const accessibilityToggle = document.getElementById('accessibilityToggle');
+        const accessibilityPanel = document.getElementById('accessibilityPanel');
+        const accessibilityClose = document.getElementById('accessibilityClose');
+        const textSizeSlider = document.getElementById('textSizeSlider');
+        const textSizeValue = document.getElementById('textSizeValue');
+        const contrastModeRadios = document.querySelectorAll('input[name="contrastMode"]');
+        const reduceMotionToggle = document.getElementById('reduceMotionToggle');
+        const resetAccessibilityBtn = document.getElementById('resetAccessibilityBtn');
+
+        if (!accessibilityToggle || !accessibilityPanel) {
+            console.warn('♿ Accessibility toolbar elements not found');
+            return;
+        }
+
+        // Load saved preferences
+        this.loadAccessibilityPreferences();
+
+        // Toggle accessibility panel
+        accessibilityToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.toggleAccessibilityPanel();
+        });
+
+        // Close accessibility panel
+        if (accessibilityClose) {
+            accessibilityClose.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.hideAccessibilityPanel();
+            });
+        }
+
+        // Text size slider
+        if (textSizeSlider && textSizeValue) {
+            textSizeSlider.addEventListener('input', (e) => {
+                const value = e.target.value;
+                this.updateTextSize(value);
+                textSizeValue.textContent = `${value}%`;
+                
+                // Update ARIA attributes
+                textSizeSlider.setAttribute('aria-valuenow', value);
+                textSizeSlider.setAttribute('aria-valuetext', `${value}% ${value == 100 ? 'normal size' : value > 100 ? 'larger' : 'smaller'}`);
+            });
+        }
+
+        // Contrast mode radio buttons
+        contrastModeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    this.updateContrastMode(e.target.value);
+                }
+            });
+        });
+
+        // Reduce motion toggle
+        if (reduceMotionToggle) {
+            reduceMotionToggle.addEventListener('change', (e) => {
+                this.updateMotionPreference(e.target.checked);
+            });
+        }
+
+        // Reset button
+        if (resetAccessibilityBtn) {
+            resetAccessibilityBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.resetAccessibilitySettings();
+            });
+        }
+
+        // Close panel when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#accessibilityToolbar')) {
+                this.hideAccessibilityPanel();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Alt + A to open accessibility panel
+            if (e.altKey && e.key === 'a') {
+                e.preventDefault();
+                this.toggleAccessibilityPanel();
+            }
+            // Escape to close panel
+            if (e.key === 'Escape' && accessibilityPanel.style.display === 'block') {
+                e.preventDefault();
+                this.hideAccessibilityPanel();
+            }
+        });
+
+        // Detect user's reduced motion preference
+        this.detectReducedMotionPreference();
+
+        console.log('✅ Accessibility toolbar initialized successfully');
+    }
+
+    /**
+     * Toggle accessibility panel visibility
+     */
+    toggleAccessibilityPanel() {
+        const accessibilityToggle = document.getElementById('accessibilityToggle');
+        const accessibilityPanel = document.getElementById('accessibilityPanel');
+        
+        if (!accessibilityPanel) return;
+        
+        const isVisible = accessibilityPanel.style.display === 'block';
+        
+        if (isVisible) {
+            this.hideAccessibilityPanel();
+        } else {
+            this.showAccessibilityPanel();
+        }
+    }
+
+    /**
+     * Show accessibility panel
+     */
+    showAccessibilityPanel() {
+        const accessibilityToggle = document.getElementById('accessibilityToggle');
+        const accessibilityPanel = document.getElementById('accessibilityPanel');
+        
+        if (!accessibilityPanel) return;
+        
+        accessibilityPanel.style.display = 'block';
+        accessibilityToggle?.setAttribute('aria-expanded', 'true');
+        accessibilityPanel.setAttribute('aria-hidden', 'false');
+        
+        // Focus first interactive element
+        const firstInput = accessibilityPanel.querySelector('input, button');
+        if (firstInput) {
+            firstInput.focus();
+        }
+        
+        this.announceToScreenReader('Accessibility settings panel opened', 'polite');
+    }
+
+    /**
+     * Hide accessibility panel
+     */
+    hideAccessibilityPanel() {
+        const accessibilityToggle = document.getElementById('accessibilityToggle');
+        const accessibilityPanel = document.getElementById('accessibilityPanel');
+        
+        if (!accessibilityPanel) return;
+        
+        accessibilityPanel.style.display = 'none';
+        accessibilityToggle?.setAttribute('aria-expanded', 'false');
+        accessibilityPanel.setAttribute('aria-hidden', 'true');
+        
+        this.announceToScreenReader('Accessibility settings panel closed', 'polite');
+    }
+
+    /**
+     * Update text size across the application
+     */
+    updateTextSize(percentage) {
+        const root = document.documentElement;
+        root.style.setProperty('--accessibility-text-scale', `${percentage / 100}`);
+        
+        // Apply text size class
+        document.body.className = document.body.className.replace(/text-size-\d+/g, '');
+        document.body.classList.add(`text-size-${percentage}`);
+        
+        // Save preference
+        localStorage.setItem('accessibility_text_size', percentage);
+        
+        console.log(`♿ Text size updated to ${percentage}%`);
+        this.announceToScreenReader(`Text size set to ${percentage}%`, 'polite');
+    }
+
+    /**
+     * Update contrast mode
+     */
+    updateContrastMode(mode) {
+        const body = document.body;
+        
+        // Remove existing contrast classes
+        body.classList.remove('contrast-normal', 'contrast-high', 'contrast-dark');
+        
+        // Apply new contrast class
+        body.classList.add(`contrast-${mode}`);
+        
+        // Save preference
+        localStorage.setItem('accessibility_contrast_mode', mode);
+        
+        console.log(`♿ Contrast mode updated to: ${mode}`);
+        
+        const modeNames = {
+            'normal': 'Normal contrast',
+            'high-contrast': 'High contrast',
+            'dark-mode': 'Dark mode'
+        };
+        
+        this.announceToScreenReader(`Display mode changed to ${modeNames[mode]}`, 'polite');
+    }
+
+    /**
+     * Update motion preference
+     */
+    updateMotionPreference(reduceMotion) {
+        const body = document.body;
+        
+        if (reduceMotion) {
+            body.classList.add('reduce-motion');
+        } else {
+            body.classList.remove('reduce-motion');
+        }
+        
+        // Save preference
+        localStorage.setItem('accessibility_reduce_motion', reduceMotion);
+        
+        console.log(`♿ Motion preference updated: ${reduceMotion ? 'reduced' : 'normal'}`);
+        this.announceToScreenReader(`Motion ${reduceMotion ? 'reduced' : 'enabled'}`, 'polite');
+    }
+
+    /**
+     * Reset all accessibility settings to default
+     */
+    resetAccessibilitySettings() {
+        // Reset text size
+        this.updateTextSize(100);
+        const textSizeSlider = document.getElementById('textSizeSlider');
+        const textSizeValue = document.getElementById('textSizeValue');
+        if (textSizeSlider) textSizeSlider.value = 100;
+        if (textSizeValue) textSizeValue.textContent = '100%';
+        
+        // Reset contrast mode
+        this.updateContrastMode('normal');
+        const normalRadio = document.querySelector('input[name="contrastMode"][value="normal"]');
+        if (normalRadio) normalRadio.checked = true;
+        
+        // Reset motion preference
+        this.updateMotionPreference(false);
+        const motionToggle = document.getElementById('reduceMotionToggle');
+        if (motionToggle) motionToggle.checked = false;
+        
+        // Clear localStorage
+        localStorage.removeItem('accessibility_text_size');
+        localStorage.removeItem('accessibility_contrast_mode');
+        localStorage.removeItem('accessibility_reduce_motion');
+        
+        console.log('♿ All accessibility settings reset to default');
+        this.announceToScreenReader('All accessibility settings reset to default', 'polite');
+    }
+
+    /**
+     * Load saved accessibility preferences
+     */
+    loadAccessibilityPreferences() {
+        // Load text size
+        const savedTextSize = localStorage.getItem('accessibility_text_size');
+        if (savedTextSize) {
+            this.updateTextSize(parseInt(savedTextSize));
+            const textSizeSlider = document.getElementById('textSizeSlider');
+            const textSizeValue = document.getElementById('textSizeValue');
+            if (textSizeSlider) textSizeSlider.value = savedTextSize;
+            if (textSizeValue) textSizeValue.textContent = `${savedTextSize}%`;
+        }
+        
+        // Load contrast mode
+        const savedContrastMode = localStorage.getItem('accessibility_contrast_mode');
+        if (savedContrastMode) {
+            this.updateContrastMode(savedContrastMode);
+            const contrastRadio = document.querySelector(`input[name="contrastMode"][value="${savedContrastMode}"]`);
+            if (contrastRadio) contrastRadio.checked = true;
+        }
+        
+        // Load motion preference
+        const savedReduceMotion = localStorage.getItem('accessibility_reduce_motion');
+        if (savedReduceMotion !== null) {
+            const reduceMotion = savedReduceMotion === 'true';
+            this.updateMotionPreference(reduceMotion);
+            const motionToggle = document.getElementById('reduceMotionToggle');
+            if (motionToggle) motionToggle.checked = reduceMotion;
+        }
+        
+        console.log('♿ Accessibility preferences loaded');
+    }
+
+    /**
+     * Detect user's reduced motion preference from system
+     */
+    detectReducedMotionPreference() {
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+            
+            // Only apply if user hasn't manually set preference
+            if (!localStorage.getItem('accessibility_reduce_motion')) {
+                this.updateMotionPreference(mediaQuery.matches);
+                const motionToggle = document.getElementById('reduceMotionToggle');
+                if (motionToggle) motionToggle.checked = mediaQuery.matches;
+            }
+            
+            // Listen for changes to system preference
+            mediaQuery.addEventListener('change', (e) => {
+                // Only apply if user hasn't manually set preference
+                if (!localStorage.getItem('accessibility_reduce_motion')) {
+                    this.updateMotionPreference(e.matches);
+                    const motionToggle = document.getElementById('reduceMotionToggle');
+                    if (motionToggle) motionToggle.checked = e.matches;
+                }
+            });
+            
+            console.log('♿ System reduced motion preference detected:', mediaQuery.matches);
+        }
     }
 }
 

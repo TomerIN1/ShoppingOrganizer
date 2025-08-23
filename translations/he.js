@@ -381,6 +381,28 @@ const hebrewTranslations = {
             invalidInput: "קלט לא תקין סופק",
             networkError: "שגיאת חיבור רשת",
             serverError: "אירעה שגיאת שרת"
+        },
+        toolbar: {
+            title: "הגדרות נגישות",
+            close: "סגור הגדרות נגישות",
+            open: "פתח הגדרות נגישות",
+            textSize: "גודל טקסט",
+            displayMode: "מצב תצוגה",
+            normalMode: "רגיל",
+            highContrastMode: "ניגודיות גבוהה",
+            darkMode: "מצב כהה",
+            reduceMotion: "הפחת תנועה",
+            reset: "איפוס",
+            resetAll: "איפוס כל הגדרות הנגישות לברירת המחדל",
+            announcements: {
+                panelOpened: "פאנל הגדרות נגישות נפתח",
+                panelClosed: "פאנל הגדרות נגישות נסגר",
+                textSizeChanged: "גודל הטקסט הוגדר ל-{size}%",
+                modeChanged: "מצב התצוגה שונה ל-{mode}",
+                motionReduced: "התנועה הופחתה",
+                motionEnabled: "התנועה הופעלה",
+                settingsReset: "כל הגדרות הנגישות אופסו לברירת המחדל"
+            }
         }
     }
 };

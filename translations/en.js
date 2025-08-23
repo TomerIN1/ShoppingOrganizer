@@ -360,6 +360,28 @@ const englishTranslations = {
             invalidInput: "Invalid input provided",
             networkError: "Network connection error",
             serverError: "Server error occurred"
+        },
+        toolbar: {
+            title: "Accessibility Settings",
+            close: "Close accessibility settings",
+            open: "Open accessibility settings",
+            textSize: "Text Size",
+            displayMode: "Display Mode",
+            normalMode: "Normal",
+            highContrastMode: "High Contrast",
+            darkMode: "Dark Mode",
+            reduceMotion: "Reduce Motion",
+            reset: "Reset",
+            resetAll: "Reset all accessibility settings to default",
+            announcements: {
+                panelOpened: "Accessibility settings panel opened",
+                panelClosed: "Accessibility settings panel closed",
+                textSizeChanged: "Text size set to {size}%",
+                modeChanged: "Display mode changed to {mode}",
+                motionReduced: "Motion reduced",
+                motionEnabled: "Motion enabled",
+                settingsReset: "All accessibility settings reset to default"
+            }
         }
     }
 };

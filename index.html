@@ -105,7 +105,7 @@
                             id="myListsBtn" 
                             class="dropdown-item"
                             role="menuitem"
-                            aria-label="View my lists"
+                            aria-label="View my saved lists"
                         >
                             <span aria-hidden="true">📋</span> My Lists
                         </button>
@@ -172,25 +172,25 @@
                 <h3>Use Cases & Examples</h3>
                 <div class="examples-grid">
                     <div class="example-card">
-                        <div class="example-icon">🛒</div>
+                        <div class="example-icon" aria-label="Shopping cart icon" role="img">🛒</div>
                         <h4>Shopping Lists</h4>
                         <p>milk, bread, apples, chicken breast, yogurt</p>
                         <small>Auto-categorized into Dairy, Bakery, Fruits, Meat</small>
                     </div>
                     <div class="example-card">
-                        <div class="example-icon">✈️</div>
+                        <div class="example-icon" aria-label="Travel airplane icon" role="img">✈️</div>
                         <h4>Travel Packing</h4>
                         <p>passport, sunscreen, camera, medications, swimsuit</p>
                         <small>Organized by Travel Docs, Health, Electronics</small>
                     </div>
                     <div class="example-card">
-                        <div class="example-icon">🔨</div>
+                        <div class="example-icon" aria-label="Hammer and tools icon" role="img">🔨</div>
                         <h4>DIY Projects</h4>
                         <p>screws, paint, brushes, sandpaper, gloves</p>
                         <small>Sorted into Hardware, Supplies, Safety</small>
                     </div>
                     <div class="example-card">
-                        <div class="example-icon">🎉</div>
+                        <div class="example-icon" aria-label="Party celebration icon" role="img">🎉</div>
                         <h4>Event Planning</h4>
                         <p>balloons, cake, music playlist, invitations</p>
                         <small>Categorized by Decorations, Food, Entertainment</small>
@@ -225,13 +225,13 @@
                 <div class="section-header">
                     <h2>Organized Shopping List</h2>
                     <div class="list-actions">
-                        <button id="addCategoryBtn" class="btn-add">Add Category</button>
-                        <button id="downloadWhatsAppBtn" class="btn-secondary" style="display: none;" title="Copy list to clipboard for WhatsApp sharing">
-                            📋 Copy for WhatsApp
+                        <button id="addCategoryBtn" class="btn-add" aria-label="Add new category to list">Add Category</button>
+                        <button id="downloadWhatsAppBtn" class="btn-secondary" style="display: none;" title="Copy list to clipboard for WhatsApp sharing" aria-label="Copy list to clipboard for WhatsApp sharing">
+                            <span aria-hidden="true">📋</span> Copy for WhatsApp
                         </button>
                         <button id="shareListBtn" class="btn-primary" style="display: none;">Share List</button>
-                        <button id="deleteListBtn" class="btn-danger" style="display: none;" title="Delete this list permanently">
-                            🗑️ Delete List
+                        <button id="deleteListBtn" class="btn-danger" style="display: none;" title="Delete this list permanently" aria-label="Delete this list permanently">
+                            <span aria-hidden="true">🗑️</span> Delete List
                         </button>
                     </div>
                 </div>
@@ -259,6 +259,121 @@
             </div>
         </div>
     </footer>
+
+    <!-- Accessibility Toolbar -->
+    <div id="accessibilityToolbar" class="accessibility-toolbar" aria-label="Accessibility settings toolbar">
+        <button 
+            id="accessibilityToggle" 
+            class="accessibility-toggle" 
+            aria-label="Open accessibility settings"
+            data-translate-attr="aria-label:accessibility.toolbar.open"
+            aria-expanded="false"
+            aria-controls="accessibilityPanel"
+        >
+            <span aria-hidden="true">♿</span>
+        </button>
+        <div 
+            id="accessibilityPanel" 
+            class="accessibility-panel" 
+            style="display: none;"
+            role="dialog"
+            aria-labelledby="accessibilityPanelTitle"
+            aria-modal="false"
+        >
+            <div class="accessibility-panel-header">
+                <h3 id="accessibilityPanelTitle" data-translate="accessibility.toolbar.title">Accessibility Settings</h3>
+                <button 
+                    id="accessibilityClose" 
+                    class="accessibility-close"
+                    aria-label="Close accessibility settings"
+                    data-translate-attr="aria-label:accessibility.toolbar.close"
+                >
+                    <span aria-hidden="true">✕</span>
+                </button>
+            </div>
+            <div class="accessibility-panel-body">
+                <div class="accessibility-option">
+                    <label for="textSizeSlider" class="accessibility-label" data-translate="accessibility.toolbar.textSize">Text Size</label>
+                    <input 
+                        type="range" 
+                        id="textSizeSlider" 
+                        min="80" 
+                        max="200" 
+                        value="100" 
+                        step="10"
+                        aria-label="Adjust text size from 80% to 200%"
+                        aria-valuemin="80"
+                        aria-valuemax="200"
+                        aria-valuenow="100"
+                        aria-valuetext="100% normal size"
+                    >
+                    <span id="textSizeValue" class="accessibility-value">100%</span>
+                </div>
+                
+                <div class="accessibility-option">
+                    <label class="accessibility-label" data-translate="accessibility.toolbar.displayMode">Display Mode</label>
+                    <div class="accessibility-radio-group" role="radiogroup" aria-labelledby="contrastModeLabel">
+                        <span id="contrastModeLabel" class="sr-only">Choose display mode</span>
+                        <label class="accessibility-radio">
+                            <input 
+                                type="radio" 
+                                name="contrastMode" 
+                                value="normal" 
+                                checked
+                                aria-describedby="normalModeDesc"
+                            >
+                            <span data-translate="accessibility.toolbar.normalMode">Normal</span>
+                            <span id="normalModeDesc" class="sr-only">Standard color scheme</span>
+                        </label>
+                        <label class="accessibility-radio">
+                            <input 
+                                type="radio" 
+                                name="contrastMode" 
+                                value="high-contrast"
+                                aria-describedby="highContrastDesc"
+                            >
+                            <span data-translate="accessibility.toolbar.highContrastMode">High Contrast</span>
+                            <span id="highContrastDesc" class="sr-only">High contrast black and white mode</span>
+                        </label>
+                        <label class="accessibility-radio">
+                            <input 
+                                type="radio" 
+                                name="contrastMode" 
+                                value="dark-mode"
+                                aria-describedby="darkModeDesc"
+                            >
+                            <span data-translate="accessibility.toolbar.darkMode">Dark Mode</span>
+                            <span id="darkModeDesc" class="sr-only">Dark background with light text</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="accessibility-option">
+                    <label class="accessibility-checkbox">
+                        <input 
+                            type="checkbox" 
+                            id="reduceMotionToggle"
+                            aria-describedby="reduceMotionDesc"
+                        >
+                        <span data-translate="accessibility.toolbar.reduceMotion">Reduce Motion</span>
+                        <span id="reduceMotionDesc" class="sr-only">Reduce animations and transitions</span>
+                    </label>
+                </div>
+                
+                <div class="accessibility-actions">
+                    <button 
+                        id="resetAccessibilityBtn" 
+                        class="btn-secondary accessibility-btn"
+                        aria-label="Reset all accessibility settings to default"
+                        data-translate="accessibility.toolbar.reset"
+                        data-translate-attr="aria-label:accessibility.toolbar.resetAll"
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Enhanced ARIA Live Regions for Dynamic Content Announcements -->
     <div 
