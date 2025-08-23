@@ -6013,11 +6013,13 @@ Items: ${items.join(', ')}
         const bodyClassesBefore = document.body.className;
         console.log('♿ DEBUG - Body classes before:', bodyClassesBefore);
         
-        // Apply text size class
+        // Apply text size class to both html and body elements
+        document.documentElement.className = document.documentElement.className.replace(/text-size-\d+/g, '');
         document.body.className = document.body.className.replace(/text-size-\d+/g, '');
         if (percentage !== 100) {
+            document.documentElement.classList.add(`text-size-${percentage}`);
             document.body.classList.add(`text-size-${percentage}`);
-            console.log('♿ DEBUG - Added class:', `text-size-${percentage}`);
+            console.log('♿ DEBUG - Added class to html and body:', `text-size-${percentage}`);
         }
         
         // Get body classes after modification
